@@ -8,14 +8,28 @@ import CTASection from '@/components/sections/cta-section'
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
-      <Navbar />
-      <HeroSection />
-      <FeaturesSection />
-      <AboutSection />
-      <PricingSection />
-      <CTASection />
-      <Footer />
+    <main className="min-h-screen relative">
+      {/* Background Image */}
+      <div 
+        className="fixed inset-0 z-0"
+        style={{
+          backgroundImage: 'url(/background-home.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      />
+      
+      {/* Content with overlay */}
+      <div className="relative z-10">
+        <Navbar />
+        <HeroSection />
+        <FeaturesSection />
+        <AboutSection />
+        <PricingSection />
+        <CTASection />
+        <Footer />
+      </div>
     </main>
   )
 }

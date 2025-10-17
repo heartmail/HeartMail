@@ -6,8 +6,11 @@ import { Play } from 'lucide-react'
 export default function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background with floating hearts */}
-      <div className="absolute inset-0 heartmail-gradient">
+      {/* Semi-transparent overlay for better text readability */}
+      <div className="absolute inset-0 bg-black/40"></div>
+      
+      {/* Floating hearts */}
+      <div className="absolute inset-0">
         <div className="floating-hearts">
           <div className="floating-heart">💖</div>
           <div className="floating-heart">💕</div>
