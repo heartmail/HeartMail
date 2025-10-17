@@ -1,0 +1,515 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { User, Bell, Shield, CreditCard, Palette, Globe, Save, Eye, EyeOff, Heart, LogOut } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+// DashboardLayout is already applied through the main layout
+import BillingSettings from '@/components/billing/billing-settings'
+import { useAuth } from '@/lib/auth-context'
+import { useTheme } from '@/lib/theme-context'
+import { useRouter } from 'next/navigation'
+import { getUserProfile, upsertUserProfile, UserProfile } from '@/lib/profile'
+import { getUserSettings, upsertUserSettings, UserSettings } from '@/lib/settings'
+import { toast } from 'sonner'
+
+export default function SettingsPage() {
+  const [activeTab, setActiveTab] = useState('profile')
+  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  
+  // Profile state
+  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [profileForm, setProfileForm] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    bio: ''
+  })
+  
+  // Settings state
+  const [settings, setSettings] = useState<UserSettings | null>(null)
+  const [notifications, setNotifications] = useState({
+    email_notifications: true,
+    push_notifications: true,
+    email_delivery_confirmations: true,
+    monthly_reports: false,
+    weekly_reports: true
+  })
+
+  const { user, signOut } = useAuth()
+  const { theme, setTheme } = useTheme()
+  const router = useRouter()
+
+  // Load user data on component mount
+  useEffect(() => {
+    if (user) {
+      loadUserData()
+    }
+  }, [user])
+
+  const loadUserData = async () => {
+    try {
+      setLoading(true)
+      const [profileData, settingsData] = await Promise.all([
+        getUserProfile(user!.id),
+        getUserSettings(user!.id)
+      ])
+      
+      if (profileData) {
+        setProfile(profileData)
+        setProfileForm({
+          first_name: profileData.first_name || '',
+          last_name: profileData.last_name || '',
+          email: profileData.email || user!.email || '',
+          phone: profileData.phone || '',
+          bio: profileData.bio || ''
+        })
+      } else {
+        // Initialize with user email if no profile exists
+        setProfileForm({
+          first_name: '',
+          last_name: '',
+          email: user!.email || '',
+          phone: '',
+          bio: ''
+        })
+      }
+      
+      if (settingsData) {
+        setSettings(settingsData)
+        setNotifications({
+          email_notifications: settingsData.email_notifications,
+          push_notifications: settingsData.push_notifications,
+          email_delivery_confirmations: settingsData.email_delivery_confirmations,
+          monthly_reports: settingsData.monthly_reports,
+          weekly_reports: settingsData.weekly_reports
+        })
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error)
+      toast.error('Failed to load user data')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSaveProfile = async () => {
+    if (!user) return
+    
+    try {
+      setSaving(true)
+      await upsertUserProfile(user.id, profileForm)
+      toast.success('Profile updated successfully')
+      await loadUserData() // Reload data
+    } catch (error) {
+      console.error('Error saving profile:', error)
+      toast.error('Failed to save profile')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleSaveSettings = async () => {
+    if (!user) return
+    
+    try {
+      setSaving(true)
+      await upsertUserSettings(user.id, notifications)
+      toast.success('Settings updated successfully')
+      await loadUserData() // Reload data
+    } catch (error) {
+      console.error('Error saving settings:', error)
+      toast.error('Failed to save settings')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleLogout = async () => {
+    await signOut()
+    router.push('/')
+  }
+
+  const tabs = [
+    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'security', label: 'Security', icon: Shield },
+    { id: 'billing', label: 'Billing', icon: CreditCard },
+    { id: 'appearance', label: 'Appearance', icon: Palette },
+    { id: 'preferences', label: 'Preferences', icon: Globe }
+  ]
+
+  const handleNotificationChange = (key: string, value: boolean) => {
+    setNotifications(prev => ({
+      ...prev,
+      [key]: value
+    }))
+  }
+
+  return (
+    <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+            <p className="text-gray-600 mt-1">Manage your account settings and preferences</p>
+          </div>
+        </div>
+
+        <div className="settings-container">
+          {/* Settings Sidebar */}
+          <div className="settings-sidebar">
+            <nav className="settings-nav">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  className={`settings-nav-item ${activeTab === tab.id ? 'active' : ''}`}
+                  onClick={() => setActiveTab(tab.id)}
+                >
+                  <tab.icon className="h-5 w-5" />
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          {/* Settings Content */}
+          <div className="settings-main">
+            {activeTab === 'profile' && (
+              <div className="settings-section">
+                <h2>Profile Information</h2>
+                <p className="section-description">Update your personal information and contact details.</p>
+                
+                <form className="settings-form">
+                  <div className="form-row">
+                    <div className="form-group">
+                      <Label htmlFor="first_name">First Name</Label>
+                      <Input 
+                        id="first_name"
+                        type="text" 
+                        value={profileForm.first_name}
+                        onChange={(e) => setProfileForm({ ...profileForm, first_name: e.target.value })}
+                        className="form-input"
+                        placeholder="Enter your first name"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <Label htmlFor="last_name">Last Name</Label>
+                      <Input 
+                        id="last_name"
+                        type="text" 
+                        value={profileForm.last_name}
+                        onChange={(e) => setProfileForm({ ...profileForm, last_name: e.target.value })}
+                        className="form-input"
+                        placeholder="Enter your last name"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="form-group">
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input 
+                      id="email"
+                      type="email" 
+                      value={profileForm.email}
+                      onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                      className="form-input"
+                      placeholder="Enter your email"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input 
+                      id="phone"
+                      type="tel" 
+                      value={profileForm.phone}
+                      onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                      className="form-input"
+                      placeholder="Enter your phone number"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <Label htmlFor="bio">Bio</Label>
+                    <Textarea 
+                      id="bio"
+                      className="form-input" 
+                      rows={4}
+                      value={profileForm.bio}
+                      onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
+                      placeholder="Share a bit about yourself and what HeartMail means to you..."
+                    />
+                  </div>
+                  
+                  <div className="form-actions">
+                    <Button 
+                      onClick={handleSaveProfile}
+                      disabled={saving}
+                      className="btn-heartmail"
+                    >
+                      {saving ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          Save Changes
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {activeTab === 'notifications' && (
+              <div className="settings-section">
+                <h2>Notification Preferences</h2>
+                <p className="section-description">Choose how you want to be notified about your HeartMail activities.</p>
+                
+                <div className="notification-settings">
+                  <div className="notification-group">
+                    <h3>Email Notifications</h3>
+                    <div className="notification-item">
+                      <div className="notification-info">
+                        <label>Email delivery confirmations</label>
+                        <p>Get notified when your emails are successfully delivered</p>
+                      </div>
+                      <label className="toggle-switch">
+                        <input 
+                          type="checkbox" 
+                          checked={notifications.email_delivery_confirmations}
+                          onChange={(e) => setNotifications({ ...notifications, email_delivery_confirmations: e.target.checked })}
+                        />
+                        <span className="toggle-slider"></span>
+                      </label>
+                    </div>
+                    
+                    
+                    <div className="notification-item">
+                      <div className="notification-info">
+                        <label>Monthly report</label>
+                        <p>Get detailed monthly reports about your email performance</p>
+                      </div>
+                      <label className="toggle-switch">
+                        <input 
+                          type="checkbox" 
+                          checked={notifications.monthly_reports}
+                          onChange={(e) => setNotifications({ ...notifications, monthly_reports: e.target.checked })}
+                        />
+                        <span className="toggle-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <div className="notification-group">
+                    <h3>Push Notifications</h3>
+                    <div className="notification-item">
+                      <div className="notification-info">
+                        <label>Browser notifications</label>
+                        <p>Receive push notifications in your browser</p>
+                      </div>
+                      <label className="toggle-switch">
+                        <input 
+                          type="checkbox" 
+                          checked={notifications.push_notifications}
+                          onChange={(e) => setNotifications({ ...notifications, push_notifications: e.target.checked })}
+                        />
+                        <span className="toggle-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <div className="form-actions">
+                    <Button 
+                      onClick={handleSaveSettings}
+                      disabled={saving}
+                      className="btn-heartmail"
+                    >
+                      {saving ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          Save Settings
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'security' && (
+              <div className="settings-section">
+                <h2>Security Settings</h2>
+                <p className="section-description">Manage your account security and privacy settings.</p>
+                
+                <div className="security-settings">
+                  <div className="security-item">
+                    <div className="security-info">
+                      <h3>Change Password</h3>
+                      <p>Update your account password for better security</p>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      className="btn-smooth border-gray-300 hover:border-heartmail-pink hover:text-heartmail-pink"
+                    >
+                      <Shield className="h-4 w-4 mr-2" />
+                      Change Password
+                    </Button>
+                  </div>
+                  
+                  <div className="security-item">
+                    <div className="security-info">
+                      <h3>Two-Factor Authentication</h3>
+                      <p>Add an extra layer of security to your account</p>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      className="btn-smooth border-gray-300 hover:border-heartmail-pink hover:text-heartmail-pink"
+                    >
+                      <Shield className="h-4 w-4 mr-2" />
+                      Enable 2FA
+                    </Button>
+                  </div>
+                  
+                  <div className="security-item">
+                    <div className="security-info">
+                      <h3>Sign Out</h3>
+                      <p>Sign out of your account on this device</p>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      onClick={handleLogout}
+                      className="btn-smooth text-red-600 border-red-300 hover:text-red-700 hover:bg-red-50 hover:border-red-400"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  </div>
+                  
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'billing' && (
+              <div className="settings-section">
+                <h2>Billing & Subscription</h2>
+                <p className="section-description">Manage your subscription and billing information.</p>
+                
+                <BillingSettings />
+              </div>
+            )}
+
+            {activeTab === 'appearance' && (
+              <div className="settings-section">
+                <h2>Appearance Settings</h2>
+                <p className="section-description">Customize the look and feel of your HeartMail experience.</p>
+                
+                <div className="appearance-settings">
+                  <div className="appearance-group">
+                    <h3>Theme</h3>
+                    <div className="theme-options">
+                      <label className="theme-option">
+                        <input 
+                          type="radio" 
+                          name="theme" 
+                          value="light" 
+                          checked={theme === 'light'}
+                          onChange={() => setTheme('light')}
+                        />
+                        <div className="theme-preview light">
+                          <div className="theme-header"></div>
+                          <div className="theme-content"></div>
+                        </div>
+                        <span>Light</span>
+                      </label>
+                      <label className="theme-option">
+                        <input 
+                          type="radio" 
+                          name="theme" 
+                          value="dark" 
+                          checked={theme === 'dark'}
+                          onChange={() => setTheme('dark')}
+                        />
+                        <div className="theme-preview dark">
+                          <div className="theme-header"></div>
+                          <div className="theme-content"></div>
+                        </div>
+                        <span>Dark</span>
+                      </label>
+                    </div>
+                  </div>
+                  
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'preferences' && (
+              <div className="settings-section">
+                <h2>Preferences</h2>
+                <p className="section-description">Customize your HeartMail experience with personal preferences.</p>
+                
+                <div className="preferences-settings">
+                  <div className="preference-group">
+                    <h3>Email Preferences</h3>
+                    <div className="preference-item">
+                      <label>Default email frequency</label>
+                      <select className="form-select">
+                        <option value="daily">Daily</option>
+                        <option value="weekly" selected>Weekly</option>
+                        <option value="monthly">Monthly</option>
+                      </select>
+                    </div>
+                    
+                    <div className="preference-item">
+                      <label>Preferred send time</label>
+                      <select className="form-select">
+                        <option value="morning">Morning (9:00 AM)</option>
+                        <option value="afternoon" selected>Afternoon (2:00 PM)</option>
+                        <option value="evening">Evening (6:00 PM)</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="preference-group">
+                    <h3>Language & Region</h3>
+                    <div className="preference-item">
+                      <label>Language</label>
+                      <select className="form-select">
+                        <option value="en" selected>English</option>
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                      </select>
+                    </div>
+                    
+                    <div className="preference-item">
+                      <label>Time Zone</label>
+                      <select className="form-select">
+                        <option value="EST" selected>Eastern Time (EST)</option>
+                        <option value="PST">Pacific Time (PST)</option>
+                        <option value="CST">Central Time (CST)</option>
+                        <option value="MST">Mountain Time (MST)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+    </div>
+  )
+}

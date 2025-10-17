@@ -1,0 +1,89 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/lib/auth-context'
+import { getDashboardStats, getRecentActivity, getRecipients, getUpcomingEmails } from '@/lib/database'
+
+interface Activity {
+  id: string
+  type: 'info' | 'success'
+  message: string
+  time: string
+  icon: string
+}
+
+interface Recipient {
+  id: string
+  name: string
+  email: string
+  relationship?: string
+  status: 'active' | 'inactive'
+  created_at: string
+}
+
+interface UpcomingEmail {
+  id: string
+  title: string
+  recipient: string
+  date: string
+  time: string
+  status: string
+}
+
+export function useDashboardData() {
+  const { user } = useAuth()
+  const [data, setData] = useState<{
+    stats: any
+    recentActivity: Activity[]
+    recipients: Recipient[]
+    upcomingEmails: UpcomingEmail[]
+  }>({
+    stats: null,
+    recentActivity: [],
+    recipients: [],
+    upcomingEmails: []
+  })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    if (!user) {
+      setLoading(false)
+      return
+    }
+
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const [stats, recentActivity, recipients, upcomingEmails] = await Promise.all([
+          getDashboardStats(user.id),
+          getRecentActivity(user.id),
+          getRecipients(user.id),
+          getUpcomingEmails(user.id)
+        ])
+
+        setData({
+          stats,
+          recentActivity: recentActivity.map(activity => ({
+            ...activity,
+            type: activity.type as 'info' | 'success'
+          })),
+          recipients: recipients.map(recipient => ({
+            ...recipient,
+            status: recipient.status as 'active' | 'inactive'
+          })),
+          upcomingEmails
+        })
+      } catch (err: any) {
+        setError(err.message)
+        console.error('Error fetching dashboard data:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [user])
+
+  return { data, loading, error }
+}

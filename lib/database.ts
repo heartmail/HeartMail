@@ -1,0 +1,168 @@
+import { supabase } from './supabase'
+
+// Dashboard Stats
+export async function getDashboardStats(userId: string) {
+  const [recipientsResult, scheduledEmailsResult, emailLogsResult] = await Promise.all([
+    supabase.from('recipients').select('id').eq('user_id', userId).eq('is_active', true),
+    supabase.from('scheduled_emails').select('id, status').eq('user_id', userId),
+    supabase.from('email_logs').select('id, sent_at').gte('sent_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
+  ])
+
+  const activeRecipients = recipientsResult.data?.length || 0
+  const scheduledEmails = scheduledEmailsResult.data?.length || 0
+  const sentThisMonth = emailLogsResult.data?.length || 0
+  
+  // Calculate deliverability rate (simplified)
+  const successfulEmails = emailLogsResult.data?.filter(log => log.sent_at).length || 0
+  const deliverabilityRate = sentThisMonth > 0 ? Math.round((successfulEmails / sentThisMonth) * 100) : 100
+
+  return {
+    activeRecipients,
+    scheduledEmails,
+    sentThisMonth,
+    deliverabilityRate
+  }
+}
+
+// Recent Activity
+export async function getRecentActivity(userId: string) {
+  const { data: scheduledEmails, error } = await supabase
+    .from('scheduled_emails')
+    .select(`
+      id,
+      title,
+      status,
+      scheduled_date,
+      scheduled_time,
+      created_at,
+      recipients!inner(name, email)
+    `)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(5)
+
+  if (error) throw error
+
+  return scheduledEmails?.map(email => ({
+    id: email.id,
+    type: email.status === 'sent' ? 'success' : 'info',
+    message: email.status === 'sent' 
+      ? `Email delivered to ${email.recipients?.[0]?.name || 'recipient'}`
+      : `Email scheduled: ${email.title}`,
+    time: formatTimeAgo(email.created_at),
+    icon: email.status === 'sent' ? 'Check' : 'Calendar'
+  })) || []
+}
+
+// Recipients
+export async function getRecipients(userId: string) {
+  const { data, error } = await supabase
+    .from('recipients')
+    .select('id, name, email, relationship, is_active, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+
+  return data?.map(recipient => ({
+    id: recipient.id,
+    name: recipient.name,
+    email: recipient.email,
+    relationship: recipient.relationship,
+    status: recipient.is_active ? 'active' : 'inactive',
+    created_at: recipient.created_at
+  })) || []
+}
+
+// Upcoming Emails
+export async function getUpcomingEmails(userId: string) {
+  const { data, error } = await supabase
+    .from('scheduled_emails')
+    .select(`
+      id,
+      title,
+      scheduled_date,
+      scheduled_time,
+      status,
+      recipients!inner(name, email)
+    `)
+    .eq('user_id', userId)
+    .gte('scheduled_date', new Date().toISOString().split('T')[0])
+    .order('scheduled_date', { ascending: true })
+    .limit(5)
+
+  if (error) throw error
+
+  return data?.map(email => ({
+    id: email.id,
+    title: email.title,
+    recipient: email.recipients?.[0]?.name || 'recipient',
+    date: formatDate(email.scheduled_date),
+    time: formatTime(email.scheduled_time),
+    status: email.status
+  })) || []
+}
+
+// User Preferences
+export async function getUserPreferences(userId: string) {
+  const { data, error } = await supabase
+    .from('user_preferences')
+    .select('*')
+    .eq('user_id', userId)
+    .single()
+
+  if (error && error.code !== 'PGRST116') throw error
+
+  return data || {
+    timezone: 'America/New_York',
+    email_notifications: true,
+    push_notifications: true,
+    theme: 'light'
+  }
+}
+
+// Update User Preferences
+export async function updateUserPreferences(userId: string, preferences: any) {
+  const { data, error } = await supabase
+    .from('user_preferences')
+    .upsert({
+      user_id: userId,
+      ...preferences,
+      updated_at: new Date().toISOString()
+    })
+
+  if (error) throw error
+  return data
+}
+
+// Helper functions
+function formatTimeAgo(dateString: string): string {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
+  
+  if (diffInMinutes < 1) return 'Just now'
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`
+  if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`
+  return `${Math.floor(diffInMinutes / 1440)}d ago`
+}
+
+function formatDate(dateString: string): string {
+  const date = new Date(dateString)
+  const today = new Date()
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  
+  if (date.toDateString() === today.toDateString()) return 'Today'
+  if (date.toDateString() === tomorrow.toDateString()) return 'Tomorrow'
+  
+  return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+}
+
+function formatTime(timeString: string): string {
+  const [hours, minutes] = timeString.split(':')
+  const hour = parseInt(hours)
+  const ampm = hour >= 12 ? 'PM' : 'AM'
+  const displayHour = hour % 12 || 12
+  return `${displayHour}:${minutes} ${ampm}`
+}
