@@ -17,6 +17,7 @@ export default function Home() {
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
+          backgroundColor: '#f3f4f6', // Fallback color
         }}
       />
       

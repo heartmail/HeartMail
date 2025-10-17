@@ -14,6 +14,7 @@ export default function Logo({ className = '', size = 32 }: LogoProps) {
       height={size}
       className={className}
       priority
+      unoptimized
     />
   )
 }
