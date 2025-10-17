@@ -29,6 +29,7 @@ export const getGoogleAuthUrl = () => {
     scope: 'openid email profile',
     access_type: 'offline',
     prompt: 'consent',
+    hd: 'heartmail.com', // This will show heartmail.com in the consent screen
   })
 
   return `${baseUrl}?${params.toString()}`

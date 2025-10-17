@@ -2,10 +2,11 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { Heart, Menu, X } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth-context'
 import LoggedInNavbar from './logged-in-navbar'
+import Logo from '@/components/ui/logo'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -30,7 +31,7 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <Heart className="h-8 w-8 text-heartmail-pink fill-heartmail-pink" />
+            <Logo size={32} className="h-8 w-8" />
             <span className="text-2xl font-bold text-heartmail-pink">HeartMail</span>
           </Link>
 

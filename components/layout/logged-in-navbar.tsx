@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { Heart, LayoutDashboard, BookOpen } from 'lucide-react'
+import { LayoutDashboard, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth-context'
+import Logo from '@/components/ui/logo'
 
 export default function LoggedInNavbar() {
   const { user, signOut } = useAuth()
@@ -18,7 +19,7 @@ export default function LoggedInNavbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/dashboard" className="flex items-center space-x-2">
-            <Heart className="h-8 w-8 text-heartmail-pink fill-heartmail-pink" />
+            <Logo size={32} className="h-8 w-8" />
             <span className="text-2xl font-bold text-heartmail-pink">HeartMail</span>
           </Link>
 

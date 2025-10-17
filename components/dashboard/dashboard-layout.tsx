@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Heart, Home, Users, Palette, Calendar, Settings, Bell, Plus, LogOut, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react'
+import { Home, Users, Palette, Calendar, Settings, Bell, Plus, LogOut, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth-context'
+import Logo from '@/components/ui/logo'
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
@@ -85,7 +86,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         
         <div className="sidebar-header">
           <div className="logo">
-            <Heart className="h-6 w-6 text-heartmail-pink fill-heartmail-pink" />
+            <Logo size={24} className="h-6 w-6" />
             <span>HeartMail</span>
           </div>
         </div>
