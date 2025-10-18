@@ -179,7 +179,6 @@ export default function SchedulePage() {
       status: email.status
     }))
   }
-  }
 
   const getEmailsForMonth = () => {
     // Return all scheduled emails for the current month
@@ -189,15 +188,18 @@ export default function SchedulePage() {
     return scheduledEmails.filter(email => {
       const emailDate = new Date(email.send_at)
       return emailDate.getMonth() === currentMonth && emailDate.getFullYear() === currentYear
-    }).map(email => ({
-      id: email.id,
-      title: email.subject,
-      type: 'scheduled',
-      recipient: email.to_email,
-      time: emailDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      date: emailDate.toISOString().split('T')[0],
-      status: email.status
-    }))
+    }).map(email => {
+      const emailDate = new Date(email.send_at)
+      return {
+        id: email.id,
+        title: email.subject,
+        type: 'scheduled',
+        recipient: email.to_email,
+        time: emailDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        date: emailDate.toISOString().split('T')[0],
+        status: email.status
+      }
+    })
   }
 
   const handleScheduleEmail = async (e: React.FormEvent<HTMLFormElement>) => {
