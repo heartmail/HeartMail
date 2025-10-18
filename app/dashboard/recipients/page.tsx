@@ -122,6 +122,11 @@ export default function RecipientsPage() {
     setEditingRecipient(null)
   }
 
+  const openAddDialog = () => {
+    resetForm()
+    setIsDialogOpen(true)
+  }
+
   const handleDialogClose = () => {
     setIsDialogOpen(false)
     resetForm()
@@ -147,7 +152,7 @@ export default function RecipientsPage() {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
           <DialogTrigger asChild>
-            <Button className="btn-heartmail" onClick={() => resetForm()}>
+            <Button className="btn-heartmail" onClick={openAddDialog}>
               <Plus className="h-4 w-4 mr-2" />
               Add Recipient
             </Button>
@@ -258,6 +263,17 @@ export default function RecipientsPage() {
             </form>
           </DialogContent>
         </Dialog>
+        
+        {/* Debug button */}
+        <Button 
+          className="btn-heartmail ml-4" 
+          onClick={() => {
+            console.log('🔍 DEBUG: Direct button clicked!')
+            setIsDialogOpen(true)
+          }}
+        >
+          DEBUG: Open Dialog
+        </Button>
       </div>
 
       {recipients.length === 0 ? (
@@ -266,7 +282,7 @@ export default function RecipientsPage() {
             <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No recipients yet</h3>
             <p className="text-gray-600 mb-6">Add your first recipient to start sending heartfelt emails</p>
-            <Button className="btn-heartmail" onClick={() => setIsDialogOpen(true)}>
+            <Button className="btn-heartmail" onClick={openAddDialog}>
               <Plus className="h-4 w-4 mr-2" />
               Add Your First Recipient
             </Button>

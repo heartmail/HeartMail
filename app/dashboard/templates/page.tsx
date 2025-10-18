@@ -161,6 +161,11 @@ export default function TemplatesPage() {
     setEditingTemplate(null)
   }
 
+  const openAddDialog = () => {
+    resetForm()
+    setIsDialogOpen(true)
+  }
+
   const handleDialogClose = () => {
     setIsDialogOpen(false)
     resetForm()
@@ -186,7 +191,7 @@ export default function TemplatesPage() {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
           <DialogTrigger asChild>
-            <Button className="btn-heartmail" onClick={() => resetForm()}>
+            <Button className="btn-heartmail" onClick={openAddDialog}>
               <Plus className="h-4 w-4 mr-2" />
               Create Template
             </Button>
@@ -317,7 +322,7 @@ export default function TemplatesPage() {
             <Palette className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No templates yet</h3>
             <p className="text-gray-600 mb-6">Create your first template to start sending personalized emails</p>
-            <Button className="btn-heartmail" onClick={() => setIsDialogOpen(true)}>
+            <Button className="btn-heartmail" onClick={openAddDialog}>
               <Plus className="h-4 w-4 mr-2" />
               Create Your First Template
             </Button>
