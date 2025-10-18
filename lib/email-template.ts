@@ -13,7 +13,7 @@ export function createEmailTemplate(subject: string, message: string, from: stri
         <!-- Header with Logo -->
         <div style="text-align: center; padding: 40px 20px 20px;">
           <div style="margin-bottom: 20px;">
-            <img src="https://heartsmail.com/logo.png" 
+            <img src="https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/logo.png" 
                  alt="HeartMail Logo" 
                  style="width: 80px; height: 80px; border-radius: 16px; box-shadow: 0 8px 16px rgba(0,0,0,0.1);"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
@@ -34,7 +34,7 @@ export function createEmailTemplate(subject: string, message: string, from: stri
         <!-- Footer -->
         <div style="text-align: center; padding: 30px 20px 40px;">
           <div style="margin-bottom: 20px;">
-            <img src="https://heartsmail.com/logo.png" 
+            <img src="https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/logo.png" 
                  alt="HeartMail" 
                  style="width: 32px; height: 32px; border-radius: 8px;"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />

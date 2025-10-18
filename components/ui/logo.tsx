@@ -5,13 +5,13 @@ interface LogoProps {
 
 export default function Logo({ className = '', size = 32 }: LogoProps) {
   return (
-    <img
-      src="/logo.png"
-      alt="HeartMail Logo"
-      width={size}
-      height={size}
-      className={`object-contain ${className}`}
-      style={{ width: size, height: size }}
-    />
+        <img
+          src="https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/logo.png"
+          alt="HeartMail Logo"
+          width={size}
+          height={size}
+          className={`object-contain ${className}`}
+          style={{ width: size, height: size }}
+        />
   )
 }

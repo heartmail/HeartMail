@@ -149,7 +149,7 @@ export const createAuthEmailTemplate = (
         <!-- Header with Logo -->
         <div class="header">
           <div class="logo-container">
-            <img src="https://heartsmail.com/logo.png" 
+            <img src="https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/logo.png" 
                  alt="HeartMail Logo" 
                  class="logo-img"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
@@ -173,7 +173,7 @@ export const createAuthEmailTemplate = (
         <!-- Footer -->
         <div class="footer">
           <div class="footer-logo-container">
-            <img src="https://heartsmail.com/logo.png" 
+            <img src="https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/logo.png" 
                  alt="HeartMail" 
                  class="footer-logo-img"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
