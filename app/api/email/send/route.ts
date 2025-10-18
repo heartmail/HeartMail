@@ -27,30 +27,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Use your verified domain for production, fallback to onboarding for testing
-    const fromAddress = process.env.NODE_ENV === 'production' 
-      ? 'HeartMail <noreply@letter.heartsmail.com>'
-      : 'HeartMail <onboarding@resend.dev>'
+    // Always use onboarding@resend.dev for now since it's verified
+    // TODO: Set up letter.heartsmail.com domain verification in Resend
+    const fromAddress = 'HeartMail <onboarding@resend.dev>'
 
     console.log('📧 From address:', fromAddress);
     console.log('📧 NODE_ENV:', process.env.NODE_ENV);
 
-    // In development/testing mode, only allow sending to your verified email
-    const isTestingMode = process.env.NODE_ENV !== 'production'
-    const verifiedEmail = 'heartmailio@gmail.com'
-    
-    // Skip testing mode restriction if NODE_ENV is explicitly set to production
-    if (isTestingMode && to !== verifiedEmail) {
-      console.log('❌ Testing mode restriction triggered');
-      return NextResponse.json(
-        { 
-          error: `Testing mode: Emails can only be sent to ${verifiedEmail}. Please use your verified email address for testing.`,
-          testingMode: true,
-          verifiedEmail 
-        },
-        { status: 403 }
-      )
-    }
+    // For now, allow sending to any email address
+    // TODO: Add proper domain verification and production setup
+    console.log('📧 Sending to:', to);
 
     console.log('📧 Attempting to send email via Resend...');
     
