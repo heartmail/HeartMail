@@ -6,7 +6,7 @@ interface LogoProps {
 export default function Logo({ className = '', size = 32 }: LogoProps) {
   return (
     <img
-      src="/logo.webp"
+      src="/logo.png"
       alt="HeartMail Logo"
       width={size}
       height={size}
