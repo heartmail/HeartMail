@@ -175,7 +175,7 @@ export default function SchedulePage() {
       type: 'scheduled',
       recipient: email.to_email,
       time: new Date(email.send_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      date: emailDate,
+      date: new Date(email.send_at).toISOString().split('T')[0],
       status: email.status
     }))
   }
