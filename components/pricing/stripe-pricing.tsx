@@ -112,7 +112,7 @@ export default function StripePricing() {
         }
       } else {
         return {
-          text: plan.name === 'Family' ? 'Upgrade' : 'Extend Family',
+          text: 'Upgrade',
           disabled: false,
           variant: plan.popular ? 'default' : 'outline'
         }
