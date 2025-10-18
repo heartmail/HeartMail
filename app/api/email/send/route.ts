@@ -75,7 +75,6 @@ export async function POST(request: NextRequest) {
       console.error('❌ Resend error details:', {
         name: error.name,
         message: error.message,
-        statusCode: error.statusCode,
         type: typeof error
       })
       return NextResponse.json(
