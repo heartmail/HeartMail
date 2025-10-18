@@ -1,0 +1,242 @@
+export const createAuthEmailTemplate = (
+  subject: string,
+  bodyHtml: string,
+  actionText: string,
+  actionUrl: string,
+  preheaderText: string = "A heartfelt message from HeartMail"
+) => {
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${subject}</title>
+      <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+      <style>
+        body {
+          font-family: 'Nunito', sans-serif;
+          margin: 0;
+          padding: 0;
+          background-color: #f8f8f8;
+          -webkit-text-size-adjust: 100%;
+          -ms-text-size-adjust: 100%;
+          width: 100% !important;
+        }
+        .container {
+          max-width: 600px;
+          margin: 20px auto;
+          background-color: #ffffff;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+          border: 1px solid #f0f0f0;
+        }
+        .header {
+          background: linear-gradient(to right, #ff6b81, #ff4757);
+          padding: 30px 20px;
+          text-align: center;
+          color: #ffffff;
+          border-top-left-radius: 12px;
+          border-top-right-radius: 12px;
+        }
+        .logo-container {
+          margin-bottom: 15px;
+        }
+        .logo-img {
+          width: 60px;
+          height: 60px;
+          object-fit: contain;
+        }
+        .logo-fallback {
+          display: none;
+          font-size: 60px;
+          line-height: 1;
+        }
+        .title {
+          font-size: 28px;
+          font-weight: 700;
+          margin: 0;
+          line-height: 1.2;
+        }
+        .tagline {
+          font-size: 16px;
+          font-weight: 400;
+          margin-top: 5px;
+          opacity: 0.9;
+        }
+        .content-card {
+          padding: 30px;
+          color: #333333;
+          line-height: 1.6;
+          font-size: 16px;
+        }
+        .content-title {
+          font-size: 22px;
+          font-weight: 600;
+          color: #333333;
+          margin-top: 0;
+          margin-bottom: 20px;
+          text-align: center;
+        }
+        .content-body p {
+          margin-bottom: 15px;
+        }
+        .button-container {
+          text-align: center;
+          margin-top: 30px;
+          margin-bottom: 20px;
+        }
+        .button {
+          display: inline-block;
+          padding: 14px 28px;
+          background: linear-gradient(to right, #ff6b81, #ff4757);
+          color: #ffffff;
+          text-decoration: none;
+          border-radius: 8px;
+          font-weight: 700;
+          font-size: 17px;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 10px rgba(255, 107, 129, 0.4);
+        }
+        .button:hover {
+          background: linear-gradient(to right, #ff4757, #ff6b81);
+          box-shadow: 0 6px 15px rgba(255, 107, 129, 0.6);
+        }
+        .footer {
+          background-color: #f0f0f0;
+          padding: 25px 20px;
+          text-align: center;
+          font-size: 13px;
+          color: #777777;
+          border-bottom-left-radius: 12px;
+          border-bottom-right-radius: 12px;
+        }
+        .footer-logo-container {
+          margin-bottom: 10px;
+        }
+        .footer-logo-img {
+          width: 40px;
+          height: 40px;
+          object-fit: contain;
+          opacity: 0.8;
+        }
+        .footer-logo-fallback {
+          display: none;
+          font-size: 40px;
+          line-height: 1;
+        }
+        .preheader {
+          display: none !important;
+          visibility: hidden;
+          opacity: 0;
+          color: transparent;
+          height: 0;
+          width: 0;
+          font-size: 0;
+          line-height: 0;
+        }
+        .footer-link {
+          color: #777777;
+          text-decoration: underline;
+        }
+      </style>
+    </head>
+    <body>
+      <span class="preheader">${preheaderText}</span>
+      <div class="container">
+        
+        <!-- Header with Logo -->
+        <div class="header">
+          <div class="logo-container">
+            <img src="https://heartsmail.com/logo.png" 
+                 alt="HeartMail Logo" 
+                 class="logo-img"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+            <div class="logo-fallback">💕</div>
+          </div>
+          <h1 class="title">HeartMail</h1>
+          <p class="tagline">Keeping hearts connected, one email at a time</p>
+        </div>
+
+        <!-- Email Content Card -->
+        <div class="content-card">
+          <h2 class="content-title">${subject}</h2>
+          <div class="content-body">
+            ${bodyHtml}
+          </div>
+          <div class="button-container">
+            <a href="${actionUrl}" class="button">${actionText}</a>
+          </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+          <div class="footer-logo-container">
+            <img src="https://heartsmail.com/logo.png" 
+                 alt="HeartMail" 
+                 class="footer-logo-img"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+            <div class="footer-logo-fallback">💕</div>
+          </div>
+          <p class="footer-text">Sent with 💕 via HeartMail</p>
+          <p class="footer-text">© ${new Date().getFullYear()} HeartMail. All rights reserved.</p>
+          <p class="footer-text">
+            <a href="https://heartsmail.com/privacy" class="footer-link">Privacy Policy</a> | 
+            <a href="https://heartsmail.com/terms" class="footer-link">Terms of Service</a>
+          </p>
+        </div>
+
+      </div>
+    </body>
+    </html>
+  `
+}
+
+// 1. Confirm Your Signup Email Template
+export const confirmSignupEmail = createAuthEmailTemplate(
+  "Welcome to HeartMail! Please Confirm Your Email 💕",
+  `
+    <p>Hello there,</p>
+    <p>Welcome to HeartMail! We're so excited to have you join our community dedicated to keeping hearts connected, one email at a time.</p>
+    <p>To activate your account and start sending heartfelt messages, please click the button below:</p>
+    <p>If you didn't sign up for HeartMail, please ignore this email.</p>
+    <p>With love,</p>
+    <p>The HeartMail Team</p>
+  `,
+  "Confirm My Account",
+  "{{ .ConfirmationURL }}",
+  "Welcome to HeartMail! Confirm your account to get started."
+)
+
+// 2. Confirm Email Change Email Template
+export const confirmEmailChangeEmail = createAuthEmailTemplate(
+  "Verify Your New Email for HeartMail",
+  `
+    <p>Hello,</p>
+    <p>You recently requested to change your email address associated with your HeartMail account to <strong>{{ .NewEmail }}</strong>.</p>
+    <p>To complete this change, please click the button below to verify your new email address:</p>
+    <p>If you did not request this change, please ignore this email or contact our support team immediately.</p>
+    <p>With love,</p>
+    <p>The HeartMail Team</p>
+  `,
+  "Verify New Email",
+  "{{ .ConfirmationURL }}",
+  "Action required: Verify your new email address for HeartMail."
+)
+
+// 3. Reset Your Password Email Template
+export const resetPasswordEmail = createAuthEmailTemplate(
+  "Reset Your HeartMail Password",
+  `
+    <p>Hello,</p>
+    <p>You have requested to reset the password for your HeartMail account. No worries, it happens!</p>
+    <p>To set a new password, please click the button below:</p>
+    <p>This link is valid for a limited time. If you did not request a password reset, please ignore this email.</p>
+    <p>With love,</p>
+    <p>The HeartMail Team</p>
+  `,
+  "Reset My Password",
+  "{{ .ConfirmationURL }}",
+  "Password reset requested for your HeartMail account."
+)

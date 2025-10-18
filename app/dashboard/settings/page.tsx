@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { User, Bell, Shield, CreditCard, Palette, Globe, Save, Eye, EyeOff, Heart, LogOut } from 'lucide-react'
+import { User, Bell, Shield, CreditCard, Palette, Globe, Save, Eye, EyeOff, Heart, LogOut, Mail, Key } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 // DashboardLayout is already applied through the main layout
 import BillingSettings from '@/components/billing/billing-settings'
 import { useAuth } from '@/lib/auth-context'
@@ -13,6 +14,7 @@ import { useTheme } from '@/lib/theme-context'
 import { useRouter } from 'next/navigation'
 import { getUserProfile, upsertUserProfile, UserProfile } from '@/lib/profile'
 import { getUserSettings, upsertUserSettings, UserSettings } from '@/lib/settings'
+import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 
 export default function SettingsPage() {
@@ -20,6 +22,19 @@ export default function SettingsPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  
+  // Email change modal state
+  const [showEmailChangeModal, setShowEmailChangeModal] = useState(false)
+  const [newEmail, setNewEmail] = useState('')
+  const [emailChangeLoading, setEmailChangeLoading] = useState(false)
+  const [emailChangeMessage, setEmailChangeMessage] = useState('')
+  const [emailChangeError, setEmailChangeError] = useState('')
+  
+  // Password reset modal state
+  const [showPasswordResetModal, setShowPasswordResetModal] = useState(false)
+  const [passwordResetLoading, setPasswordResetLoading] = useState(false)
+  const [passwordResetMessage, setPasswordResetMessage] = useState('')
+  const [passwordResetError, setPasswordResetError] = useState('')
   
   // Profile state
   const [profile, setProfile] = useState<UserProfile | null>(null)
@@ -133,6 +148,61 @@ export default function SettingsPage() {
   const handleLogout = async () => {
     await signOut()
     router.push('/')
+  }
+
+  // Email change handler
+  const handleEmailChangeRequest = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setEmailChangeLoading(true)
+    setEmailChangeMessage('')
+    setEmailChangeError('')
+
+    if (!newEmail) {
+      setEmailChangeError('Please enter a new email address.')
+      setEmailChangeLoading(false)
+      return
+    }
+
+    try {
+      const { error } = await supabase.auth.updateUser({ email: newEmail })
+
+      if (error) {
+        setEmailChangeError(error.message)
+      } else {
+        setEmailChangeMessage('A verification email has been sent to your new address. Please check your inbox to confirm the change.')
+        setNewEmail('')
+        toast.success('Verification email sent!')
+      }
+    } catch (err) {
+      setEmailChangeError(err instanceof Error ? err.message : 'An unexpected error occurred.')
+    } finally {
+      setEmailChangeLoading(false)
+    }
+  }
+
+  // Password reset handler
+  const handlePasswordResetRequest = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setPasswordResetLoading(true)
+    setPasswordResetMessage('')
+    setPasswordResetError('')
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(user?.email || '', {
+        redirectTo: `${window.location.origin}/auth/update-password`
+      })
+
+      if (error) {
+        setPasswordResetError(error.message)
+      } else {
+        setPasswordResetMessage('A password reset link has been sent to your email address. Please check your inbox.')
+        toast.success('Password reset link sent!')
+      }
+    } catch (err) {
+      setPasswordResetError(err instanceof Error ? err.message : 'An unexpected error occurred.')
+    } finally {
+      setPasswordResetLoading(false)
+    }
   }
 
   const tabs = [
@@ -358,15 +428,39 @@ export default function SettingsPage() {
                 <div className="security-settings">
                   <div className="security-item">
                     <div className="security-info">
-                      <h3>Change Password</h3>
-                      <p>Update your account password for better security</p>
+                      <h3>Email Address</h3>
+                      <p>Change your email address for account notifications</p>
+                      <p className="text-sm text-gray-500">Current: {user?.email}</p>
                     </div>
                     <Button 
-                      variant="outline" 
+                      onClick={() => {
+                        setShowEmailChangeModal(true)
+                        setEmailChangeMessage('')
+                        setEmailChangeError('')
+                        setNewEmail('')
+                      }}
                       className="btn-smooth border-gray-300 hover:border-heartmail-pink hover:text-heartmail-pink"
                     >
-                      <Shield className="h-4 w-4 mr-2" />
-                      Change Password
+                      <Mail className="h-4 w-4 mr-2" />
+                      Change Email
+                    </Button>
+                  </div>
+                  
+                  <div className="security-item">
+                    <div className="security-info">
+                      <h3>Reset Password</h3>
+                      <p>Send a password reset link to your email address</p>
+                    </div>
+                    <Button 
+                      onClick={() => {
+                        setShowPasswordResetModal(true)
+                        setPasswordResetMessage('')
+                        setPasswordResetError('')
+                      }}
+                      className="btn-smooth border-gray-300 hover:border-heartmail-pink hover:text-heartmail-pink"
+                    >
+                      <Key className="h-4 w-4 mr-2" />
+                      Reset Password
                     </Button>
                   </div>
                   
@@ -510,6 +604,72 @@ export default function SettingsPage() {
             )}
           </div>
         </div>
+
+        {/* Email Change Modal */}
+        <Dialog open={showEmailChangeModal} onOpenChange={setShowEmailChangeModal}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center space-x-2">
+                <Mail className="h-5 w-5 text-heartmail-pink" />
+                <span>Change Your Email Address</span>
+              </DialogTitle>
+              <DialogDescription>
+                Enter your new email address below. A verification link will be sent to the new address.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleEmailChangeRequest} className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="new-email">New Email Address</Label>
+                <Input
+                  id="new-email"
+                  type="email"
+                  placeholder="new.email@example.com"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  required
+                  className="w-full"
+                />
+              </div>
+              {emailChangeError && <p className="text-red-500 text-sm">{emailChangeError}</p>}
+              {emailChangeMessage && <p className="text-green-600 text-sm">{emailChangeMessage}</p>}
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setShowEmailChangeModal(false)} disabled={emailChangeLoading}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={emailChangeLoading} className="bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white font-semibold">
+                  {emailChangeLoading ? 'Sending...' : 'Send Verification'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Password Reset Modal */}
+        <Dialog open={showPasswordResetModal} onOpenChange={setShowPasswordResetModal}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center space-x-2">
+                <Key className="h-5 w-5 text-heartmail-pink" />
+                <span>Reset Your Password</span>
+              </DialogTitle>
+              <DialogDescription>
+                A password reset link will be sent to your email address: <strong>{user?.email}</strong>
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handlePasswordResetRequest} className="grid gap-4 py-4">
+              {passwordResetError && <p className="text-red-500 text-sm">{passwordResetError}</p>}
+              {passwordResetMessage && <p className="text-green-600 text-sm">{passwordResetMessage}</p>}
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setShowPasswordResetModal(false)} disabled={passwordResetLoading}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={passwordResetLoading} className="bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white font-semibold">
+                  {passwordResetLoading ? 'Sending...' : 'Send Reset Link'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
     </div>
   )
 }
