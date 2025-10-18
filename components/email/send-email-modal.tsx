@@ -23,6 +23,9 @@ interface Recipient {
   last_name?: string
   name?: string // Keep for backward compatibility
   email: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
 }
 
 interface Template {
@@ -62,7 +65,7 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
     try {
       const { data, error } = await supabase
         .from('recipients')
-        .select('id, first_name, last_name, name, email')
+        .select('id, first_name, last_name, name, email, is_active, created_at, updated_at')
         .eq('user_id', user.id)
         .order('first_name')
 
