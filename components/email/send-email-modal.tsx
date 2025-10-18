@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Mail, Heart, Send, Loader2, X, User, MessageSquare } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { supabase } from '@/lib/supabase'
+import { getFullName } from '@/lib/recipients'
 
 interface SendEmailModalProps {
   isOpen: boolean
@@ -18,7 +19,9 @@ interface SendEmailModalProps {
 
 interface Recipient {
   id: string
-  name: string
+  first_name: string
+  last_name?: string
+  name?: string // Keep for backward compatibility
   email: string
 }
 
@@ -59,9 +62,9 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
     try {
       const { data, error } = await supabase
         .from('recipients')
-        .select('id, name, email')
+        .select('id, first_name, last_name, name, email')
         .eq('user_id', user.id)
-        .order('name')
+        .order('first_name')
 
       if (error) {
         console.error('Error fetching recipients:', error)
@@ -271,7 +274,7 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
                       ) : (
                         recipients.map(recipient => (
                           <SelectItem key={recipient.id} value={recipient.id}>
-                            {recipient.name} ({recipient.email})
+                            {getFullName(recipient)} ({recipient.email})
                           </SelectItem>
                         ))
                       )}

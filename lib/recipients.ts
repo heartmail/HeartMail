@@ -2,7 +2,9 @@ import { supabase } from './supabase'
 
 export interface Recipient {
   id: string
-  name: string
+  first_name: string
+  last_name?: string
+  name?: string // Keep for backward compatibility
   email: string
   relationship?: string
   phone?: string
@@ -76,4 +78,16 @@ export async function getRecipient(recipientId: string): Promise<Recipient> {
 
   if (error) throw error
   return data
+}
+
+// Helper function to get full name
+export function getFullName(recipient: Recipient): string {
+  if (recipient.first_name && recipient.last_name) {
+    return `${recipient.first_name} ${recipient.last_name}`
+  } else if (recipient.first_name) {
+    return recipient.first_name
+  } else if (recipient.name) {
+    return recipient.name // Fallback to old name field
+  }
+  return 'Unknown'
 }

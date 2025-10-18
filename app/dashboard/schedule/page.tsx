@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Plus, Edit, Trash2, Mail, Clock, Calendar, U
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth-context'
 import { supabase } from '@/lib/supabase'
+import { getFullName } from '@/lib/recipients'
 // DashboardLayout is already applied through the main layout
 
 const currentDate = new Date()
@@ -59,7 +60,9 @@ const scheduledEmails = [
 
 interface Recipient {
   id: string
-  name: string
+  first_name: string
+  last_name?: string
+  name?: string // Keep for backward compatibility
   email: string
 }
 
@@ -100,9 +103,9 @@ export default function SchedulePage() {
     try {
       const { data, error } = await supabase
         .from('recipients')
-        .select('id, name, email')
+        .select('id, first_name, last_name, name, email')
         .eq('user_id', user.id)
-        .order('name')
+        .order('first_name')
 
       if (error) {
         console.error('Error fetching recipients:', error)
@@ -538,7 +541,7 @@ export default function SchedulePage() {
                     ) : (
                       recipients.map((recipient) => (
                         <option key={recipient.id} value={recipient.id}>
-                          {recipient.name} ({recipient.email})
+                          {getFullName(recipient)} ({recipient.email})
                         </option>
                       ))
                     )}

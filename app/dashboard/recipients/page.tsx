@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAuth } from '@/lib/auth-context'
-import { getRecipients, createRecipient, updateRecipient, deleteRecipient, Recipient } from '@/lib/recipients'
+import { getRecipients, createRecipient, updateRecipient, deleteRecipient, Recipient, getFullName } from '@/lib/recipients'
 import { toast } from 'sonner'
 
 export default function RecipientsPage() {
@@ -19,7 +19,8 @@ export default function RecipientsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingRecipient, setEditingRecipient] = useState<Recipient | null>(null)
   const [formData, setFormData] = useState({
-    name: '',
+    first_name: '',
+    last_name: '',
     email: '',
     relationship: '',
     phone: '',
@@ -85,7 +86,8 @@ export default function RecipientsPage() {
   const handleEdit = (recipient: Recipient) => {
     setEditingRecipient(recipient)
     setFormData({
-      name: recipient.name,
+      first_name: recipient.first_name || '',
+      last_name: recipient.last_name || '',
       email: recipient.email,
       relationship: recipient.relationship || '',
       phone: recipient.phone || '',
@@ -111,7 +113,8 @@ export default function RecipientsPage() {
 
   const resetForm = () => {
     setFormData({
-      name: '',
+      first_name: '',
+      last_name: '',
       email: '',
       relationship: '',
       phone: '',
@@ -174,16 +177,28 @@ export default function RecipientsPage() {
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Enter recipient's name"
-                  className="form-input"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="first_name">First Name *</Label>
+                  <Input
+                    id="first_name"
+                    value={formData.first_name}
+                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                    placeholder="Enter first name"
+                    className="form-input"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="last_name">Last Name</Label>
+                  <Input
+                    id="last_name"
+                    value={formData.last_name}
+                    onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                    placeholder="Enter last name"
+                    className="form-input"
+                  />
+                </div>
               </div>
               
               <div className="space-y-2">
@@ -305,7 +320,7 @@ export default function RecipientsPage() {
                       <Heart className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg">{recipient.name}</CardTitle>
+                      <CardTitle className="text-lg">{getFullName(recipient)}</CardTitle>
                       <CardDescription>{recipient.relationship || 'Loved one'}</CardDescription>
                     </div>
                   </div>
