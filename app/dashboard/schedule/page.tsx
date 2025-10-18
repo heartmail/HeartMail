@@ -81,6 +81,7 @@ export default function SchedulePage() {
   // New state for real data
   const [recipients, setRecipients] = useState<Recipient[]>([])
   const [templates, setTemplates] = useState<Template[]>([])
+  const [scheduledEmails, setScheduledEmails] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const { user } = useAuth()
 
@@ -89,6 +90,7 @@ export default function SchedulePage() {
     if (user) {
       fetchRecipients()
       fetchTemplates()
+      fetchScheduledEmails()
     }
   }, [user])
 
@@ -134,6 +136,26 @@ export default function SchedulePage() {
     }
   }
 
+  const fetchScheduledEmails = async () => {
+    if (!user) return
+    
+    try {
+      const { data, error } = await supabase
+        .from('scheduled_emails')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('send_at')
+
+      if (error) {
+        console.error('Error fetching scheduled emails:', error)
+      } else {
+        setScheduledEmails(data || [])
+      }
+    } catch (error) {
+      console.error('Error fetching scheduled emails:', error)
+    }
+  }
+
   const getDaysInMonth = (month: number, year: number) => {
     return new Date(year, month + 1, 0).getDate()
   }
@@ -143,13 +165,38 @@ export default function SchedulePage() {
   }
 
   const getEmailsForDate = (date: string) => {
-    // For now, return empty array - we'll implement real scheduled emails later
-    return [] as Array<{ id: string; title: string; type: string; recipient: string; time: string; date: string; status: string }>
+    // Return scheduled emails for the specific date
+    return scheduledEmails.filter(email => {
+      const emailDate = new Date(email.send_at).toISOString().split('T')[0]
+      return emailDate === date
+    }).map(email => ({
+      id: email.id,
+      title: email.subject,
+      type: 'scheduled',
+      recipient: email.to_email,
+      time: new Date(email.send_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      date: emailDate,
+      status: email.status
+    }))
   }
 
   const getEmailsForMonth = () => {
-    // For now, return empty array - we'll implement real scheduled emails later
-    return [] as Array<{ id: string; title: string; type: string; recipient: string; time: string; date: string; status: string }>
+    // Return all scheduled emails for the current month
+    const currentMonth = new Date().getMonth()
+    const currentYear = new Date().getFullYear()
+    
+    return scheduledEmails.filter(email => {
+      const emailDate = new Date(email.send_at)
+      return emailDate.getMonth() === currentMonth && emailDate.getFullYear() === currentYear
+    }).map(email => ({
+      id: email.id,
+      title: email.subject,
+      type: 'scheduled',
+      recipient: email.to_email,
+      time: emailDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      date: emailDate.toISOString().split('T')[0],
+      status: email.status
+    }))
   }
 
   const handleScheduleEmail = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -200,11 +247,35 @@ export default function SchedulePage() {
         console.error('Error scheduling email:', error)
         alert('Failed to schedule email. Please try again.')
       } else {
-        alert('Email scheduled successfully!')
-        setShowAddModal(false)
-        // Refresh the data
-        fetchRecipients()
-        fetchTemplates()
+        // Trigger Inngest event to schedule the email
+        try {
+          const response = await fetch('/api/schedule-email', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              scheduledEmailId: data.id,
+              userId: user.id,
+              sendAt: sendAt.toISOString()
+            })
+          })
+
+          if (response.ok) {
+            alert('Email scheduled successfully!')
+            setShowAddModal(false)
+            // Refresh the data
+            fetchRecipients()
+            fetchTemplates()
+            fetchScheduledEmails()
+          } else {
+            console.error('Failed to trigger Inngest event')
+            alert('Email saved but scheduling may not work. Please check your Inngest configuration.')
+          }
+        } catch (error) {
+          console.error('Error triggering Inngest event:', error)
+          alert('Email saved but scheduling may not work. Please check your Inngest configuration.')
+        }
       }
     } catch (error) {
       console.error('Error scheduling email:', error)
