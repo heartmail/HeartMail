@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Heart, Mail, ArrowLeft } from 'lucide-react'
+import { Mail, ArrowLeft } from 'lucide-react'
+import Logo from '@/components/ui/logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -37,7 +38,7 @@ export default function ForgotPasswordForm() {
     <Card className="bg-white/95 backdrop-blur-md shadow-2xl border-0 w-full max-w-lg">
       <CardHeader className="text-center">
         <Link href="/" className="flex items-center justify-center space-x-2 mb-6">
-          <Heart className="h-8 w-8 text-heartmail-pink fill-heartmail-pink" />
+          <Logo size={32} className="h-8 w-8" />
           <span className="text-2xl font-bold text-heartmail-pink">HeartMail</span>
         </Link>
         <CardTitle className="text-2xl">Reset Password</CardTitle>

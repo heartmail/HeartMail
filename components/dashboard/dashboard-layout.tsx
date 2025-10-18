@@ -94,17 +94,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           {menuItems.map((item) => {
             const isActive = pathname === item.href
             return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`menu-item ${isActive ? 'active' : ''} btn-smooth`}
-                    onClick={(e) => {
-                      console.log('🔍 Navigation clicked:', item.href, e)
-                    }}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    <span>{item.label}</span>
-                  </Link>
+              <button
+                key={item.href}
+                className={`menu-item ${isActive ? 'active' : ''}`}
+                onClick={() => router.push(item.href)}
+                type="button"
+                aria-label={`Navigate to ${item.label}`}
+              >
+                <item.icon className="h-5 w-5" />
+                <span>{item.label}</span>
+              </button>
             )
           })}
         </div>
@@ -119,16 +118,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
           </div>
           <div className="mt-4">
-            <Link 
-              href="/letter-library" 
+            <button
               className="w-full btn-heartmail flex items-center justify-center space-x-2 py-3 px-4 rounded-lg text-sm font-medium"
-              onClick={(e) => {
-                console.log('🔍 Letter Library clicked:', e)
-              }}
+              onClick={() => router.push('/letter-library')}
             >
               <BookOpen className="h-4 w-4" />
               <span>Letter Library</span>
-            </Link>
+            </button>
           </div>
         </div>
       </nav>

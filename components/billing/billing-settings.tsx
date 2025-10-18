@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { CreditCard, ExternalLink, Loader2, Calendar, Users, Mail } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { CreditCard, ExternalLink, Loader2, Calendar, Users, Mail, X } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { Subscription, SubscriptionUsage, PlanLimits } from '@/lib/subscription'
 
@@ -27,6 +28,8 @@ export default function BillingSettings() {
   const [limits, setLimits] = useState<PlanLimits | null>(null)
   const [loading, setLoading] = useState(true)
   const [portalLoading, setPortalLoading] = useState(false)
+  const [showPortalModal, setShowPortalModal] = useState(false)
+  const [portalUrl, setPortalUrl] = useState<string | null>(null)
   const { user } = useAuth()
 
   useEffect(() => {
@@ -72,7 +75,8 @@ export default function BillingSettings() {
       const data = await response.json()
       
       if (data.url) {
-        window.open(data.url, '_blank')
+        setPortalUrl(data.url)
+        setShowPortalModal(true)
       } else {
         throw new Error('No portal URL received')
       }
@@ -195,16 +199,16 @@ export default function BillingSettings() {
               <Button
                 onClick={openCustomerPortal}
                 disabled={portalLoading || subscription.status === 'free'}
-                className="w-full"
+                className="w-full bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white font-semibold py-6 text-base shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 {portalLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                     Opening Portal...
                   </>
                 ) : (
                   <>
-                    <ExternalLink className="mr-2 h-4 w-4" />
+                    <CreditCard className="mr-2 h-5 w-5" />
                     Manage Billing
                   </>
                 )}
@@ -214,7 +218,7 @@ export default function BillingSettings() {
             <div className="text-center py-8">
               <p className="text-gray-600 mb-4">No active subscription</p>
               <Button 
-                onClick={() => window.location.href = '/pricing'}
+                onClick={() => window.location.href = '/#pricing'}
                 className="btn-heartmail"
               >
                 View Plans
@@ -224,51 +228,31 @@ export default function BillingSettings() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Payment Methods</CardTitle>
-          <CardDescription>
-            Manage your payment methods and billing information.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-600 mb-4">
-            Payment methods are managed through the Stripe Customer Portal.
-          </p>
-          {subscription && subscription.status === 'free' ? (
-            <div className="text-center py-4">
-              <p className="text-sm text-gray-500 mb-4">
-                Upgrade to a paid plan to manage payment methods.
-              </p>
-              <Button 
-                onClick={() => window.location.href = '/pricing'}
-                className="btn-heartmail"
+      {/* Stripe Customer Portal Modal */}
+      <Dialog open={showPortalModal} onOpenChange={setShowPortalModal}>
+        <DialogContent className="max-w-4xl h-[80vh] p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="flex items-center justify-between">
+              <span className="text-xl font-semibold">Manage Billing</span>
+              <button
+                onClick={() => setShowPortalModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
               >
-                View Plans
-              </Button>
-            </div>
-          ) : (
-            <Button
-              onClick={openCustomerPortal}
-              disabled={portalLoading || !subscription}
-              variant="outline"
-              className="w-full"
-            >
-              {portalLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Opening Portal...
-                </>
-              ) : (
-                <>
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  Manage Payment Methods
-                </>
-              )}
-            </Button>
-          )}
-        </CardContent>
-      </Card>
+                <X className="h-5 w-5" />
+              </button>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 p-6 pt-4">
+            {portalUrl && (
+              <iframe
+                src={portalUrl}
+                className="w-full h-full rounded-lg border border-gray-200"
+                title="Stripe Customer Portal"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

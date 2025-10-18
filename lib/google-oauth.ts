@@ -8,8 +8,6 @@ export const signInWithGoogle = async () => {
       queryParams: {
         access_type: 'offline',
         prompt: 'consent',
-        hd: 'heartsmail.com', // This will show heartsmail.com in the consent screen
-        login_hint: 'heartsmail.com', // Additional hint for the domain
       },
     },
   })
@@ -31,8 +29,6 @@ export const getGoogleAuthUrl = () => {
     scope: 'openid email profile',
     access_type: 'offline',
     prompt: 'consent',
-    hd: 'heartsmail.com', // This will show heartsmail.com in the consent screen
-    login_hint: 'heartsmail.com', // Additional hint for the domain
   })
 
   return `${baseUrl}?${params.toString()}`

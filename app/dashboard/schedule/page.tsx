@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, Plus, Edit, Trash2, Mail, Clock, Calendar, Users, Filter, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useAuth } from '@/lib/auth-context'
+import { supabase } from '@/lib/supabase'
 // DashboardLayout is already applied through the main layout
 
 const currentDate = new Date()
@@ -55,6 +57,19 @@ const scheduledEmails = [
   }
 ]
 
+interface Recipient {
+  id: string
+  name: string
+  email: string
+}
+
+interface Template {
+  id: string
+  name: string
+  subject: string
+  content: string
+}
+
 export default function SchedulePage() {
   const [currentMonthIndex, setCurrentMonthIndex] = useState(currentMonth)
   const [currentYearState, setCurrentYearState] = useState(currentYear)
@@ -62,6 +77,62 @@ export default function SchedulePage() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showDayModal, setShowDayModal] = useState(false)
   const [selectedDay, setSelectedDay] = useState<{ date: string; emails: any[] } | null>(null)
+  
+  // New state for real data
+  const [recipients, setRecipients] = useState<Recipient[]>([])
+  const [templates, setTemplates] = useState<Template[]>([])
+  const [loading, setLoading] = useState(true)
+  const { user } = useAuth()
+
+  // Fetch recipients and templates from database
+  useEffect(() => {
+    if (user) {
+      fetchRecipients()
+      fetchTemplates()
+    }
+  }, [user])
+
+  const fetchRecipients = async () => {
+    if (!user) return
+    
+    try {
+      const { data, error } = await supabase
+        .from('recipients')
+        .select('id, name, email')
+        .eq('user_id', user.id)
+        .order('name')
+
+      if (error) {
+        console.error('Error fetching recipients:', error)
+      } else {
+        setRecipients(data || [])
+      }
+    } catch (error) {
+      console.error('Error fetching recipients:', error)
+    }
+  }
+
+  const fetchTemplates = async () => {
+    if (!user) return
+    
+    try {
+      const { data, error } = await supabase
+        .from('templates')
+        .select('id, name, subject, content')
+        .eq('user_id', user.id)
+        .order('name')
+
+      if (error) {
+        console.error('Error fetching templates:', error)
+      } else {
+        setTemplates(data || [])
+      }
+    } catch (error) {
+      console.error('Error fetching templates:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const getDaysInMonth = (month: number, year: number) => {
     return new Date(year, month + 1, 0).getDate()
@@ -72,14 +143,73 @@ export default function SchedulePage() {
   }
 
   const getEmailsForDate = (date: string) => {
-    return scheduledEmails.filter(email => email.date === date)
+    // For now, return empty array - we'll implement real scheduled emails later
+    return []
   }
 
   const getEmailsForMonth = () => {
-    return scheduledEmails.filter(email => {
-      const emailDate = new Date(email.date)
-      return emailDate.getMonth() === currentMonthIndex && emailDate.getFullYear() === currentYearState
-    })
+    // For now, return empty array - we'll implement real scheduled emails later
+    return []
+  }
+
+  const handleScheduleEmail = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!user) return
+
+    const formData = new FormData(e.currentTarget)
+    const recipientId = formData.get('recipient') as string
+    const templateId = formData.get('template') as string
+    const date = formData.get('date') as string
+    const time = formData.get('time') as string
+    const frequency = formData.get('frequency') as string
+    const personalMessage = formData.get('personalMessage') as string
+
+    if (!recipientId || !date || !time) {
+      alert('Please fill in all required fields')
+      return
+    }
+
+    try {
+      // Find the selected recipient and template
+      const recipient = recipients.find(r => r.id === recipientId)
+      const template = templates.find(t => t.id === templateId)
+
+      if (!recipient) {
+        alert('Please select a valid recipient')
+        return
+      }
+
+      // Create the scheduled email
+      const sendAt = new Date(`${date}T${time}`)
+      
+      const { data, error } = await supabase
+        .from('scheduled_emails')
+        .insert({
+          user_id: user.id,
+          recipient_id: recipientId,
+          template_id: templateId,
+          subject: template?.subject || 'Heartfelt Message',
+          body_html: template?.content || personalMessage,
+          send_at: sendAt.toISOString(),
+          status: 'pending'
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error scheduling email:', error)
+        alert('Failed to schedule email. Please try again.')
+      } else {
+        alert('Email scheduled successfully!')
+        setShowAddModal(false)
+        // Refresh the data
+        fetchRecipients()
+        fetchTemplates()
+      }
+    } catch (error) {
+      console.error('Error scheduling email:', error)
+      alert('Failed to schedule email. Please try again.')
+    }
   }
 
   const handleDayClick = (date: string) => {
@@ -306,40 +436,54 @@ export default function SchedulePage() {
               </button>
             </div>
             <div className="modal-body">
-              <form className="schedule-form">
+              <form className="schedule-form" onSubmit={handleScheduleEmail}>
                 <div className="form-group">
                   <label>Recipient</label>
-                  <select className="form-select">
+                  <select name="recipient" className="form-select" required>
                     <option value="">Select recipient</option>
-                    <option value="grandma-rose">Grandma Rose</option>
-                    <option value="grandpa-john">Grandpa John</option>
-                    <option value="aunt-mary">Aunt Mary</option>
-                    <option value="uncle-bob">Uncle Bob</option>
+                    {loading ? (
+                      <option disabled>Loading recipients...</option>
+                    ) : recipients.length === 0 ? (
+                      <option disabled>No recipients found. Add some in the Recipients tab!</option>
+                    ) : (
+                      recipients.map((recipient) => (
+                        <option key={recipient.id} value={recipient.id}>
+                          {recipient.name} ({recipient.email})
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
                 <div className="form-group">
                   <label>Template</label>
-                  <select className="form-select">
+                  <select name="template" className="form-select">
                     <option value="">Select template</option>
-                    <option value="weekly-checkin">Weekly Check-in</option>
-                    <option value="thinking-of-you">Thinking of You</option>
-                    <option value="family-photos">Family Photos</option>
-                    <option value="birthday-wishes">Birthday Wishes</option>
+                    {loading ? (
+                      <option disabled>Loading templates...</option>
+                    ) : templates.length === 0 ? (
+                      <option disabled>No templates found. Create some in the Templates tab!</option>
+                    ) : (
+                      templates.map((template) => (
+                        <option key={template.id} value={template.id}>
+                          {template.name}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
                 <div className="form-row">
                   <div className="form-group">
                     <label>Date</label>
-                    <input type="date" className="form-input" />
+                    <input name="date" type="date" className="form-input" required />
                   </div>
                   <div className="form-group">
                     <label>Time</label>
-                    <input type="time" className="form-input" />
+                    <input name="time" type="time" className="form-input" required />
                   </div>
                 </div>
                 <div className="form-group">
                   <label>Frequency</label>
-                  <select className="form-select">
+                  <select name="frequency" className="form-select">
                     <option value="one-time">One-time</option>
                     <option value="daily">Daily</option>
                     <option value="weekly">Weekly</option>
@@ -349,6 +493,7 @@ export default function SchedulePage() {
                 <div className="form-group">
                   <label>Personal Message</label>
                   <textarea 
+                    name="personalMessage"
                     className="form-textarea" 
                     placeholder="Add a personal message..."
                     rows={4}
@@ -363,7 +508,7 @@ export default function SchedulePage() {
               >
                 Cancel
               </Button>
-              <Button className="btn btn-primary">
+              <Button type="submit" className="btn btn-primary">
                 Schedule Email
               </Button>
             </div>

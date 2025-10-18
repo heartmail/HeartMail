@@ -1,10 +1,12 @@
 'use client'
 
+import { useState } from 'react'
 import { Plus, Users, Palette, Calendar, Mail, Camera, Check, Clock, UserPlus, AlertTriangle, Bell, Heart, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useDashboardData } from '@/hooks/use-dashboard-data'
 import { useRouter } from 'next/navigation'
+import SendEmailModal from '@/components/email/send-email-modal'
 
 const quickActions = [
   { icon: Plus, label: 'Add Recipient', href: '/dashboard/recipients' },
@@ -16,6 +18,7 @@ const quickActions = [
 export default function DashboardContent() {
   const { data, loading, error } = useDashboardData()
   const router = useRouter()
+  const [showEmailModal, setShowEmailModal] = useState(false)
 
   if (loading) {
     return (
@@ -82,18 +85,7 @@ export default function DashboardContent() {
         <div className="flex items-center space-x-4">
           <Button 
             className="btn-heartmail"
-            onClick={(e) => {
-              console.log('🔍 New Email button clicked!', e)
-              console.log('🔍 Navigating to /dashboard/schedule')
-              try {
-                router.push('/dashboard/schedule')
-                console.log('🔍 Router push successful')
-              } catch (error) {
-                console.error('🔍 Router push failed:', error)
-                // Fallback to window.location
-                window.location.href = '/dashboard/schedule'
-              }
-            }}
+            onClick={() => setShowEmailModal(true)}
           >
             <Plus className="h-4 w-4 mr-2" />
             New Email
@@ -257,6 +249,12 @@ export default function DashboardContent() {
           </div>
         </div>
       </div>
+
+      {/* Email Modal */}
+      <SendEmailModal 
+        isOpen={showEmailModal} 
+        onClose={() => setShowEmailModal(false)} 
+      />
     </div>
   )
 }
