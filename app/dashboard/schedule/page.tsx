@@ -179,6 +179,7 @@ export default function SchedulePage() {
       status: email.status
     }))
   }
+  }
 
   const getEmailsForMonth = () => {
     // Return all scheduled emails for the current month
