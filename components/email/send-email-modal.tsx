@@ -197,7 +197,15 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
               <Heart className="h-8 w-8 text-green-600" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Email Sent! 💕</h3>
-            <p className="text-gray-600">Your heartfelt message has been delivered to your loved one.</p>
+            <p className="text-gray-600 mb-6">Your heartfelt message has been delivered to your loved one.</p>
+            <div className="flex justify-center">
+              <Button 
+                onClick={onClose}
+                className="px-6 py-2.5 bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+              >
+                Close
+              </Button>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">

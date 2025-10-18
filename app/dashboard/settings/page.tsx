@@ -187,7 +187,7 @@ export default function SettingsPage() {
       })
 
       if (response.ok) {
-        setEmailChangeMessage('A beautiful verification email has been sent to your new address from support@heartsmail.com. Please check your inbox to confirm the change.')
+        setEmailChangeMessage('A beautiful verification email has been sent to your new address from support.heartsmail@gmail.com. Please check your inbox to confirm the change.')
         setNewEmail('')
         toast.success('Verification email sent from HeartMail Support!')
       } else {
@@ -222,7 +222,7 @@ export default function SettingsPage() {
       })
 
       if (response.ok) {
-        setPasswordResetMessage('A beautiful password reset email has been sent to your email address from support@heartsmail.com. Please check your inbox.')
+        setPasswordResetMessage('A beautiful password reset email has been sent to your email address from support.heartsmail@gmail.com. Please check your inbox.')
         toast.success('Password reset email sent from HeartMail Support!')
       } else {
         setPasswordResetError('Failed to send password reset email. Please try again.')

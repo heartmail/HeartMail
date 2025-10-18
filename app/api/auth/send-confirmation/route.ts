@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { data, error } = await resend.emails.send({
-      from: 'HeartMail Support <support@heartsmail.com>',
+      from: 'HeartMail Support <support.heartsmail@gmail.com>',
       to: [email],
       subject: subject,
       html: htmlContent,

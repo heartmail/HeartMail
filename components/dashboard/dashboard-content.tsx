@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useDashboardData } from '@/hooks/use-dashboard-data'
 import { useRouter } from 'next/navigation'
 import SendEmailModal from '@/components/email/send-email-modal'
+import ActivityHistoryModal from './activity-history-modal'
 
 const quickActions = [
   { icon: Plus, label: 'Add Recipient', href: '/dashboard/recipients' },
@@ -19,6 +20,7 @@ export default function DashboardContent() {
   const { data, loading, error } = useDashboardData()
   const router = useRouter()
   const [showEmailModal, setShowEmailModal] = useState(false)
+  const [showActivityHistory, setShowActivityHistory] = useState(false)
 
   if (loading) {
     return (
@@ -147,11 +149,16 @@ export default function DashboardContent() {
 
           {/* Main Dashboard Grid */}
           <div className="dashboard-grid w-full">
-        {/* Recent Activity */}
+        {/* Activity History */}
             <div className="dashboard-card">
               <div className="card-header">
-                <h3>Recent Activity</h3>
-                <button className="btn-text">View All</button>
+                <h3>Activity History</h3>
+                <button 
+                  className="btn-text"
+                  onClick={() => setShowActivityHistory(true)}
+                >
+                  View All
+                </button>
               </div>
               <div className="activity-list">
                 {data.recentActivity.length > 0 ? (
@@ -254,6 +261,12 @@ export default function DashboardContent() {
       <SendEmailModal 
         isOpen={showEmailModal} 
         onClose={() => setShowEmailModal(false)} 
+      />
+
+      {/* Activity History Modal */}
+      <ActivityHistoryModal 
+        isOpen={showActivityHistory} 
+        onClose={() => setShowActivityHistory(false)} 
       />
     </div>
   )

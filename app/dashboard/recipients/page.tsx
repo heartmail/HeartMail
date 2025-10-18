@@ -261,11 +261,19 @@ export default function RecipientsPage() {
                 <Label htmlFor="is_active">Active recipient</Label>
               </div>
               
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button type="button" variant="outline" onClick={handleDialogClose}>
+              <div className="flex justify-end space-x-3 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={handleDialogClose}
+                  className="px-6 py-2.5 border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-800 font-semibold transition-all duration-200 hover:bg-gray-50"
+                >
                   Cancel
                 </Button>
-                <Button type="submit" className="btn-heartmail">
+                <Button 
+                  type="submit" 
+                  className="px-6 py-2.5 bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+                >
                   {editingRecipient ? 'Update Recipient' : 'Add Recipient'}
                 </Button>
               </div>
