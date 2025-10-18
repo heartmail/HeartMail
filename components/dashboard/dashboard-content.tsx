@@ -78,7 +78,10 @@ export default function DashboardContent() {
           <p className="text-gray-600 mt-1">Welcome back! Here's what's happening with your HeartMail.</p>
         </div>
         <div className="flex items-center space-x-4">
-          <Button className="btn-heartmail">
+          <Button 
+            className="btn-heartmail"
+            onClick={() => window.location.href = '/dashboard/schedule'}
+          >
             <Plus className="h-4 w-4 mr-2" />
             New Email
           </Button>
@@ -171,10 +174,6 @@ export default function DashboardContent() {
         <div className="dashboard-card">
           <div className="card-header">
             <h3>Your Recipients</h3>
-            <button className="btn btn-secondary btn-small">
-              <Plus className="h-4 w-4" />
-              Add
-            </button>
           </div>
           <div className="recipients-list">
             {data.recipients.length > 0 ? (
@@ -214,7 +213,6 @@ export default function DashboardContent() {
         <div className="dashboard-card">
           <div className="card-header">
             <h3>Upcoming Emails</h3>
-            <button className="btn-text">Schedule New</button>
           </div>
           <div className="schedule-list">
             {data.upcomingEmails.length > 0 ? (
