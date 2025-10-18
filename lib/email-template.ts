@@ -15,7 +15,9 @@ export function createEmailTemplate(subject: string, message: string, from: stri
           <div style="margin-bottom: 20px;">
             <img src="https://heartsmail.com/logo.png" 
                  alt="HeartMail Logo" 
-                 style="width: 80px; height: 80px; border-radius: 16px; box-shadow: 0 8px 16px rgba(0,0,0,0.1);" />
+                 style="width: 80px; height: 80px; border-radius: 16px; box-shadow: 0 8px 16px rgba(0,0,0,0.1);"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+            <div style="display: none; width: 80px; height: 80px; background: linear-gradient(135deg, #E63365, #f093fb); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 32px;">💕</div>
           </div>
           <h1 style="color: #E63365; margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">HeartMail</h1>
           <p style="color: #6b7280; margin: 8px 0 0 0; font-size: 18px; font-weight: 400;">Keeping hearts connected, one email at a time</p>
@@ -34,7 +36,9 @@ export function createEmailTemplate(subject: string, message: string, from: stri
           <div style="margin-bottom: 20px;">
             <img src="https://heartsmail.com/logo.png" 
                  alt="HeartMail" 
-                 style="width: 32px; height: 32px; border-radius: 8px;" />
+                 style="width: 32px; height: 32px; border-radius: 8px;"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+            <div style="display: none; width: 32px; height: 32px; background: linear-gradient(135deg, #E63365, #f093fb); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px;">💕</div>
           </div>
           <p style="color: #6b7280; font-size: 16px; margin: 0 0 8px 0;">Sent with 💕 via HeartMail</p>
           <p style="color: #9ca3af; font-size: 14px; margin: 0;">From: ${from}</p>

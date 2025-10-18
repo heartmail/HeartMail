@@ -34,8 +34,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Use verified letter.heartsmail.com domain
-    const fromAddress = 'HeartMail <noreply@letter.heartsmail.com>'
+    // Use verified letter.heartsmail.com domain with sender name
+    const senderName = from || 'HeartMail User'
+    const fromAddress = `${senderName} <noreply@letter.heartsmail.com>`
 
     console.log('📧 From address:', fromAddress);
     console.log('📧 NODE_ENV:', process.env.NODE_ENV);
