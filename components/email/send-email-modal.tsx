@@ -24,8 +24,7 @@ interface Recipient {
 
 interface Template {
   id: string
-  name: string
-  subject: string
+  title: string
   content: string
 }
 
@@ -81,19 +80,21 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
     
     setTemplatesLoading(true)
     try {
+      console.log('🔍 Fetching templates for user:', user.id)
       const { data, error } = await supabase
         .from('templates')
-        .select('id, name, subject, content')
+        .select('id, title, content')
         .eq('user_id', user.id)
-        .order('name')
+        .order('title')
 
       if (error) {
-        console.error('Error fetching templates:', error)
+        console.error('❌ Error fetching templates:', error)
       } else {
+        console.log('✅ Templates fetched:', data)
         setTemplates(data || [])
       }
     } catch (error) {
-      console.error('Error fetching templates:', error)
+      console.error('❌ Error fetching templates:', error)
     } finally {
       setTemplatesLoading(false)
     }
@@ -108,14 +109,17 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
   }
 
   const handleTemplateSelect = (templateId: string) => {
+    console.log('🎯 Template selected:', templateId)
     setSelectedTemplateId(templateId)
     const template = templates.find(t => t.id === templateId)
+    console.log('📝 Found template:', template)
     if (template) {
       setFormData(prev => ({ 
         ...prev, 
-        subject: template.subject,
+        subject: `From HeartMail: ${template.title}`, // Use template title as subject
         message: template.content
       }))
+      console.log('✅ Form data updated with template content')
     }
   }
 
@@ -228,7 +232,7 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
                       ) : (
                         templates.map(template => (
                           <SelectItem key={template.id} value={template.id}>
-                            {template.name}
+                            {template.title}
                           </SelectItem>
                         ))
                       )}
