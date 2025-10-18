@@ -19,6 +19,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if Resend API key is available
+    console.log('🔑 API Key check:', {
+      hasKey: !!process.env.RESEND_API_KEY,
+      keyPrefix: process.env.RESEND_API_KEY?.substring(0, 10) + '...',
+      nodeEnv: process.env.NODE_ENV
+    });
+    
     if (!process.env.RESEND_API_KEY) {
       console.error('❌ RESEND_API_KEY not found');
       return NextResponse.json(
@@ -66,6 +72,12 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('❌ Resend error:', error)
+      console.error('❌ Resend error details:', {
+        name: error.name,
+        message: error.message,
+        statusCode: error.statusCode,
+        type: typeof error
+      })
       return NextResponse.json(
         { error: `Failed to send email: ${error.message || 'Unknown error'}` },
         { status: 500 }
