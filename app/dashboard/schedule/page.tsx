@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, Plus, Edit, Trash2, Mail, Clock, Calendar, Users, Filter, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Edit, Trash2, Mail, Clock, Calendar, Users, Filter, X, MessageSquare, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth-context'
 import { supabase } from '@/lib/supabase'
@@ -495,23 +495,39 @@ export default function SchedulePage() {
 
         {/* Add Schedule Modal */}
         {showAddModal && (
-          <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Schedule New Email</h3>
-              <button 
-                className="modal-close"
-                onClick={() => setShowAddModal(false)}
-              >
-                ×
-              </button>
-            </div>
-            <div className="modal-body">
-              <form className="schedule-form" onSubmit={handleScheduleEmail}>
-                <div className="form-group">
-                  <label>Recipient</label>
-                  <select name="recipient" className="form-select" required>
-                    <option value="">Select recipient</option>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowAddModal(false)}>
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              {/* Header */}
+              <div className="bg-gradient-to-r from-heartmail-pink to-pink-500 text-white p-6 rounded-t-2xl">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                      <Calendar className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold">Schedule a Heartfelt Email</h3>
+                      <p className="text-pink-100">Send love at the perfect time</p>
+                    </div>
+                  </div>
+                  <button 
+                    className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-colors"
+                    onClick={() => setShowAddModal(false)}
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleScheduleEmail} className="p-6 space-y-6">
+                {/* Recipient Card */}
+                <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-4 border border-pink-100">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Users className="h-5 w-5 text-heartmail-pink" />
+                    <label className="text-lg font-semibold text-gray-800">Who are you sending love to?</label>
+                  </div>
+                  <select name="recipient" className="w-full p-3 border border-pink-200 rounded-lg focus:ring-2 focus:ring-heartmail-pink focus:border-transparent" required>
+                    <option value="">Choose a loved one...</option>
                     {loading ? (
                       <option disabled>Loading recipients...</option>
                     ) : recipients.length === 0 ? (
@@ -525,10 +541,15 @@ export default function SchedulePage() {
                     )}
                   </select>
                 </div>
-                <div className="form-group">
-                  <label>Template</label>
-                  <select name="template" className="form-select">
-                    <option value="">Select template</option>
+
+                {/* Template Card */}
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-4 border border-purple-100">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Mail className="h-5 w-5 text-purple-600" />
+                    <label className="text-lg font-semibold text-gray-800">Choose a template (optional)</label>
+                  </div>
+                  <select name="template" className="w-full p-3 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <option value="">Start from scratch or use a template...</option>
                     {loading ? (
                       <option disabled>Loading templates...</option>
                     ) : templates.length === 0 ? (
@@ -542,46 +563,89 @@ export default function SchedulePage() {
                     )}
                   </select>
                 </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Date</label>
-                    <input name="date" type="date" className="form-input" required />
+
+                {/* Subject Card */}
+                <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4 border border-blue-100">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <MessageSquare className="h-5 w-5 text-blue-600" />
+                    <label className="text-lg font-semibold text-gray-800">What's this email about?</label>
                   </div>
-                  <div className="form-group">
-                    <label>Time</label>
-                    <input name="time" type="time" className="form-input" required />
+                  <input 
+                    name="subject"
+                    type="text"
+                    className="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Just wanted to say I love you..."
+                    required
+                  />
+                </div>
+
+                {/* Date & Time Card */}
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Clock className="h-5 w-5 text-green-600" />
+                    <label className="text-lg font-semibold text-gray-800">When should this be sent?</label>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                      <input name="date" type="date" className="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                      <input name="time" type="time" className="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required />
+                    </div>
                   </div>
                 </div>
-                <div className="form-group">
-                  <label>Frequency</label>
-                  <select name="frequency" className="form-select">
+
+                {/* Frequency Card */}
+                <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-4 border border-orange-100">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Calendar className="h-5 w-5 text-orange-600" />
+                    <label className="text-lg font-semibold text-gray-800">How often?</label>
+                  </div>
+                  <select name="frequency" className="w-full p-3 border border-orange-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
                     <option value="one-time">One-time</option>
                     <option value="daily">Daily</option>
                     <option value="weekly">Weekly</option>
                     <option value="monthly">Monthly</option>
                   </select>
                 </div>
-                <div className="form-group">
-                  <label>Personal Message</label>
+
+                {/* Personal Message Card */}
+                <div className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-100">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Heart className="h-5 w-5 text-rose-600" />
+                    <label className="text-lg font-semibold text-gray-800">Share your heart with them</label>
+                  </div>
                   <textarea 
                     name="personalMessage"
-                    className="form-textarea" 
-                    placeholder="Add a personal message..."
-                    rows={4}
+                    className="w-full p-3 border border-rose-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent resize-none"
+                    placeholder="Dear [Name],&#10;&#10;I just wanted to take a moment to tell you how much you mean to me..."
+                    rows={6}
+                    required
                   />
                 </div>
+
+                {/* Buttons */}
+                <div className="flex space-x-4 pt-4">
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    onClick={() => setShowAddModal(false)}
+                    className="flex-1 py-3 text-lg font-semibold border-2 border-gray-300 hover:border-gray-400 transition-colors"
+                  >
+                    <X className="h-5 w-5 mr-2" />
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    className="flex-1 py-3 text-lg font-semibold bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                  >
+                    <Calendar className="h-5 w-5 mr-2" />
+                    Schedule with Love
+                  </Button>
+                </div>
               </form>
-            </div>
-            <div className="modal-footer">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowAddModal(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" className="btn btn-primary">
-                Schedule Email
-              </Button>
             </div>
           </div>
         </div>

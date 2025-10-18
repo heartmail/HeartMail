@@ -22,6 +22,13 @@ interface Recipient {
   email: string
 }
 
+interface Template {
+  id: string
+  name: string
+  subject: string
+  content: string
+}
+
 export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps) {
   const [formData, setFormData] = useState({
     to: '',
@@ -33,12 +40,16 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
   const [recipients, setRecipients] = useState<Recipient[]>([])
   const [selectedRecipientId, setSelectedRecipientId] = useState<string>('')
   const [recipientsLoading, setRecipientsLoading] = useState(false)
+  const [templates, setTemplates] = useState<Template[]>([])
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
+  const [templatesLoading, setTemplatesLoading] = useState(false)
   const { user } = useAuth()
 
-  // Fetch recipients when modal opens
+  // Fetch recipients and templates when modal opens
   useEffect(() => {
     if (isOpen && user) {
       fetchRecipients()
+      fetchTemplates()
     }
   }, [isOpen, user])
 
@@ -65,11 +76,46 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
     }
   }
 
+  const fetchTemplates = async () => {
+    if (!user) return
+    
+    setTemplatesLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('templates')
+        .select('id, name, subject, content')
+        .eq('user_id', user.id)
+        .order('name')
+
+      if (error) {
+        console.error('Error fetching templates:', error)
+      } else {
+        setTemplates(data || [])
+      }
+    } catch (error) {
+      console.error('Error fetching templates:', error)
+    } finally {
+      setTemplatesLoading(false)
+    }
+  }
+
   const handleRecipientSelect = (recipientId: string) => {
     setSelectedRecipientId(recipientId)
     const recipient = recipients.find(r => r.id === recipientId)
     if (recipient) {
       setFormData(prev => ({ ...prev, to: recipient.email }))
+    }
+  }
+
+  const handleTemplateSelect = (templateId: string) => {
+    setSelectedTemplateId(templateId)
+    const template = templates.find(t => t.id === templateId)
+    if (template) {
+      setFormData(prev => ({ 
+        ...prev, 
+        subject: template.subject,
+        message: template.content
+      }))
     }
   }
 
@@ -105,6 +151,7 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
         // Reset form after success
         setFormData({ to: '', subject: '', message: '' })
         setSelectedRecipientId('')
+        setSelectedTemplateId('')
         setTimeout(() => {
           setIsSuccess(false)
           onClose()
@@ -197,6 +244,42 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
                   required
                   className="text-lg"
                 />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Mail className="h-5 w-5" />
+                  <span>Template (Optional)</span>
+                </CardTitle>
+                <CardDescription>
+                  Start from a template or write from scratch
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {templatesLoading ? (
+                  <p className="text-sm text-gray-500">Loading templates...</p>
+                ) : (
+                  <Select onValueChange={handleTemplateSelect} value={selectedTemplateId}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Choose a template (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {templates.length === 0 ? (
+                        <SelectItem value="no-templates" disabled>
+                          No templates found. Create some in the Templates tab!
+                        </SelectItem>
+                      ) : (
+                        templates.map(template => (
+                          <SelectItem key={template.id} value={template.id}>
+                            {template.name}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                )}
               </CardContent>
             </Card>
 
