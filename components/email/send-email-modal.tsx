@@ -188,9 +188,6 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
                   required
                   className="text-lg"
                 />
-                <p className="text-sm text-green-600 bg-green-50 p-2 rounded-md mt-2">
-                  <strong>Production Mode:</strong> You can now send emails to any address! 🚀
-                </p>
               </CardContent>
             </Card>
 
