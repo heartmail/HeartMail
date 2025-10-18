@@ -151,13 +151,15 @@ export default function RecipientsPage() {
           <p className="text-gray-600 mt-1">Manage your loved ones who will receive your heartfelt emails</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
-          <Button 
-            className="btn-heartmail" 
-            onClick={openAddDialog}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Recipient
-          </Button>
+          <DialogTrigger asChild>
+            <Button 
+              className="btn-heartmail" 
+              onClick={openAddDialog}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Recipient
+            </Button>
+          </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>{editingRecipient ? 'Edit Recipient' : 'Add New Recipient'}</DialogTitle>
