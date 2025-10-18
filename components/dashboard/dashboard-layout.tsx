@@ -98,6 +98,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     key={item.href}
                     href={item.href}
                     className={`menu-item ${isActive ? 'active' : ''} btn-smooth`}
+                    onClick={(e) => {
+                      console.log('🔍 Navigation clicked:', item.href, e)
+                    }}
                   >
                     <item.icon className="h-5 w-5" />
                     <span>{item.label}</span>
@@ -119,6 +122,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <Link 
               href="/letter-library" 
               className="w-full btn-heartmail flex items-center justify-center space-x-2 py-3 px-4 rounded-lg text-sm font-medium"
+              onClick={(e) => {
+                console.log('🔍 Letter Library clicked:', e)
+              }}
             >
               <BookOpen className="h-4 w-4" />
               <span>Letter Library</span>
