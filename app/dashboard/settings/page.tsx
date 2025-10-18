@@ -164,14 +164,34 @@ export default function SettingsPage() {
     }
 
     try {
-      const { error } = await supabase.auth.updateUser({ email: newEmail })
+      // First update the user's email in Supabase
+      const { error: updateError } = await supabase.auth.updateUser({ email: newEmail })
 
-      if (error) {
-        setEmailChangeError(error.message)
-      } else {
-        setEmailChangeMessage('A verification email has been sent to your new address. Please check your inbox to confirm the change.')
+      if (updateError) {
+        setEmailChangeError(updateError.message)
+        setEmailChangeLoading(false)
+        return
+      }
+
+      // Then send our custom branded email
+      const response = await fetch('/api/auth/send-confirmation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: newEmail,
+          type: 'email_change',
+          confirmationUrl: `${window.location.origin}/auth/update-password`
+        })
+      })
+
+      if (response.ok) {
+        setEmailChangeMessage('A beautiful verification email has been sent to your new address from support@heartsmail.com. Please check your inbox to confirm the change.')
         setNewEmail('')
-        toast.success('Verification email sent!')
+        toast.success('Verification email sent from HeartMail Support!')
+      } else {
+        setEmailChangeError('Failed to send verification email. Please try again.')
       }
     } catch (err) {
       setEmailChangeError(err instanceof Error ? err.message : 'An unexpected error occurred.')
@@ -188,15 +208,24 @@ export default function SettingsPage() {
     setPasswordResetError('')
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(user?.email || '', {
-        redirectTo: `${window.location.origin}/auth/update-password`
+      // Send our custom branded password reset email
+      const response = await fetch('/api/auth/send-confirmation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: user?.email || '',
+          type: 'password_reset',
+          confirmationUrl: `${window.location.origin}/auth/update-password`
+        })
       })
 
-      if (error) {
-        setPasswordResetError(error.message)
+      if (response.ok) {
+        setPasswordResetMessage('A beautiful password reset email has been sent to your email address from support@heartsmail.com. Please check your inbox.')
+        toast.success('Password reset email sent from HeartMail Support!')
       } else {
-        setPasswordResetMessage('A password reset link has been sent to your email address. Please check your inbox.')
-        toast.success('Password reset link sent!')
+        setPasswordResetError('Failed to send password reset email. Please try again.')
       }
     } catch (err) {
       setPasswordResetError(err instanceof Error ? err.message : 'An unexpected error occurred.')
@@ -632,12 +661,29 @@ export default function SettingsPage() {
               </div>
               {emailChangeError && <p className="text-red-500 text-sm">{emailChangeError}</p>}
               {emailChangeMessage && <p className="text-green-600 text-sm">{emailChangeMessage}</p>}
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setShowEmailChangeModal(false)} disabled={emailChangeLoading}>
+              <DialogFooter className="gap-3">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setShowEmailChangeModal(false)} 
+                  disabled={emailChangeLoading}
+                  className="px-6 py-2.5 border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-800 font-semibold transition-all duration-200 hover:bg-gray-50"
+                >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={emailChangeLoading} className="bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white font-semibold">
-                  {emailChangeLoading ? 'Sending...' : 'Send Verification'}
+                <Button 
+                  type="submit" 
+                  disabled={emailChangeLoading} 
+                  className="px-6 py-2.5 bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+                >
+                  {emailChangeLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Sending...
+                    </>
+                  ) : (
+                    'Send Verification'
+                  )}
                 </Button>
               </DialogFooter>
             </form>
@@ -659,12 +705,29 @@ export default function SettingsPage() {
             <form onSubmit={handlePasswordResetRequest} className="grid gap-4 py-4">
               {passwordResetError && <p className="text-red-500 text-sm">{passwordResetError}</p>}
               {passwordResetMessage && <p className="text-green-600 text-sm">{passwordResetMessage}</p>}
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setShowPasswordResetModal(false)} disabled={passwordResetLoading}>
+              <DialogFooter className="gap-3">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setShowPasswordResetModal(false)} 
+                  disabled={passwordResetLoading}
+                  className="px-6 py-2.5 border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-800 font-semibold transition-all duration-200 hover:bg-gray-50"
+                >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={passwordResetLoading} className="bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white font-semibold">
-                  {passwordResetLoading ? 'Sending...' : 'Send Reset Link'}
+                <Button 
+                  type="submit" 
+                  disabled={passwordResetLoading} 
+                  className="px-6 py-2.5 bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+                >
+                  {passwordResetLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Sending...
+                    </>
+                  ) : (
+                    'Send Reset Link'
+                  )}
                 </Button>
               </DialogFooter>
             </form>
