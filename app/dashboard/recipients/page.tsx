@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, Users, Mail, Phone, Calendar, Heart } from 'lucide-react'
+import { Plus, Edit, Trash2, Users, Mail, Calendar, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -23,7 +23,6 @@ export default function RecipientsPage() {
     last_name: '',
     email: '',
     relationship: '',
-    phone: '',
     birthday: '',
     notes: '',
     is_active: true
@@ -90,7 +89,6 @@ export default function RecipientsPage() {
       last_name: recipient.last_name || '',
       email: recipient.email,
       relationship: recipient.relationship || '',
-      phone: recipient.phone || '',
       birthday: recipient.birthday || '',
       notes: recipient.notes || '',
       is_active: recipient.is_active
@@ -117,7 +115,6 @@ export default function RecipientsPage() {
       last_name: '',
       email: '',
       relationship: '',
-      phone: '',
       birthday: '',
       notes: '',
       is_active: true
@@ -232,16 +229,6 @@ export default function RecipientsPage() {
                 </Select>
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="Enter phone number"
-                  className="form-input"
-                />
-              </div>
               
               <div className="space-y-2">
                 <Label htmlFor="birthday">Birthday</Label>
@@ -349,12 +336,6 @@ export default function RecipientsPage() {
                   <Mail className="h-4 w-4" />
                   <span>{recipient.email}</span>
                 </div>
-                {recipient.phone && (
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <Phone className="h-4 w-4" />
-                    <span>{recipient.phone}</span>
-                  </div>
-                )}
                 {recipient.birthday && (
                   <div className="flex items-center space-x-2 text-sm text-gray-600">
                     <Calendar className="h-4 w-4" />

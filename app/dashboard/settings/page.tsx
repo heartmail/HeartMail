@@ -42,7 +42,6 @@ export default function SettingsPage() {
     first_name: '',
     last_name: '',
     email: '',
-    phone: '',
     bio: ''
   })
   
@@ -81,7 +80,6 @@ export default function SettingsPage() {
           first_name: profileData.first_name || '',
           last_name: profileData.last_name || '',
           email: profileData.email || user!.email || '',
-          phone: profileData.phone || '',
           bio: profileData.bio || ''
         })
       } else {
@@ -90,7 +88,6 @@ export default function SettingsPage() {
           first_name: '',
           last_name: '',
           email: user!.email || '',
-          phone: '',
           bio: ''
         })
       }
@@ -321,17 +318,6 @@ export default function SettingsPage() {
                     />
                   </div>
                   
-                  <div className="form-group">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input 
-                      id="phone"
-                      type="tel" 
-                      value={profileForm.phone}
-                      onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                      className="form-input"
-                      placeholder="Enter your phone number"
-                    />
-                  </div>
                   
                   <div className="form-group">
                     <Label htmlFor="bio">Bio</Label>

@@ -64,7 +64,6 @@ CREATE TABLE IF NOT EXISTS recipients (
   name TEXT NOT NULL,
   email TEXT NOT NULL,
   relationship TEXT,
-  phone TEXT,
   birthday DATE,
   notes TEXT,
   is_active BOOLEAN DEFAULT true,

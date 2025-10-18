@@ -7,7 +7,6 @@ export interface Recipient {
   name?: string // Keep for backward compatibility
   email: string
   relationship?: string
-  phone?: string
   birthday?: string
   notes?: string
   is_active: boolean
