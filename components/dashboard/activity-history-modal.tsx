@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Search, Filter, Calendar, Mail, User, FileText, Settings, Clock, X } from 'lucide-react'
 import { ActivityHistory, getActivityHistory, ActivityHistoryFilters } from '@/lib/activity-history'
-import { useAuth } from '@/hooks/use-auth'
+import { useAuth } from '@/lib/auth-context'
 
 interface ActivityHistoryModalProps {
   isOpen: boolean
