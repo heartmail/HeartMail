@@ -190,12 +190,13 @@ export default function TemplatesPage() {
           <p className="text-gray-600 mt-1">Create and manage your email templates</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
-          <DialogTrigger asChild>
-            <Button className="btn-heartmail" onClick={openAddDialog}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Template
-            </Button>
-          </DialogTrigger>
+          <Button 
+            className="btn-heartmail" 
+            onClick={openAddDialog}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Create Template
+          </Button>
           <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingTemplate ? 'Edit Template' : 'Create New Template'}</DialogTitle>
