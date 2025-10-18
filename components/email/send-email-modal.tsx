@@ -205,6 +205,42 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
+                  <Mail className="h-5 w-5" />
+                  <span>Template (Optional)</span>
+                </CardTitle>
+                <CardDescription>
+                  Start from a template or write from scratch
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {templatesLoading ? (
+                  <p className="text-sm text-gray-500">Loading templates...</p>
+                ) : (
+                  <Select onValueChange={handleTemplateSelect} value={selectedTemplateId}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Choose a template (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {templates.length === 0 ? (
+                        <SelectItem value="no-templates" disabled>
+                          No templates found. Create some in the Templates tab!
+                        </SelectItem>
+                      ) : (
+                        templates.map(template => (
+                          <SelectItem key={template.id} value={template.id}>
+                            {template.name}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
                   <User className="h-5 w-5" />
                   <span>Recipient</span>
                 </CardTitle>
@@ -244,42 +280,6 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
                   required
                   className="text-lg"
                 />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Mail className="h-5 w-5" />
-                  <span>Template (Optional)</span>
-                </CardTitle>
-                <CardDescription>
-                  Start from a template or write from scratch
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {templatesLoading ? (
-                  <p className="text-sm text-gray-500">Loading templates...</p>
-                ) : (
-                  <Select onValueChange={handleTemplateSelect} value={selectedTemplateId}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Choose a template (optional)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {templates.length === 0 ? (
-                        <SelectItem value="no-templates" disabled>
-                          No templates found. Create some in the Templates tab!
-                        </SelectItem>
-                      ) : (
-                        templates.map(template => (
-                          <SelectItem key={template.id} value={template.id}>
-                            {template.name}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                )}
               </CardContent>
             </Card>
 
