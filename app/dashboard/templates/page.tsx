@@ -192,8 +192,14 @@ export default function TemplatesPage() {
         <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
           <DialogTrigger asChild>
             <Button 
-              className="btn-heartmail" 
-              onClick={openAddDialog}
+              className="btn-heartmail"
+              onClick={(e) => {
+                console.log('🔍 Create Template button clicked!', e)
+                e.preventDefault()
+                e.stopPropagation()
+                resetForm()
+                setIsDialogOpen(true)
+              }}
             >
               <Plus className="h-4 w-4 mr-2" />
               Create Template
