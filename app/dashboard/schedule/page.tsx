@@ -144,12 +144,12 @@ export default function SchedulePage() {
 
   const getEmailsForDate = (date: string) => {
     // For now, return empty array - we'll implement real scheduled emails later
-    return [] as Array<{ id: string; title: string; type: string; recipient: string; time: string }>
+    return [] as Array<{ id: string; title: string; type: string; recipient: string; time: string; date: string }>
   }
 
   const getEmailsForMonth = () => {
     // For now, return empty array - we'll implement real scheduled emails later
-    return [] as Array<{ id: string; title: string; type: string; recipient: string; time: string }>
+    return [] as Array<{ id: string; title: string; type: string; recipient: string; time: string; date: string }>
   }
 
   const handleScheduleEmail = async (e: React.FormEvent<HTMLFormElement>) => {
