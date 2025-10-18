@@ -198,7 +198,7 @@ export default function BillingSettings() {
 
               <Button
                 onClick={openCustomerPortal}
-                disabled={portalLoading || subscription.status === 'free'}
+                disabled={portalLoading}
                 className="w-full bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white font-semibold py-6 text-base shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 {portalLoading ? (
@@ -209,7 +209,7 @@ export default function BillingSettings() {
                 ) : (
                   <>
                     <CreditCard className="mr-2 h-5 w-5" />
-                    Manage Billing
+                    {subscription?.status === 'free' ? 'Manage Account' : 'Manage Billing'}
                   </>
                 )}
               </Button>

@@ -22,16 +22,46 @@ export async function POST(request: NextRequest) {
       .eq('user_id', userId)
       .single()
 
+    let customerId: string
+
     if (error || !subscription?.stripe_customer_id) {
-      return NextResponse.json(
-        { error: 'No subscription found' },
-        { status: 404 }
-      )
+      // No subscription found - create a Stripe customer for free users
+      const { data: user } = await supabase.auth.admin.getUserById(userId)
+      
+      if (!user?.user?.email) {
+        return NextResponse.json(
+          { error: 'User email not found' },
+          { status: 404 }
+        )
+      }
+
+      // Create Stripe customer for free user
+      const customer = await stripe.customers.create({
+        email: user.user.email,
+        metadata: {
+          userId: userId,
+        },
+      })
+      
+      customerId = customer.id
+
+      // Store customer ID in database for future use
+      await supabase
+        .from('subscriptions')
+        .upsert({
+          user_id: userId,
+          stripe_customer_id: customerId,
+          status: 'free',
+          plan: 'Free',
+          price_id: null
+        })
+    } else {
+      customerId = subscription.stripe_customer_id
     }
 
     // Create customer portal session
     const portalSession = await stripe.billingPortal.sessions.create({
-      customer: subscription.stripe_customer_id,
+      customer: customerId,
       return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard/settings?tab=billing`,
     })
 
