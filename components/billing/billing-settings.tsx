@@ -196,23 +196,35 @@ export default function BillingSettings() {
                 </div>
               </div>
 
-              <Button
-                onClick={openCustomerPortal}
-                disabled={portalLoading}
-                className="w-full bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white font-semibold py-6 text-base shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                {portalLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Opening Portal...
-                  </>
-                ) : (
-                  <>
-                    <CreditCard className="mr-2 h-5 w-5" />
-                    {subscription?.status === 'free' ? 'Manage Account' : 'Manage Billing'}
-                  </>
-                )}
-              </Button>
+              {subscription?.status === 'free' ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-600 mb-4">No active subscription</p>
+                  <Button 
+                    onClick={() => window.location.href = '/#pricing'}
+                    className="btn-heartmail"
+                  >
+                    View Plans
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  onClick={openCustomerPortal}
+                  disabled={portalLoading}
+                  className="w-full bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white font-semibold py-6 text-base shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  {portalLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Opening Portal...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="mr-2 h-5 w-5" />
+                      Manage Billing
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           ) : (
             <div className="text-center py-8">

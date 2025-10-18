@@ -25,36 +25,12 @@ export async function POST(request: NextRequest) {
     let customerId: string
 
     if (error || !subscription?.stripe_customer_id) {
-      // No subscription found - create a Stripe customer for free users
-      const { data: user } = await supabase.auth.admin.getUserById(userId)
-      
-      if (!user?.user?.email) {
-        return NextResponse.json(
-          { error: 'User email not found' },
-          { status: 404 }
-        )
-      }
-
-      // Create Stripe customer for free user
-      const customer = await stripe.customers.create({
-        email: user.user.email,
-        metadata: {
-          userId: userId,
-        },
-      })
-      
-      customerId = customer.id
-
-      // Store customer ID in database for future use
-      await supabase
-        .from('subscriptions')
-        .upsert({
-          user_id: userId,
-          stripe_customer_id: customerId,
-          status: 'free',
-          plan: 'Free',
-          price_id: null
-        })
+      // No subscription found - return error for now
+      // Free users don't need customer portal access
+      return NextResponse.json(
+        { error: 'No subscription found. Please upgrade to access billing portal.' },
+        { status: 404 }
+      )
     } else {
       customerId = subscription.stripe_customer_id
     }
