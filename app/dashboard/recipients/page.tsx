@@ -78,7 +78,7 @@ export default function RecipientsPage() {
       setIsDialogOpen(false)
     } catch (error) {
       console.error('Error saving recipient:', error)
-      toast.error(`Failed to save recipient: ${error.message || 'Unknown error'}`)
+      toast.error(`Failed to save recipient: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 

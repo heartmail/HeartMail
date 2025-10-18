@@ -88,7 +88,7 @@ export default function TemplatesPage() {
       setIsDialogOpen(false)
     } catch (error) {
       console.error('Error saving template:', error)
-      toast.error(`Failed to save template: ${error.message || 'Unknown error'}`)
+      toast.error(`Failed to save template: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 

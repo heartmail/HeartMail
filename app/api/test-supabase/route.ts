@@ -9,7 +9,7 @@ export async function GET() {
     if (error) {
       return NextResponse.json({ 
         success: false, 
-        error: error.message,
+        error: error instanceof Error ? error.message : 'Unknown error',
         message: 'Supabase connection failed' 
       }, { status: 500 })
     }
@@ -22,7 +22,7 @@ export async function GET() {
   } catch (error: any) {
     return NextResponse.json({ 
       success: false, 
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown error',
       message: 'Check your environment variables'
     }, { status: 500 })
   }
