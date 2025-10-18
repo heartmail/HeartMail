@@ -5,12 +5,25 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('📧 Email send API called');
+    
     const { to, subject, message, from } = await request.json()
+    console.log('📧 Request data:', { to, subject, message: message?.substring(0, 50) + '...', from });
 
     if (!to || !subject || !message) {
+      console.log('❌ Missing required fields');
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
+      )
+    }
+
+    // Check if Resend API key is available
+    if (!process.env.RESEND_API_KEY) {
+      console.error('❌ RESEND_API_KEY not found');
+      return NextResponse.json(
+        { error: 'Email service not configured' },
+        { status: 500 }
       )
     }
 
@@ -19,12 +32,16 @@ export async function POST(request: NextRequest) {
       ? 'HeartMail <noreply@letter.heartsmail.com>'
       : 'HeartMail <onboarding@resend.dev>'
 
+    console.log('📧 From address:', fromAddress);
+    console.log('📧 NODE_ENV:', process.env.NODE_ENV);
+
     // In development/testing mode, only allow sending to your verified email
     const isTestingMode = process.env.NODE_ENV !== 'production'
     const verifiedEmail = 'heartmailio@gmail.com'
     
     // Skip testing mode restriction if NODE_ENV is explicitly set to production
     if (isTestingMode && to !== verifiedEmail) {
+      console.log('❌ Testing mode restriction triggered');
       return NextResponse.json(
         { 
           error: `Testing mode: Emails can only be sent to ${verifiedEmail}. Please use your verified email address for testing.`,
@@ -35,6 +52,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    console.log('📧 Attempting to send email via Resend...');
+    
     const { data, error } = await resend.emails.send({
       from: fromAddress,
       to: [to],
@@ -61,22 +80,23 @@ export async function POST(request: NextRequest) {
     })
 
     if (error) {
-      console.error('Resend error:', error)
+      console.error('❌ Resend error:', error)
       return NextResponse.json(
-        { error: 'Failed to send email' },
+        { error: `Failed to send email: ${error.message || 'Unknown error'}` },
         { status: 500 }
       )
     }
 
+    console.log('✅ Email sent successfully:', data?.id);
     return NextResponse.json({ 
       success: true, 
       messageId: data?.id 
     })
 
   } catch (error) {
-    console.error('Email send error:', error)
+    console.error('❌ Email send error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: `Internal server error: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
     )
   }

@@ -77,6 +77,13 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
     e.preventDefault()
     setIsLoading(true)
 
+    console.log('📧 Frontend: Starting email send...', {
+      to: formData.to,
+      subject: formData.subject,
+      message: formData.message?.substring(0, 50) + '...',
+      from: user?.email || 'heartmailio@gmail.com'
+    });
+
     try {
       const response = await fetch('/api/email/send', {
         method: 'POST',
@@ -90,6 +97,8 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
           from: user?.email || 'heartmailio@gmail.com'
         })
       })
+
+      console.log('📧 Frontend: Response status:', response.status);
 
       if (response.ok) {
         setIsSuccess(true)
