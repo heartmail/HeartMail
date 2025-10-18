@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Home, Users, Palette, Calendar, Settings, Bell, Plus, LogOut, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react'
+import { Home, Users, Palette, Calendar, Settings, Bell, Plus, LogOut, ChevronLeft, ChevronRight, BookOpen, Image } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth-context'
 import Logo from '@/components/ui/logo'
@@ -13,6 +13,7 @@ const menuItems = [
   { href: '/dashboard/recipients', label: 'Recipients', icon: Users },
   { href: '/dashboard/templates', label: 'Templates', icon: Palette },
   { href: '/dashboard/schedule', label: 'Schedule', icon: Calendar },
+  { href: '/dashboard/photos', label: 'Photos', icon: Image },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ]
 
@@ -108,15 +109,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           })}
         </div>
         <div className="sidebar-footer">
-          <div className="user-profile">
-            <div className="user-avatar">
-              <Users className="h-5 w-5" />
+          <Link href={`/dashboard/profile/${user?.id}`} className="user-profile block hover:bg-gray-50 rounded-lg p-2 transition-colors">
+            <div className="flex items-center space-x-3">
+              <div className="user-avatar">
+                <Users className="h-5 w-5" />
+              </div>
+              <div className="user-info">
+                <div className="user-name">{user?.email || 'User'}</div>
+                <div className="user-plan">Free Plan</div>
+              </div>
             </div>
-            <div className="user-info">
-              <div className="user-name">{user?.email || 'User'}</div>
-              <div className="user-plan">Free Plan</div>
-            </div>
-          </div>
+          </Link>
           <div className="mt-4">
             <button
               className="w-full btn-heartmail flex items-center justify-center space-x-2 py-3 px-4 rounded-lg text-sm font-medium"
