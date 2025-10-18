@@ -651,8 +651,7 @@ export default function SchedulePage() {
               </form>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Day Popup Modal */}
       {showDayModal && selectedDay && (
