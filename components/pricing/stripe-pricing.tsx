@@ -29,6 +29,9 @@ const plans = [
     name: 'Family',
     price: '$9.99',
     period: '/month',
+    yearlyPrice: '$95.99',
+    yearlyPeriod: '/year',
+    yearlySavings: 'Save $23.89 (20% off)',
     description: 'Most popular for families',
     features: [
       'Up to 5 recipients',
@@ -40,12 +43,17 @@ const plans = [
     buttonText: 'Start Free Trial',
     buttonVariant: 'default' as const,
     popular: true,
-    priceId: 'price_1SJ3gL8h6OhnnNXPXyTiD9Yo'
+    priceId: 'price_1SJ3gL8h6OhnnNXPXyTiD9Yo',
+    monthlyPriceId: 'price_1SJ3gL8h6OhnnNXPXyTiD9Yo',
+    yearlyPriceId: 'price_YEARLY_FAMILY_PLACEHOLDER'
   },
   {
     name: 'Extended Family',
     price: '$19.99',
     period: '/month',
+    yearlyPrice: '$191.99',
+    yearlyPeriod: '/year',
+    yearlySavings: 'Save $47.89 (20% off)',
     description: 'For larger families',
     features: [
       'Unlimited recipients',
@@ -57,7 +65,9 @@ const plans = [
     buttonText: 'Start Free Trial',
     buttonVariant: 'outline' as const,
     popular: false,
-    priceId: 'price_1SJ3gO8h6OhnnNXPY430Z8DW'
+    priceId: 'price_1SJ3gO8h6OhnnNXPY430Z8DW',
+    monthlyPriceId: 'price_1SJ3gO8h6OhnnNXPY430Z8DW',
+    yearlyPriceId: 'price_YEARLY_EXTENDED_PLACEHOLDER'
   }
 ]
 
@@ -66,6 +76,7 @@ export default function StripePricing() {
   const [couponCode, setCouponCode] = useState('')
   const [showCoupon, setShowCoupon] = useState(false)
   const [subscription, setSubscription] = useState<any>(null)
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly')
   const { user } = useAuth()
 
   // Fetch user's subscription status
@@ -142,6 +153,9 @@ export default function StripePricing() {
 
     setLoading(plan.name)
 
+    // Determine which price ID to use based on billing period
+    const selectedPriceId = billingPeriod === 'yearly' ? plan.yearlyPriceId : plan.monthlyPriceId
+
     try {
       const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
@@ -149,7 +163,7 @@ export default function StripePricing() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          priceId: plan.priceId,
+          priceId: selectedPriceId,
           customerEmail: user.email,
           userId: user.id,
           couponCode: couponCode || undefined
@@ -172,7 +186,37 @@ export default function StripePricing() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div className="space-y-8">
+      {/* Billing Toggle */}
+      <div className="flex justify-center">
+        <div className="bg-gray-100 rounded-lg p-1 flex">
+          <button
+            onClick={() => setBillingPeriod('monthly')}
+            className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
+              billingPeriod === 'monthly'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Monthly
+          </button>
+          <button
+            onClick={() => setBillingPeriod('yearly')}
+            className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
+              billingPeriod === 'yearly'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Yearly
+            <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+              Save 20%
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
       {plans.map((plan, index) => (
         <Card 
           key={index} 
@@ -188,8 +232,23 @@ export default function StripePricing() {
           <CardHeader className="text-center py-4">
             <CardTitle className="text-2xl font-bold mb-4">{plan.name}</CardTitle>
             <div className="mt-4 mb-4">
-              <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
-              <span className="text-lg text-gray-500 ml-2">{plan.period}</span>
+              {billingPeriod === 'yearly' && plan.yearlyPrice ? (
+                <div className="text-center">
+                  <div className="flex items-center justify-center">
+                    <span className="text-4xl font-bold text-gray-900">{plan.yearlyPrice}</span>
+                    <span className="text-lg text-gray-500 ml-2">{plan.yearlyPeriod}</span>
+                  </div>
+                  <div className="text-sm text-green-600 font-medium mt-1">{plan.yearlySavings}</div>
+                  <div className="text-sm text-gray-400 line-through mt-1">
+                    {plan.price}{plan.period}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center">
+                  <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
+                  <span className="text-lg text-gray-500 ml-2">{plan.period}</span>
+                </div>
+              )}
             </div>
             <CardDescription className="text-sm mt-2">{plan.description}</CardDescription>
           </CardHeader>
@@ -261,6 +320,7 @@ export default function StripePricing() {
           </CardContent>
         </Card>
       ))}
+      </div>
     </div>
   )
 }
