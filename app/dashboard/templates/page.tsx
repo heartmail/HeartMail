@@ -63,13 +63,22 @@ export default function TemplatesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) return
+    if (!user) {
+      console.error('No user found')
+      toast.error('You must be logged in to create templates')
+      return
+    }
+
+    console.log('Submitting template:', formData)
+    console.log('User ID:', user.id)
 
     try {
       if (editingTemplate) {
+        console.log('Updating template:', editingTemplate.id)
         await updateTemplate(editingTemplate.id, formData)
         toast.success('Template updated successfully')
       } else {
+        console.log('Creating new template')
         await createTemplate(user.id, formData)
         toast.success('Template created successfully')
       }
@@ -79,7 +88,7 @@ export default function TemplatesPage() {
       setIsDialogOpen(false)
     } catch (error) {
       console.error('Error saving template:', error)
-      toast.error('Failed to save template')
+      toast.error(`Failed to save template: ${error.message || 'Unknown error'}`)
     }
   }
 

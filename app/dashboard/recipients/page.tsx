@@ -53,13 +53,22 @@ export default function RecipientsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) return
+    if (!user) {
+      console.error('No user found')
+      toast.error('You must be logged in to add recipients')
+      return
+    }
+
+    console.log('Submitting recipient:', formData)
+    console.log('User ID:', user.id)
 
     try {
       if (editingRecipient) {
+        console.log('Updating recipient:', editingRecipient.id)
         await updateRecipient(editingRecipient.id, formData)
         toast.success('Recipient updated successfully')
       } else {
+        console.log('Creating new recipient')
         await createRecipient(user.id, formData)
         toast.success('Recipient added successfully')
       }
@@ -69,7 +78,7 @@ export default function RecipientsPage() {
       setIsDialogOpen(false)
     } catch (error) {
       console.error('Error saving recipient:', error)
-      toast.error('Failed to save recipient')
+      toast.error(`Failed to save recipient: ${error.message || 'Unknown error'}`)
     }
   }
 
