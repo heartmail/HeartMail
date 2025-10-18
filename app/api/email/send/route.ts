@@ -27,9 +27,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Always use onboarding@resend.dev for now since it's verified
-    // TODO: Set up letter.heartsmail.com domain verification in Resend
-    const fromAddress = 'HeartMail <onboarding@resend.dev>'
+    // Use verified letter.heartsmail.com domain
+    const fromAddress = 'HeartMail <noreply@letter.heartsmail.com>'
 
     console.log('📧 From address:', fromAddress);
     console.log('📧 NODE_ENV:', process.env.NODE_ENV);
