@@ -80,7 +80,6 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
     
     setTemplatesLoading(true)
     try {
-      console.log('🔍 Fetching templates for user:', user.id)
       const { data, error } = await supabase
         .from('templates')
         .select('id, title, content')
@@ -88,13 +87,12 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
         .order('title')
 
       if (error) {
-        console.error('❌ Error fetching templates:', error)
+        console.error('Error fetching templates:', error)
       } else {
-        console.log('✅ Templates fetched:', data)
         setTemplates(data || [])
       }
     } catch (error) {
-      console.error('❌ Error fetching templates:', error)
+      console.error('Error fetching templates:', error)
     } finally {
       setTemplatesLoading(false)
     }
@@ -109,17 +107,14 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
   }
 
   const handleTemplateSelect = (templateId: string) => {
-    console.log('🎯 Template selected:', templateId)
     setSelectedTemplateId(templateId)
     const template = templates.find(t => t.id === templateId)
-    console.log('📝 Found template:', template)
     if (template) {
       setFormData(prev => ({ 
         ...prev, 
         subject: `From HeartMail: ${template.title}`, // Use template title as subject
         message: template.content
       }))
-      console.log('✅ Form data updated with template content')
     }
   }
 
