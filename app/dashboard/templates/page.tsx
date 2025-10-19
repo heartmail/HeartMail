@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, Palette, Eye, Copy, Heart } from 'lucide-react'
+import { Plus, Edit, Trash2, Palette, Eye, Copy, Heart, Mail, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -206,55 +206,97 @@ export default function TemplatesPage() {
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{editingTemplate ? 'Edit Template' : 'Create New Template'}</DialogTitle>
-              <DialogDescription>
-                {editingTemplate ? 'Update your template below.' : 'Create a new email template for your loved ones.'}
-              </DialogDescription>
+            <DialogHeader className="bg-gradient-to-r from-pink-500 to-purple-600 text-white p-6 -m-6 mb-6 rounded-t-lg">
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 p-2 rounded-lg">
+                  <Heart className="h-6 w-6" />
+                </div>
+                <div>
+                  <DialogTitle className="text-2xl font-bold text-white">
+                    {editingTemplate ? 'Edit Your Template' : 'Create a Heartfelt Template'}
+                  </DialogTitle>
+                  <DialogDescription className="text-pink-100 mt-1">
+                    {editingTemplate ? 'Update your loving message below.' : 'Craft a beautiful template to share your love.'}
+                  </DialogDescription>
+                </div>
+              </div>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Enter template title"
-                  className="form-input"
-                  required
-                />
-              </div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Template Title Card */}
+              <Card className="border-pink-200 bg-gradient-to-r from-pink-50 to-purple-50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Heart className="h-5 w-5 text-pink-500" />
+                    What should we call this template?
+                  </CardTitle>
+                  <CardDescription>
+                    Give your template a loving name
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="My Weekly Love Letter"
+                    className="form-input"
+                    required
+                  />
+                </CardContent>
+              </Card>
               
-              <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Select value={formData.category} onValueChange={(value: Template['category']) => setFormData({ ...formData, category: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.value} value={category.value}>
-                        {category.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Category Card */}
+              <Card className="border-pink-200 bg-gradient-to-r from-pink-50 to-purple-50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Mail className="h-5 w-5 text-pink-500" />
+                    What type of love is this?
+                  </CardTitle>
+                  <CardDescription>
+                    Choose the category that best fits your message
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Select value={formData.category} onValueChange={(value: Template['category']) => setFormData({ ...formData, category: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.value} value={category.value}>
+                          {category.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </CardContent>
+              </Card>
               
-              <div className="space-y-2">
-                <Label htmlFor="content">Content *</Label>
-                <Textarea
-                  id="content"
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  placeholder="Write your template content here..."
-                  rows={8}
-                  required
-                />
-                <p className="text-sm text-gray-500">
-                  Use placeholders like {'{name}'} for personalization
-                </p>
-              </div>
+              {/* Content Card */}
+              <Card className="border-pink-200 bg-gradient-to-r from-pink-50 to-purple-50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <MessageSquare className="h-5 w-5 text-pink-500" />
+                    Share your heart
+                  </CardTitle>
+                  <CardDescription>
+                    Write the beautiful message you want to share
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Textarea
+                    id="content"
+                    value={formData.content}
+                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                    placeholder="Dear [Name],&#10;&#10;I just wanted to take a moment to tell you how much you mean to me..."
+                    rows={8}
+                    required
+                  />
+                  <p className="text-sm text-gray-500 mt-2">
+                    Use placeholders like {'{name}'} for personalization
+                  </p>
+                </CardContent>
+              </Card>
               
               <div className="space-y-2">
                 <Label htmlFor="tags">Tags</Label>
@@ -312,11 +354,20 @@ export default function TemplatesPage() {
                 </div>
               </div>
               
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button type="button" variant="outline" onClick={handleDialogClose}>
+              <div className="flex space-x-4 pt-6">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={handleDialogClose}
+                  className="flex-1 border-pink-300 text-pink-600 hover:bg-pink-50 hover:border-pink-400"
+                >
                   Cancel
                 </Button>
-                <Button type="submit" className="btn-heartmail">
+                <Button 
+                  type="submit" 
+                  className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  <Heart className="h-4 w-4 mr-2" />
                   {editingTemplate ? 'Update Template' : 'Create Template'}
                 </Button>
               </div>

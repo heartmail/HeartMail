@@ -5,7 +5,7 @@ import { User, Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 
 interface AuthContextType {
-  user: User | null
+  user: (User & { avatar_url?: string }) | null
   session: Session | null
   loading: boolean
   signUp: (email: string, password: string) => Promise<{ error: any }>
@@ -17,15 +17,35 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<(User & { avatar_url?: string }) | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('avatar_url')
+        .eq('user_id', userId)
+        .single()
+      
+      return profile?.avatar_url
+    } catch (error) {
+      console.error('Error fetching user profile:', error)
+      return null
+    }
+  }
+
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session)
-      setUser(session?.user ?? null)
+      if (session?.user) {
+        const avatarUrl = await fetchUserProfile(session.user.id)
+        setUser({ ...session.user, avatar_url: avatarUrl })
+      } else {
+        setUser(null)
+      }
       setLoading(false)
     })
 
@@ -34,7 +54,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session)
-      setUser(session?.user ?? null)
+      if (session?.user) {
+        const avatarUrl = await fetchUserProfile(session.user.id)
+        setUser({ ...session.user, avatar_url: avatarUrl })
+      } else {
+        setUser(null)
+      }
       setLoading(false)
       
       // Initialize user data if this is a new signup

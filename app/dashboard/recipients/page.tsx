@@ -166,68 +166,105 @@ export default function RecipientsPage() {
               Add Recipient
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>{editingRecipient ? 'Edit Recipient' : 'Add New Recipient'}</DialogTitle>
-              <DialogDescription>
-                {editingRecipient ? 'Update the recipient information below.' : 'Add a new recipient to your HeartMail list.'}
-              </DialogDescription>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader className="bg-gradient-to-r from-pink-500 to-purple-600 text-white p-6 -m-6 mb-6 rounded-t-lg">
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 p-2 rounded-lg">
+                  <User className="h-6 w-6" />
+                </div>
+                <div>
+                  <DialogTitle className="text-2xl font-bold text-white">
+                    {editingRecipient ? 'Update Your Loved One' : 'Add Someone Special'}
+                  </DialogTitle>
+                  <DialogDescription className="text-pink-100 mt-1">
+                    {editingRecipient ? 'Keep their information up to date.' : 'Add someone you care about to your HeartMail list.'}
+                  </DialogDescription>
+                </div>
+              </div>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="first_name">First Name *</Label>
-                  <Input
-                    id="first_name"
-                    value={formData.first_name}
-                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                    placeholder="Enter first name"
-                    className="form-input"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="last_name">Last Name</Label>
-                  <Input
-                    id="last_name"
-                    value={formData.last_name}
-                    onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                    placeholder="Enter last name"
-                    className="form-input"
-                  />
-                </div>
-              </div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Name Card */}
+              <Card className="border-pink-200 bg-gradient-to-r from-pink-50 to-purple-50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <User className="h-5 w-5 text-pink-500" />
+                    What's their name?
+                  </CardTitle>
+                  <CardDescription>
+                    Tell us who this special person is
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="first_name">First Name *</Label>
+                      <Input
+                        id="first_name"
+                        value={formData.first_name}
+                        onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                        placeholder="First name"
+                        className="form-input"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="last_name">Last Name</Label>
+                      <Input
+                        id="last_name"
+                        value={formData.last_name}
+                        onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                        placeholder="Last name"
+                        className="form-input"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
               
-              <div className="space-y-2">
-                <Label htmlFor="email">Email *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="Enter email address"
-                  className="form-input"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="relationship">Relationship</Label>
-                <Select value={formData.relationship} onValueChange={(value) => setFormData({ ...formData, relationship: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select relationship" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="grandparent">Grandparent</SelectItem>
-                    <SelectItem value="parent">Parent</SelectItem>
-                    <SelectItem value="sibling">Sibling</SelectItem>
-                    <SelectItem value="child">Child</SelectItem>
-                    <SelectItem value="spouse">Spouse</SelectItem>
-                    <SelectItem value="friend">Friend</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Contact Card */}
+              <Card className="border-pink-200 bg-gradient-to-r from-pink-50 to-purple-50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Mail className="h-5 w-5 text-pink-500" />
+                    How can we reach them?
+                  </CardTitle>
+                  <CardDescription>
+                    Their email address and your relationship
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email Address *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="their.email@example.com"
+                      className="form-input"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="relationship">Relationship</Label>
+                    <Select value={formData.relationship} onValueChange={(value) => setFormData({ ...formData, relationship: value })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="How are you related?" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="grandparent">Grandparent</SelectItem>
+                        <SelectItem value="parent">Parent</SelectItem>
+                        <SelectItem value="sibling">Sibling</SelectItem>
+                        <SelectItem value="child">Child</SelectItem>
+                        <SelectItem value="spouse">Spouse</SelectItem>
+                        <SelectItem value="friend">Friend</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
               
               
               <div className="space-y-2">
@@ -263,19 +300,20 @@ export default function RecipientsPage() {
                 <Label htmlFor="is_active">Active recipient</Label>
               </div>
               
-              <div className="flex justify-end space-x-3 pt-4">
+              <div className="flex space-x-4 pt-6">
                 <Button 
                   type="button" 
                   variant="outline" 
                   onClick={handleDialogClose}
-                  className="px-6 py-2.5 border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-800 font-semibold transition-all duration-200 hover:bg-gray-50"
+                  className="flex-1 border-pink-300 text-pink-600 hover:bg-pink-50 hover:border-pink-400"
                 >
                   Cancel
                 </Button>
                 <Button 
                   type="submit" 
-                  className="px-6 py-2.5 bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+                  className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                 >
+                  <Heart className="h-4 w-4 mr-2" />
                   {editingRecipient ? 'Update Recipient' : 'Add Recipient'}
                 </Button>
               </div>

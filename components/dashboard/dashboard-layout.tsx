@@ -112,7 +112,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <Link href={`/dashboard/profile/${user?.id}`} className="user-profile block hover:bg-gray-50 rounded-lg p-2 transition-colors">
             <div className="flex items-center space-x-3">
               <div className="user-avatar">
-                <Users className="h-5 w-5" />
+                {user?.avatar_url ? (
+                  <img 
+                    src={user.avatar_url} 
+                    alt="Profile" 
+                    className="h-8 w-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <Users className="h-5 w-5" />
+                )}
               </div>
               <div className="user-info">
                 <div className="user-name">{user?.email || 'User'}</div>
