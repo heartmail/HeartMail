@@ -13,6 +13,13 @@ export interface TemplatePhoto {
   }
   z_index: number
   created_at: string
+  user_photos?: {
+    id: string
+    filename: string
+    original_name: string
+    storage_path: string
+    mime_type: string
+  }
 }
 
 // Add photo to template

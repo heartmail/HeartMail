@@ -192,8 +192,8 @@ export default function TemplateEditor({ templateId, onSave }: TemplateEditorPro
                   onMouseDown={(e) => handleMouseDown(e, templatePhoto)}
                 >
                   <img
-                    src={getTemplatePhotoUrl(templatePhoto.user_photos.storage_path)}
-                    alt={templatePhoto.user_photos.original_name}
+                    src={templatePhoto.user_photos ? getTemplatePhotoUrl(templatePhoto.user_photos.storage_path) : ''}
+                    alt={templatePhoto.user_photos?.original_name || 'Template photo'}
                     className="w-full h-full object-cover rounded-lg shadow-lg"
                     style={{
                       transform: `rotate(${templatePhoto.position.rotation || 0}deg)`
