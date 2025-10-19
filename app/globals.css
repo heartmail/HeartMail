@@ -1660,6 +1660,26 @@
     color: #718096;
   }
 
+  /* Dark mode styles for Legend */
+  .dark .calendar-legend {
+    background: #1a1a1a;
+    border-top: 1px solid #374151;
+  }
+
+  .dark .calendar-legend h4 {
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  .dark .legend-item {
+    color: #d1d5db;
+  }
+
+  .dark .legend-item span {
+    color: #ffffff;
+    font-weight: 500;
+  }
+
   .legend-dot {
     width: 12px;
     height: 12px;
@@ -2659,6 +2679,122 @@
 
   .dark .list-item p {
     @apply text-gray-300;
+  }
+
+  /* Enhanced Dark Mode Text Visibility */
+  .dark .calendar-title {
+    @apply text-white font-semibold;
+  }
+
+  .dark .weekday {
+    @apply text-white font-medium;
+  }
+
+  .dark .calendar-day {
+    @apply text-white;
+  }
+
+  .dark .calendar-day:hover {
+    @apply text-white bg-pink-900;
+  }
+
+  .dark .email-item {
+    @apply bg-gray-800 border-gray-700;
+  }
+
+  .dark .email-title {
+    @apply text-white;
+  }
+
+  .dark .email-recipient {
+    @apply text-gray-300;
+  }
+
+  .dark .email-date {
+    @apply text-white;
+  }
+
+  .dark .email-time-text {
+    @apply text-gray-300;
+  }
+
+  .dark .email-type {
+    @apply text-pink-300;
+  }
+
+  .dark .email-status {
+    @apply text-green-300;
+  }
+
+  /* Dashboard Dark Mode Improvements */
+  .dark .dashboard-card h3 {
+    @apply text-white font-semibold;
+  }
+
+  .dark .dashboard-card p {
+    @apply text-gray-300;
+  }
+
+  .dark .dashboard-card .stat-value {
+    @apply text-white font-bold;
+  }
+
+  .dark .dashboard-card .stat-label {
+    @apply text-gray-400;
+  }
+
+  /* Settings Dark Mode Improvements */
+  .dark .settings-content h1 {
+    @apply text-white;
+  }
+
+  .dark .settings-content h2 {
+    @apply text-white;
+  }
+
+  .dark .settings-content h3 {
+    @apply text-white;
+  }
+
+  .dark .settings-content p {
+    @apply text-gray-300;
+  }
+
+  .dark .settings-content label {
+    @apply text-gray-300;
+  }
+
+  /* Billing Dark Mode Improvements */
+  .dark .billing-content h1 {
+    @apply text-white;
+  }
+
+  .dark .billing-content h2 {
+    @apply text-white;
+  }
+
+  .dark .billing-content h3 {
+    @apply text-white;
+  }
+
+  .dark .billing-content p {
+    @apply text-gray-300;
+  }
+
+  .dark .billing-content .plan-name {
+    @apply text-white font-semibold;
+  }
+
+  .dark .billing-content .plan-price {
+    @apply text-white font-bold;
+  }
+
+  .dark .billing-content .usage-item {
+    @apply text-gray-300;
+  }
+
+  .dark .billing-content .usage-value {
+    @apply text-white;
   }
 
   /* Shadcn/ui Components Dark Mode */

@@ -405,7 +405,7 @@ export default function SchedulePage() {
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <h2 className="calendar-title">
+                <h2 className="calendar-title text-gray-900 dark:text-white font-semibold">
                   {monthNames[currentMonthIndex]} {currentYearState}
                 </h2>
                 <Button 
@@ -422,7 +422,7 @@ export default function SchedulePage() {
             <div className="calendar-grid">
               <div className="calendar-weekdays">
                 {dayNames.map(day => (
-                  <div key={day} className="weekday">{day}</div>
+                  <div key={day} className="weekday text-gray-700 dark:text-white font-medium">{day}</div>
                 ))}
               </div>
               <div className="calendar-days">
@@ -432,23 +432,23 @@ export default function SchedulePage() {
 
             {/* Legend */}
             <div className="calendar-legend">
-              <h4>Legend:</h4>
+              <h4 className="text-gray-900 dark:text-white font-semibold">Legend:</h4>
               <div className="legend-items">
                 <div className="legend-item">
                   <div className="legend-dot weekly"></div>
-                  <span>Weekly</span>
+                  <span className="text-gray-700 dark:text-white font-medium">Weekly</span>
                 </div>
                 <div className="legend-item">
                   <div className="legend-dot monthly"></div>
-                  <span>Monthly</span>
+                  <span className="text-gray-700 dark:text-white font-medium">Monthly</span>
                 </div>
                 <div className="legend-item">
                   <div className="legend-dot one-time"></div>
-                  <span>One-time</span>
+                  <span className="text-gray-700 dark:text-white font-medium">One-time</span>
                 </div>
                 <div className="legend-item">
                   <div className="legend-dot special"></div>
-                  <span>Special</span>
+                  <span className="text-gray-700 dark:text-white font-medium">Special</span>
                 </div>
               </div>
             </div>
