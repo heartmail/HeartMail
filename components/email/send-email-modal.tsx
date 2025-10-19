@@ -48,6 +48,8 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
   const [templates, setTemplates] = useState<Template[]>([])
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
   const [templatesLoading, setTemplatesLoading] = useState(false)
+  const [showTemplateConfirm, setShowTemplateConfirm] = useState(false)
+  const [pendingTemplateId, setPendingTemplateId] = useState<string>('')
   const { user } = useAuth()
 
   // Fetch recipients and templates when modal opens
@@ -113,6 +115,18 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
   }
 
   const handleTemplateSelect = (templateId: string) => {
+    // Check if there's existing content in the message field
+    if (formData.message.trim() !== '') {
+      setPendingTemplateId(templateId)
+      setShowTemplateConfirm(true)
+      return
+    }
+    
+    // If no existing content, apply template directly
+    applyTemplate(templateId)
+  }
+
+  const applyTemplate = (templateId: string) => {
     setSelectedTemplateId(templateId)
     const template = templates.find(t => t.id === templateId)
     if (template) {
@@ -122,6 +136,15 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
         message: template.content
       }))
     }
+    setShowTemplateConfirm(false)
+    setPendingTemplateId('')
+  }
+
+  const cancelTemplateSelection = () => {
+    setShowTemplateConfirm(false)
+    setPendingTemplateId('')
+    // Reset the select to show no selection
+    setSelectedTemplateId('')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -373,6 +396,41 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
           </form>
         )}
       </DialogContent>
+
+      {/* Template Confirmation Popup */}
+      <Dialog open={showTemplateConfirm} onOpenChange={setShowTemplateConfirm}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Heart className="h-5 w-5 text-pink-500" />
+              Overwrite Existing Message?
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-gray-600">
+              You have existing content in your message. Applying this template will overwrite your current work.
+            </p>
+            <p className="text-sm text-gray-500">
+              Do you want to continue and replace your message with the template?
+            </p>
+            <div className="flex space-x-3">
+              <Button
+                variant="outline"
+                onClick={cancelTemplateSelection}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => applyTemplate(pendingTemplateId)}
+                className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white"
+              >
+                Apply Template
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   )
 }
