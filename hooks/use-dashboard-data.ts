@@ -55,20 +55,31 @@ export function useDashboardData() {
     const fetchData = async () => {
       try {
         setLoading(true)
-        const [stats, recentActivity, recipients, upcomingEmails] = await Promise.all([
+        
+        // Add timeout to prevent hanging
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Dashboard data fetch timeout')), 15000)
+        )
+        
+        const dataPromise = Promise.all([
           getDashboardStats(user.id),
           getRecentActivity(user.id),
           getRecipients(user.id),
           getUpcomingEmails(user.id)
         ])
+        
+        const [stats, recentActivity, recipients, upcomingEmails] = await Promise.race([
+          dataPromise,
+          timeoutPromise
+        ]) as any
 
         setData({
           stats,
-          recentActivity: recentActivity.map(activity => ({
+          recentActivity: recentActivity.map((activity: any) => ({
             ...activity,
             type: activity.type as 'info' | 'success'
           })),
-          recipients: recipients.map(recipient => ({
+          recipients: recipients.map((recipient: any) => ({
             ...recipient,
             status: recipient.status as 'active' | 'inactive'
           })),

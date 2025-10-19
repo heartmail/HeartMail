@@ -23,11 +23,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      const { data: profile } = await supabase
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+      )
+      
+      const profilePromise = supabase
         .from('user_profiles')
         .select('avatar_url')
         .eq('user_id', userId)
         .single()
+      
+      const { data: profile } = await Promise.race([profilePromise, timeoutPromise]) as any
       
       return profile?.avatar_url
     } catch (error) {
@@ -37,17 +44,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session)
-      if (session?.user) {
-        const avatarUrl = await fetchUserProfile(session.user.id)
-        setUser({ ...session.user, avatar_url: avatarUrl })
-      } else {
+    // Get initial session with timeout
+    const loadSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        setSession(session)
+        if (session?.user) {
+          const avatarUrl = await fetchUserProfile(session.user.id)
+          setUser({ ...session.user, avatar_url: avatarUrl })
+        } else {
+          setUser(null)
+        }
+      } catch (error) {
+        console.error('Error loading session:', error)
         setUser(null)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
-    })
+    }
+    
+    loadSession()
 
     // Listen for auth changes
     const {
