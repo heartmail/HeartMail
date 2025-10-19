@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -27,7 +27,15 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const { user } = useAuth()
   const params = useParams()
+  const router = useRouter()
   const profileUserId = params?.userId as string
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!user) {
+      router.push('/login')
+    }
+  }, [user, router])
 
   useEffect(() => {
     if (profileUserId) {

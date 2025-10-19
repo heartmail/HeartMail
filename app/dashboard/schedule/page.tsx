@@ -215,12 +215,13 @@ export default function SchedulePage() {
     const formData = new FormData(e.currentTarget)
     const recipientId = formData.get('recipient') as string
     const templateId = formData.get('template') as string
+    const subject = formData.get('subject') as string
     const date = formData.get('date') as string
     const time = formData.get('time') as string
     const frequency = formData.get('frequency') as string
     const personalMessage = formData.get('personalMessage') as string
 
-    if (!recipientId || !date || !time) {
+    if (!recipientId || !subject || !date || !time) {
       alert('Please fill in all required fields')
       return
     }
@@ -244,7 +245,7 @@ export default function SchedulePage() {
           user_id: user.id,
           recipient_id: recipientId,
           template_id: templateId,
-          subject: template?.subject || 'Heartfelt Message',
+          subject: subject || template?.subject || 'Heartfelt Message',
           body_html: template?.content || personalMessage,
           send_at: sendAt.toISOString(),
           status: 'pending'
@@ -514,7 +515,7 @@ export default function SchedulePage() {
                       <Calendar className="h-6 w-6" />
                     </div>
                     <div>
-                      <h3 className="text-2xl font-bold">Schedule a Heartfelt Email</h3>
+                      <h3 className="text-2xl font-bold">Schedule Email</h3>
                       <p className="text-pink-100">Send love at the perfect time</p>
                     </div>
                   </div>
@@ -533,7 +534,7 @@ export default function SchedulePage() {
                 <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-4 border border-pink-100">
                   <div className="flex items-center space-x-2 mb-3">
                     <Users className="h-5 w-5 text-heartmail-pink" />
-                    <label className="text-lg font-semibold text-gray-800">Who are you sending love to?</label>
+                    <label className="text-lg font-semibold text-gray-800">Recipient</label>
                   </div>
                   <select name="recipient" className="w-full p-3 border border-pink-200 rounded-lg focus:ring-2 focus:ring-heartmail-pink focus:border-transparent" required>
                     <option value="">Choose a loved one...</option>
@@ -555,7 +556,7 @@ export default function SchedulePage() {
                 <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-4 border border-purple-100">
                   <div className="flex items-center space-x-2 mb-3">
                     <Mail className="h-5 w-5 text-purple-600" />
-                    <label className="text-lg font-semibold text-gray-800">Choose a template (optional)</label>
+                    <label className="text-lg font-semibold text-gray-800">Template (optional)</label>
                   </div>
                   <select name="template" className="w-full p-3 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                     <option value="">Start from scratch or use a template...</option>
@@ -577,7 +578,7 @@ export default function SchedulePage() {
                 <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4 border border-blue-100">
                   <div className="flex items-center space-x-2 mb-3">
                     <MessageSquare className="h-5 w-5 text-blue-600" />
-                    <label className="text-lg font-semibold text-gray-800">What's this email about?</label>
+                    <label className="text-lg font-semibold text-gray-800">Subject</label>
                   </div>
                   <input 
                     name="subject"
@@ -624,7 +625,7 @@ export default function SchedulePage() {
                 <div className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-100">
                   <div className="flex items-center space-x-2 mb-3">
                     <Heart className="h-5 w-5 text-rose-600" />
-                    <label className="text-lg font-semibold text-gray-800">Share your heart with them</label>
+                    <label className="text-lg font-semibold text-gray-800">Message</label>
                   </div>
                   <textarea 
                     name="personalMessage"
