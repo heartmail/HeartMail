@@ -247,7 +247,10 @@ export default function DashboardContent() {
               <div className="text-center py-8 text-gray-500">
                 <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                 <p>No upcoming emails</p>
-                <Button className="mt-4 btn-heartmail-outline">
+                <Button 
+                  className="mt-4 btn-heartmail-outline"
+                  onClick={() => router.push('/dashboard/schedule')}
+                >
                   <Calendar className="h-4 w-4 mr-2" />
                   Schedule Your First Email
                 </Button>
