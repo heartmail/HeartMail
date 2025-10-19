@@ -18,11 +18,6 @@ interface PublicTemplate {
   category: string
   is_public: boolean
   created_at: string
-  user_profiles: {
-    first_name: string
-    last_name: string
-    avatar_url?: string
-  }
 }
 
 export default function ProfilePage() {
@@ -64,12 +59,7 @@ export default function ProfilePage() {
           content,
           category,
           is_public,
-          created_at,
-          user_profiles!inner(
-            first_name,
-            last_name,
-            avatar_url
-          )
+          created_at
         `)
         .eq('user_id', profileUserId)
         .eq('is_public', true)
