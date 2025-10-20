@@ -42,12 +42,10 @@ export async function POST(request: NextRequest) {
         user_id: userId,
         recipient_id: recipientId,
         template_id: templateId,
-        to_email: toEmail,
-        to_name: toName,
-        subject,
-        body_html: bodyHtml,
-        body_text: bodyText,
-        send_at: sendAt,
+        title: subject,
+        content: bodyHtml,
+        scheduled_date: new Date(sendAt).toISOString().split('T')[0],
+        scheduled_time: new Date(sendAt).toTimeString().split(' ')[0],
         status: 'pending'
       })
       .select()

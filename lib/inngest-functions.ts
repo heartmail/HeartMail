@@ -38,12 +38,23 @@ export const sendScheduledEmail = inngest.createFunction(
         .eq('id', scheduledEmailId)
 
       try {
+        // Get recipient email from recipients table
+        const { data: recipient, error: recipientError } = await supabase
+          .from('recipients')
+          .select('email')
+          .eq('id', scheduledEmail.recipient_id)
+          .single()
+
+        if (recipientError || !recipient) {
+          throw new Error(`Recipient not found: ${recipientError?.message}`)
+        }
+
         // Send the email
         const { data, error } = await resend.emails.send({
           from: 'HeartMail <noreply@letter.heartsmail.com>',
-          to: [scheduledEmail.to_email],
-          subject: scheduledEmail.subject,
-          html: scheduledEmail.body_html,
+          to: [recipient.email],
+          subject: scheduledEmail.title,
+          html: scheduledEmail.content,
         })
 
         if (error) {
