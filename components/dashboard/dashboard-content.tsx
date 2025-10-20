@@ -79,18 +79,19 @@ export default function DashboardContent() {
   return (
     <div className="space-y-8 w-full max-w-full">
       {/* Dashboard Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-600 mt-1">Welcome back! Here's what's happening with your HeartMail.</p>
         </div>
         <div className="flex items-center space-x-4">
           <Button 
-            className="btn-heartmail"
+            className="btn-heartmail btn-responsive"
             onClick={() => setShowEmailModal(true)}
           >
             <Plus className="h-4 w-4 mr-2" />
-            New Email
+            <span className="hidden sm:inline">New Email</span>
+            <span className="sm:hidden">New</span>
           </Button>
           <div className="relative">
             <Bell className="h-6 w-6 text-gray-600" />
@@ -126,7 +127,7 @@ export default function DashboardContent() {
           </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 w-full">
+      <div className="dashboard-grid">
             {stats.map((stat, index) => (
               <div key={index} className="dashboard-card card-hover">
                 <div className="flex items-center justify-between p-6">

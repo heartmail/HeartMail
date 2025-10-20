@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Home, Users, Palette, Calendar, Settings, Bell, Plus, LogOut, ChevronLeft, ChevronRight, BookOpen, Image } from 'lucide-react'
+import { Home, Users, Palette, Calendar, Settings, Bell, Plus, LogOut, ChevronLeft, ChevronRight, BookOpen, Image, Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth-context'
 import Logo from '@/components/ui/logo'
@@ -25,6 +25,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const pathname = usePathname()
   const { user, signOut } = useAuth()
   const router = useRouter()
@@ -36,6 +37,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     if (savedState !== null) {
       setSidebarCollapsed(JSON.parse(savedState))
     }
+  }, [])
+
+  // Mobile detection and responsive behavior
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024)
+      if (window.innerWidth < 1024) {
+        setSidebarOpen(false)
+      }
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
   // Save sidebar state to localStorage when it changes
@@ -51,7 +66,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   const toggleSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed)
+    if (isMobile) {
+      setSidebarOpen(!sidebarOpen)
+    } else {
+      setSidebarCollapsed(!sidebarCollapsed)
+    }
+  }
+
+  const closeMobileSidebar = () => {
+    if (isMobile) {
+      setSidebarOpen(false)
+    }
   }
 
   // Prevent hydration mismatch by not rendering until mounted
@@ -74,16 +99,60 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Mobile Header */}
+      {isMobile && (
+        <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+          <button
+            onClick={toggleSidebar}
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            aria-label="Toggle menu"
+          >
+            <Menu className="h-6 w-6 text-gray-600" />
+          </button>
+          <div className="flex items-center space-x-2">
+            <Logo size={24} className="h-6 w-6" />
+            <span className="text-xl font-bold text-heartmail-pink">HeartMail</span>
+          </div>
+          <div className="w-10"></div> {/* Spacer for centering */}
+        </div>
+      )}
+
+      {/* Mobile Overlay */}
+      {isMobile && sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={closeMobileSidebar}
+        />
+      )}
+
       {/* Sidebar */}
-      <nav className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
-        <button 
-          className="sidebar-toggle"
-          onClick={toggleSidebar}
-          title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </button>
+      <nav className={`
+        sidebar 
+        ${sidebarCollapsed && !isMobile ? 'collapsed' : ''} 
+        ${isMobile ? (sidebarOpen ? 'mobile-open' : 'mobile-closed') : ''}
+      `}>
+        {/* Desktop Toggle Button */}
+        {!isMobile && (
+          <button 
+            className="sidebar-toggle"
+            onClick={toggleSidebar}
+            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </button>
+        )}
+
+        {/* Mobile Close Button */}
+        {isMobile && (
+          <button 
+            className="mobile-close-btn"
+            onClick={closeMobileSidebar}
+            aria-label="Close menu"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
         
         <div className="sidebar-header">
           <div className="logo">
@@ -98,7 +167,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <button
                 key={item.href}
                 className={`menu-item ${isActive ? 'active' : ''}`}
-                onClick={() => router.push(item.href)}
+                onClick={() => {
+                  router.push(item.href)
+                  if (isMobile) {
+                    closeMobileSidebar()
+                  }
+                }}
                 type="button"
                 aria-label={`Navigate to ${item.label}`}
               >
@@ -141,7 +215,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       </nav>
 
       {/* Main Content */}
-      <main className={`main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      <main className={`
+        main-content 
+        ${isMobile ? 'mobile-main' : ''}
+        ${sidebarCollapsed && !isMobile ? 'sidebar-collapsed' : ''}
+      `}>
         {/* Dashboard Content */}
         <div className="dashboard-content">
           {children}
