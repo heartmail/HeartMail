@@ -84,12 +84,34 @@ export async function updateTemplate(templateId: string, updates: Partial<Omit<T
 
 // Delete a template
 export async function deleteTemplate(templateId: string): Promise<void> {
+  // First get the template info for activity logging
+  const { data: template, error: fetchError } = await supabase
+    .from('templates')
+    .select('user_id, title')
+    .eq('id', templateId)
+    .single()
+
+  if (fetchError) throw fetchError
+
   const { error } = await supabase
     .from('templates')
     .delete()
     .eq('id', templateId)
 
   if (error) throw error
+
+  // Log activity
+  try {
+    await addActivity(
+      template.user_id,
+      'template_deleted',
+      `Template deleted: "${template.title}"`,
+      `Template removed from your collection`
+    )
+  } catch (activityError) {
+    console.error('Failed to log template deletion activity:', activityError)
+    // Don't fail the deletion if activity logging fails
+  }
 }
 
 // Get a single template

@@ -92,12 +92,35 @@ export async function updateRecipient(recipientId: string, updates: Partial<Omit
 
 // Delete a recipient
 export async function deleteRecipient(recipientId: string): Promise<void> {
+  // First get the recipient info for activity logging
+  const { data: recipient, error: fetchError } = await supabase
+    .from('recipients')
+    .select('user_id, first_name, last_name, email')
+    .eq('id', recipientId)
+    .single()
+
+  if (fetchError) throw fetchError
+
   const { error } = await supabase
     .from('recipients')
     .delete()
     .eq('id', recipientId)
 
   if (error) throw error
+
+  // Log activity
+  try {
+    const fullName = `${recipient.first_name} ${recipient.last_name || ''}`.trim()
+    await logRecipientActivity(
+      recipient.user_id,
+      'recipient_deleted',
+      fullName,
+      recipient.email
+    )
+  } catch (activityError) {
+    console.error('Failed to log recipient deletion activity:', activityError)
+    // Don't fail the deletion if activity logging fails
+  }
 }
 
 // Get a single recipient

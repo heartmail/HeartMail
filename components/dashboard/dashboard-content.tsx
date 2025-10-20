@@ -219,6 +219,12 @@ export default function DashboardContent() {
         <div className="dashboard-card">
           <div className="card-header">
             <h3>Upcoming Emails</h3>
+            <button 
+              className="text-sm text-heartmail-pink hover:text-pink-600 font-medium"
+              onClick={() => router.push('/dashboard/schedule?view=list')}
+            >
+              View All
+            </button>
           </div>
           <div className="schedule-list">
             {data.upcomingEmails.length > 0 ? (

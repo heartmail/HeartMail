@@ -231,13 +231,23 @@ export async function logEmailScheduled(
 // Helper function to add recipient activity
 export async function logRecipientActivity(
   userId: string,
-  activityType: 'recipient_added' | 'recipient_updated',
+  activityType: 'recipient_added' | 'recipient_updated' | 'recipient_deleted',
   recipientName: string,
   recipientEmail: string
 ): Promise<void> {
-  const title = activityType === 'recipient_added' 
-    ? `Added ${recipientName} to recipients`
-    : `Updated ${recipientName}'s information`
+  let title: string
+  
+  switch (activityType) {
+    case 'recipient_added':
+      title = `Added ${recipientName} to recipients`
+      break
+    case 'recipient_updated':
+      title = `Updated ${recipientName}'s information`
+      break
+    case 'recipient_deleted':
+      title = `Recipient deleted: ${recipientName}`
+      break
+  }
   
   await addActivity(
     userId,
@@ -247,6 +257,26 @@ export async function logRecipientActivity(
     {
       recipient_name: recipientName,
       recipient_email: recipientEmail
+    }
+  )
+}
+
+// Helper function to add scheduled email deletion activity
+export async function logScheduledEmailDeleted(
+  userId: string,
+  subject: string,
+  recipientName: string,
+  scheduledDate: string
+): Promise<void> {
+  await addActivity(
+    userId,
+    'email_cancelled',
+    `Email cancelled: "${subject}" to ${recipientName}`,
+    `Scheduled for ${new Date(scheduledDate).toLocaleDateString()}`,
+    {
+      subject,
+      recipient_name: recipientName,
+      scheduled_date: scheduledDate
     }
   )
 }

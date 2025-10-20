@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { logScheduledEmailDeleted } from './activity-history'
 
 // Dashboard Stats
 export async function getDashboardStats(userId: string) {
@@ -74,7 +75,7 @@ export async function getUpcomingEmails(userId: string) {
     .eq('user_id', userId)
     .gte('scheduled_date', new Date().toISOString().split('T')[0])
     .order('scheduled_date', { ascending: true })
-    .limit(5)
+    .limit(3)
 
   if (error) throw error
 
@@ -86,6 +87,45 @@ export async function getUpcomingEmails(userId: string) {
     time: formatTime(email.scheduled_time),
     status: email.status
   })) || []
+}
+
+// Delete a scheduled email
+export async function deleteScheduledEmail(scheduledEmailId: string): Promise<void> {
+  // First get the scheduled email info for activity logging
+  const { data: scheduledEmail, error: fetchError } = await supabase
+    .from('scheduled_emails')
+    .select(`
+      user_id,
+      title,
+      scheduled_date,
+      recipients!inner(first_name, last_name, email)
+    `)
+    .eq('id', scheduledEmailId)
+    .single()
+
+  if (fetchError) throw fetchError
+
+  const { error } = await supabase
+    .from('scheduled_emails')
+    .delete()
+    .eq('id', scheduledEmailId)
+
+  if (error) throw error
+
+  // Log activity
+  try {
+    const recipient = scheduledEmail.recipients
+    const recipientName = `${recipient.first_name} ${recipient.last_name || ''}`.trim()
+    await logScheduledEmailDeleted(
+      scheduledEmail.user_id,
+      scheduledEmail.title,
+      recipientName,
+      scheduledEmail.scheduled_date
+    )
+  } catch (activityError) {
+    console.error('Failed to log scheduled email deletion activity:', activityError)
+    // Don't fail the deletion if activity logging fails
+  }
 }
 
 // User Preferences

@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { ChevronLeft, ChevronRight, Plus, Edit, Trash2, Mail, Clock, Calendar, Users, Filter, X, MessageSquare, Heart, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth-context'
 import { supabase } from '@/lib/supabase'
 import { getFullName } from '@/lib/recipients'
+import { deleteScheduledEmail } from '@/lib/database'
 // DashboardLayout is already applied through the main layout
 
 const currentDate = new Date()
@@ -76,9 +78,10 @@ interface Template {
 }
 
 export default function SchedulePage() {
+  const searchParams = useSearchParams()
   const [currentMonthIndex, setCurrentMonthIndex] = useState(currentMonth)
   const [currentYearState, setCurrentYearState] = useState(currentYear)
-  const [viewMode, setViewMode] = useState('calendar') // 'calendar' or 'list'
+  const [viewMode, setViewMode] = useState(searchParams.get('view') === 'list' ? 'list' : 'calendar') // 'calendar' or 'list'
   const [showAddModal, setShowAddModal] = useState(false)
   const [showDayModal, setShowDayModal] = useState(false)
   const [selectedDay, setSelectedDay] = useState<{ date: string; emails: any[] } | null>(null)
@@ -381,6 +384,22 @@ export default function SchedulePage() {
     resetForm()
   }
 
+  const handleDeleteScheduledEmail = async (emailId: string) => {
+    if (!confirm('Are you sure you want to delete this scheduled email? This action cannot be undone.')) {
+      return
+    }
+
+    try {
+      await deleteScheduledEmail(emailId)
+      alert('Scheduled email deleted successfully!')
+      // Refresh the data
+      fetchScheduledEmails()
+    } catch (error) {
+      console.error('Error deleting scheduled email:', error)
+      alert('Failed to delete scheduled email. Please try again.')
+    }
+  }
+
   const handleDayClick = (date: string) => {
     const emails = getEmailsForDate(date)
     setSelectedDay({ date, emails })
@@ -569,7 +588,10 @@ export default function SchedulePage() {
                       <button className="action-btn edit-btn">
                         <Edit className="h-4 w-4" />
                       </button>
-                      <button className="action-btn delete-btn">
+                      <button 
+                        className="action-btn delete-btn"
+                        onClick={() => handleDeleteScheduledEmail(email.id)}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
