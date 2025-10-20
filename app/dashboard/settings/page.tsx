@@ -16,11 +16,13 @@ import { getUserProfile, upsertUserProfile, UserProfile } from '@/lib/profile'
 import { getUserSettings, upsertUserSettings, UserSettings } from '@/lib/settings'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
+import TwoFactorAuth from '@/components/auth/two-factor-auth'
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profile')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [show2FAModal, setShow2FAModal] = useState(false)
   const [saving, setSaving] = useState(false)
   
   // Email change modal state
@@ -485,8 +487,9 @@ export default function SettingsPage() {
                       <p>Add an extra layer of security to your account</p>
                     </div>
                     <Button 
-                      variant="outline" 
-                      className="btn-smooth border-gray-300 hover:border-heartmail-pink hover:text-heartmail-pink"
+                      variant="ghost" 
+                      className="btn-smooth hover:text-heartmail-pink"
+                      onClick={() => setShow2FAModal(true)}
                     >
                       <Shield className="h-4 w-4 mr-2" />
                       Enable 2FA
@@ -719,6 +722,16 @@ export default function SettingsPage() {
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* 2FA Modal */}
+        <TwoFactorAuth
+          isOpen={show2FAModal}
+          onClose={() => setShow2FAModal(false)}
+          onSuccess={() => {
+            setShow2FAModal(false)
+            toast.success('2FA enabled successfully!')
+          }}
+        />
     </div>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Users, Palette, Calendar, Mail, Camera, Check, Clock, UserPlus, AlertTriangle, Bell, Heart, Loader2 } from 'lucide-react'
+import { Plus, Users, Palette, Calendar, Mail, Camera, Check, Clock, UserPlus, AlertTriangle, Heart, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useDashboardData } from '@/hooks/use-dashboard-data'
@@ -86,10 +86,6 @@ export default function DashboardContent() {
             <span className="hidden sm:inline">New Email</span>
             <span className="sm:hidden">New</span>
           </Button>
-          <div className="relative">
-            <Bell className="h-6 w-6 text-gray-600" />
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
-          </div>
         </div>
       </div>
 
@@ -194,11 +190,6 @@ export default function DashboardContent() {
                     <div className={`recipient-status ${recipient.status}`}>
                       {recipient.status === 'active' ? 'Active' : 'Inactive'}
                     </div>
-                  </div>
-                  <div className="recipient-actions">
-                    <button className="btn-icon">
-                      <Palette className="h-4 w-4" />
-                    </button>
                   </div>
                 </div>
               ))
