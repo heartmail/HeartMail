@@ -196,8 +196,8 @@ export async function logEmailSent(
   await addActivity(
     userId,
     'email_sent',
-    `Email sent to ${recipientName}`,
-    `Sent: "${subject}"`,
+    `Email sent: "${subject}" to ${recipientName}`,
+    `Delivered successfully`,
     {
       recipient_name: recipientName,
       subject,
@@ -217,8 +217,8 @@ export async function logEmailScheduled(
   await addActivity(
     userId,
     'email_scheduled',
-    `Email scheduled for ${recipientName}`,
-    `Scheduled for ${new Date(scheduledDate).toLocaleDateString()}: "${subject}"`,
+    `Email scheduled: "${subject}" to ${recipientName}`,
+    `Scheduled for ${new Date(scheduledDate).toLocaleDateString()}`,
     {
       recipient_name: recipientName,
       subject,

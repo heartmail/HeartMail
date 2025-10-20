@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 import { inngest } from '@/lib/inngest'
+import { logEmailScheduled } from '@/lib/activity-history'
 
 export async function POST(request: NextRequest) {
   try {
@@ -61,6 +62,20 @@ export async function POST(request: NextRequest) {
         },
         { status: 500 }
       )
+    }
+
+    // Log activity
+    try {
+      await logEmailScheduled(
+        userId,
+        toName || toEmail,
+        subject,
+        sendAt,
+        scheduledEmail.id
+      )
+    } catch (activityError) {
+      console.error('Failed to log activity:', activityError)
+      // Don't fail the request if activity logging fails
     }
 
     // Schedule the email with Inngest

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createEmailTemplate } from '@/lib/email-template'
+import { logEmailSent } from '@/lib/activity-history'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -8,7 +9,7 @@ export async function POST(request: NextRequest) {
   try {
     console.log('📧 Email send API called');
     
-    const { to, subject, message, from } = await request.json()
+    const { to, subject, message, from, userId } = await request.json()
     console.log('📧 Request data:', { to, subject, message: message?.substring(0, 50) + '...', from });
 
     if (!to || !subject || !message) {
@@ -68,6 +69,23 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ Email sent successfully:', data?.id);
+    
+    // Log activity (extract recipient name from email if possible)
+    if (userId) {
+      try {
+        const recipientName = to.split('@')[0] // Use email prefix as name
+        await logEmailSent(
+          userId,
+          recipientName,
+          subject,
+          data?.id
+        )
+      } catch (activityError) {
+        console.error('Failed to log email sent activity:', activityError)
+        // Don't fail the request if activity logging fails
+      }
+    }
+    
     return NextResponse.json({ 
       success: true, 
       messageId: data?.id 

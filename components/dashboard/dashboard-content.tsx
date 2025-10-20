@@ -62,13 +62,6 @@ export default function DashboardContent() {
       changeType: data.stats?.activeRecipients > 0 ? 'positive' : 'neutral'
     },
     { 
-      label: 'Deliverability Rate', 
-      value: `${data.stats?.deliverabilityRate || 100}%`, 
-      icon: Heart, 
-      change: data.stats?.deliverabilityRate >= 95 ? 'Excellent' : 'Good',
-      changeType: data.stats?.deliverabilityRate >= 95 ? 'positive' : 'neutral'
-    },
-    { 
       label: 'Scheduled Emails', 
       value: data.stats?.scheduledEmails?.toString() || '0', 
       icon: Clock, 

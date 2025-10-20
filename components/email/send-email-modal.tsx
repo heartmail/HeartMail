@@ -168,7 +168,8 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
           to: formData.to,
           subject: formData.subject,
           message: formData.message,
-          from: user?.email || 'heartmailio@gmail.com'
+          from: user?.email || 'heartmailio@gmail.com',
+          userId: user?.id
         })
       })
 

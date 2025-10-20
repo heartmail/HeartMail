@@ -12,45 +12,30 @@ export async function getDashboardStats(userId: string) {
   const scheduledEmails = scheduledEmailsResult.data?.length || 0
   const sentThisMonth = emailLogsResult.data?.length || 0
   
-  // Calculate deliverability rate (simplified)
-  const successfulEmails = emailLogsResult.data?.filter(log => log.sent_at).length || 0
-  const deliverabilityRate = sentThisMonth > 0 ? Math.round((successfulEmails / sentThisMonth) * 100) : 100
-
   return {
     activeRecipients,
     scheduledEmails,
-    sentThisMonth,
-    deliverabilityRate
+    sentThisMonth
   }
 }
 
 // Recent Activity
 export async function getRecentActivity(userId: string) {
-  const { data: scheduledEmails, error } = await supabase
-    .from('scheduled_emails')
-    .select(`
-      id,
-      title,
-      status,
-      scheduled_date,
-      scheduled_time,
-      created_at,
-      recipients!inner(name, email)
-    `)
+  const { data: activities, error } = await supabase
+    .from('activity_history')
+    .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(5)
 
   if (error) throw error
 
-  return scheduledEmails?.map(email => ({
-    id: email.id,
-    type: email.status === 'sent' ? 'success' : 'info',
-    message: email.status === 'sent' 
-      ? `Email delivered to ${email.recipients?.[0]?.name || 'recipient'}`
-      : `Email scheduled: ${email.title}`,
-    time: formatTimeAgo(email.created_at),
-    icon: email.status === 'sent' ? 'Check' : 'Calendar'
+  return activities?.map(activity => ({
+    id: activity.id,
+    type: activity.activity_type === 'email_sent' ? 'success' : 'info',
+    message: activity.title,
+    time: formatTimeAgo(activity.created_at),
+    icon: activity.activity_type === 'email_sent' ? 'Check' : 'Calendar'
   })) || []
 }
 
