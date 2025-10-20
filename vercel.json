@@ -6,15 +6,5 @@
     "app/api/schedule-email/route.ts": {
       "maxDuration": 30
     }
-  },
-  "env": {
-    "INNGEST_SIGNING_KEY": "@inngest_signing_key",
-    "INNGEST_EVENT_KEY": "@inngest_event_key"
-  },
-  "build": {
-    "env": {
-      "INNGEST_SIGNING_KEY": "@inngest_signing_key",
-      "INNGEST_EVENT_KEY": "@inngest_event_key"
-    }
   }
 }
