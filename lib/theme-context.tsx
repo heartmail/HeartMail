@@ -16,7 +16,17 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<'light' | 'dark'>('light')
   const [mounted, setMounted] = useState(false)
-  const { user } = useAuth()
+  
+  // Safely get user from auth context
+  let user = null
+  try {
+    const authContext = useAuth()
+    user = authContext?.user
+  } catch (error) {
+    // AuthProvider not available, continue without user
+    console.log('AuthProvider not available in ThemeProvider')
+  }
+  
   const pathname = usePathname()
 
   // Pages that should always be in light mode

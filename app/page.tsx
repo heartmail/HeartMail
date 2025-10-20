@@ -1,4 +1,4 @@
-import dynamic from 'next/dynamic'
+import dynamicImport from 'next/dynamic'
 import Navbar from '@/components/layout/navbar'
 import HeroSection from '@/components/sections/hero-section'
 
@@ -6,23 +6,23 @@ import HeroSection from '@/components/sections/hero-section'
 export const dynamic = 'force-dynamic'
 
 // Lazy load non-critical components
-const Footer = dynamic(() => import('@/components/layout/footer'), {
+const Footer = dynamicImport(() => import('@/components/layout/footer'), {
   loading: () => <div className="h-32 bg-gray-50" />,
 })
 
-const FeaturesSection = dynamic(() => import('@/components/sections/features-section'), {
+const FeaturesSection = dynamicImport(() => import('@/components/sections/features-section'), {
   loading: () => <div className="h-96 bg-gray-50" />,
 })
 
-const AboutSection = dynamic(() => import('@/components/sections/about-section'), {
+const AboutSection = dynamicImport(() => import('@/components/sections/about-section'), {
   loading: () => <div className="h-96 bg-gray-50" />,
 })
 
-const PricingSection = dynamic(() => import('@/components/sections/pricing-section'), {
+const PricingSection = dynamicImport(() => import('@/components/sections/pricing-section'), {
   loading: () => <div className="h-96 bg-gray-50" />,
 })
 
-const CTASection = dynamic(() => import('@/components/sections/cta-section'), {
+const CTASection = dynamicImport(() => import('@/components/sections/cta-section'), {
   loading: () => <div className="h-64 bg-gray-50" />,
 })
 

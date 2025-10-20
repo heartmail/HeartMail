@@ -71,11 +71,11 @@ export default function RootLayout({
                 }} />
               </head>
       <body className={inter.className}>
-        <ThemeProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <ThemeProvider>
             {children}
-          </AuthProvider>
-        </ThemeProvider>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   )
