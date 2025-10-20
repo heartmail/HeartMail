@@ -72,7 +72,6 @@ interface Recipient {
 interface Template {
   id: string
   title: string
-  subject: string
   content: string
 }
 
