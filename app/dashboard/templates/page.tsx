@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, Palette, Eye, Copy, Heart, Mail, MessageSquare } from 'lucide-react'
+import { Plus, Edit, Trash2, Palette, Eye, Copy, Heart, Mail, MessageSquare, Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -28,6 +28,8 @@ export default function TemplatesPage() {
     tags: [] as string[]
   })
   const [tagInput, setTagInput] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filteredTemplates, setFilteredTemplates] = useState<Template[]>([])
 
   const { user } = useAuth()
 
@@ -45,6 +47,21 @@ export default function TemplatesPage() {
       fetchTemplates()
     }
   }, [user])
+
+  // Filter templates based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredTemplates(templates)
+    } else {
+      const filtered = templates.filter(template =>
+        template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        template.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        template.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        template.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+      setFilteredTemplates(filtered)
+    }
+  }, [templates, searchQuery])
 
   const fetchTemplates = async () => {
     if (!user) return
@@ -376,12 +393,41 @@ export default function TemplatesPage() {
         </Dialog>
       </div>
 
-      {templates.length === 0 ? (
+      {/* Search Bar */}
+      <div className="flex items-center space-x-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            type="text"
+            placeholder="Search templates..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 pr-10"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {filteredTemplates.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
             <Palette className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No templates yet</h3>
-            <p className="text-gray-600 mb-6">Create your first template to start sending personalized emails</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {searchQuery ? 'No templates found' : 'No templates yet'}
+            </h3>
+            <p className="text-gray-600 mb-6">
+              {searchQuery 
+                ? `No templates match "${searchQuery}". Try a different search term.`
+                : 'Create your first template to start sending personalized emails'
+              }
+            </p>
             <Button className="btn-heartmail" onClick={openAddDialog}>
               <Plus className="h-4 w-4 mr-2" />
               Create Your First Template
@@ -390,7 +436,7 @@ export default function TemplatesPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {templates.map((template) => (
+          {filteredTemplates.map((template) => (
             <Card key={template.id} className="card-hover">
               <CardHeader>
                 <div className="flex items-center justify-between">

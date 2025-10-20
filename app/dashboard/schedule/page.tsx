@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { ChevronLeft, ChevronRight, Plus, Edit, Trash2, Mail, Clock, Calendar, Users, Filter, X, MessageSquare, Heart, Eye } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Edit, Trash2, Mail, Clock, Calendar, Users, Filter, X, MessageSquare, Heart, Eye, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth-context'
 import { supabase } from '@/lib/supabase'
@@ -103,6 +103,8 @@ export default function SchedulePage() {
   const [pendingTemplateId, setPendingTemplateId] = useState<string>('')
   const [showViewModal, setShowViewModal] = useState(false)
   const [viewingEmail, setViewingEmail] = useState<any>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filteredScheduledEmails, setFilteredScheduledEmails] = useState<any[]>([])
   const { user } = useAuth()
 
   // Fetch recipients and templates from database
@@ -113,6 +115,24 @@ export default function SchedulePage() {
       fetchScheduledEmails()
     }
   }, [user])
+
+  // Filter scheduled emails based on search query (only for list view)
+  useEffect(() => {
+    if (viewMode === 'list') {
+      if (!searchQuery.trim()) {
+        setFilteredScheduledEmails(scheduledEmails)
+      } else {
+        const filtered = scheduledEmails.filter(email =>
+          email.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          email.content?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          email.recipients?.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          email.recipients?.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          email.recipients?.email?.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        setFilteredScheduledEmails(filtered)
+      }
+    }
+  }, [scheduledEmails, searchQuery, viewMode])
 
   const fetchRecipients = async () => {
     if (!user) return
@@ -592,11 +612,33 @@ export default function SchedulePage() {
           </div>
         ) : (
           <div className="list-view">
+            {/* Search Bar - Only show in list view */}
+            <div className="flex items-center space-x-4 mb-6">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  type="text"
+                  placeholder="Search scheduled emails..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-10"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+
             {/* Upcoming Emails List */}
             <div className="upcoming-emails">
               <h3>Upcoming Scheduled Emails</h3>
               <div className="emails-list">
-                {getEmailsForMonth().map((email) => (
+                {filteredScheduledEmails.map((email) => (
                   <div key={email.id} className="email-item">
                     <div className="email-time">
                       <Calendar className="h-4 w-4" />

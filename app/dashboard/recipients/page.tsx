@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, Users, Mail, Calendar, Heart, User, X } from 'lucide-react'
+import { Plus, Edit, Trash2, Users, Mail, Calendar, Heart, User, X, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -18,6 +18,8 @@ export default function RecipientsPage() {
   const [loading, setLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingRecipient, setEditingRecipient] = useState<Recipient | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filteredRecipients, setFilteredRecipients] = useState<Recipient[]>([])
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -35,6 +37,21 @@ export default function RecipientsPage() {
       fetchRecipients()
     }
   }, [user])
+
+  // Filter recipients based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredRecipients(recipients)
+    } else {
+      const filtered = recipients.filter(recipient =>
+        getFullName(recipient).toLowerCase().includes(searchQuery.toLowerCase()) ||
+        recipient.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        recipient.relationship?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        recipient.notes?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      setFilteredRecipients(filtered)
+    }
+  }, [recipients, searchQuery])
 
   const fetchRecipients = async () => {
     if (!user) return
@@ -323,12 +340,41 @@ export default function RecipientsPage() {
         </Dialog>
       </div>
 
-      {recipients.length === 0 ? (
+      {/* Search Bar */}
+      <div className="flex items-center space-x-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            type="text"
+            placeholder="Search recipients..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 pr-10"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {filteredRecipients.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
             <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No recipients yet</h3>
-            <p className="text-gray-600 mb-6">Add your first recipient to start sending heartfelt emails</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {searchQuery ? 'No recipients found' : 'No recipients yet'}
+            </h3>
+            <p className="text-gray-600 mb-6">
+              {searchQuery 
+                ? `No recipients match "${searchQuery}". Try a different search term.`
+                : 'Add your first recipient to start sending heartfelt emails'
+              }
+            </p>
             <Button className="btn-heartmail" onClick={openAddDialog}>
               <Plus className="h-4 w-4 mr-2" />
               Add Your First Recipient
@@ -337,7 +383,7 @@ export default function RecipientsPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {recipients.map((recipient) => (
+          {filteredRecipients.map((recipient) => (
             <Card key={recipient.id} className="card-hover">
               <CardHeader>
                 <div className="flex items-center justify-between">
