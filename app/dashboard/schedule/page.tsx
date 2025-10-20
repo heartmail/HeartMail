@@ -71,7 +71,7 @@ interface Recipient {
 
 interface Template {
   id: string
-  name: string
+  title: string
   subject: string
   content: string
 }
@@ -126,9 +126,9 @@ export default function SchedulePage() {
     try {
       const { data, error } = await supabase
         .from('templates')
-        .select('id, name, subject, content')
+        .select('id, title, content')
         .eq('user_id', user.id)
-        .order('name')
+        .order('title')
 
       if (error) {
         console.error('Error fetching templates:', error)
@@ -150,7 +150,7 @@ export default function SchedulePage() {
         .from('scheduled_emails')
         .select('*')
         .eq('user_id', user.id)
-        .order('send_at')
+        .order('scheduled_date')
 
       if (error) {
         console.error('Error fetching scheduled emails:', error)
@@ -245,10 +245,13 @@ export default function SchedulePage() {
           user_id: user.id,
           recipient_id: recipientId,
           template_id: templateId,
-          subject: subject || template?.subject || 'Heartfelt Message',
-          body_html: template?.content || personalMessage,
-          send_at: sendAt.toISOString(),
-          status: 'pending'
+          title: subject || template?.title || 'Heartfelt Message',
+          content: template?.content || personalMessage,
+          scheduled_date: date,
+          scheduled_time: time,
+          frequency: frequency,
+          status: 'pending',
+          personal_message: personalMessage
         })
         .select()
         .single()
@@ -567,7 +570,7 @@ export default function SchedulePage() {
                     ) : (
                       templates.map((template) => (
                         <option key={template.id} value={template.id}>
-                          {template.name}
+                          {template.title}
                         </option>
                       ))
                     )}
