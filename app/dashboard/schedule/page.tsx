@@ -101,6 +101,8 @@ export default function SchedulePage() {
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null)
   const [showTemplateConfirm, setShowTemplateConfirm] = useState(false)
   const [pendingTemplateId, setPendingTemplateId] = useState<string>('')
+  const [showViewModal, setShowViewModal] = useState(false)
+  const [viewingEmail, setViewingEmail] = useState<any>(null)
   const { user } = useAuth()
 
   // Fetch recipients and templates from database
@@ -400,6 +402,33 @@ export default function SchedulePage() {
     }
   }
 
+  const handleViewEmail = async (emailId: string) => {
+    try {
+      // Fetch the full email details
+      const { data: email, error } = await supabase
+        .from('scheduled_emails')
+        .select(`
+          *,
+          recipients!inner(first_name, last_name, email),
+          templates(title, content)
+        `)
+        .eq('id', emailId)
+        .single()
+
+      if (error) {
+        console.error('Error fetching email:', error)
+        alert('Failed to load email details')
+        return
+      }
+
+      setViewingEmail(email)
+      setShowViewModal(true)
+    } catch (error) {
+      console.error('Error viewing email:', error)
+      alert('Failed to load email details')
+    }
+  }
+
   const handleDayClick = (date: string) => {
     const emails = getEmailsForDate(date)
     setSelectedDay({ date, emails })
@@ -585,8 +614,11 @@ export default function SchedulePage() {
                       <span className={`email-status ${email.status}`}>{email.status}</span>
                     </div>
                     <div className="email-actions">
-                      <button className="action-btn edit-btn">
-                        <Edit className="h-4 w-4" />
+                      <button 
+                        className="action-btn view-btn"
+                        onClick={() => handleViewEmail(email.id)}
+                      >
+                        <Eye className="h-4 w-4" />
                       </button>
                       <button 
                         className="action-btn delete-btn"
@@ -602,16 +634,6 @@ export default function SchedulePage() {
           </div>
         )}
 
-        {/* Add Schedule Button */}
-        <div className="add-schedule-fab">
-          <Button 
-            className="btn btn-primary"
-            onClick={() => setShowAddModal(true)}
-          >
-            <Plus className="h-5 w-5" />
-            Schedule Email
-          </Button>
-        </div>
 
         {/* Add Schedule Modal */}
         {showAddModal && (
@@ -986,6 +1008,132 @@ export default function SchedulePage() {
                   Apply Template
                 </Button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Email Modal */}
+      {showViewModal && viewingEmail && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowViewModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-6 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <Mail className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold">Scheduled Email Details</h3>
+                    <p className="text-blue-100">View email content and details</p>
+                  </div>
+                </div>
+                <button
+                  className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-colors"
+                  onClick={() => setShowViewModal(false)}
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* Email Info */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Subject</label>
+                  <p className="text-lg font-semibold text-gray-900">{viewingEmail.title}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Status</label>
+                  <p className={`text-lg font-semibold ${viewingEmail.status === 'scheduled' ? 'text-green-600' : 'text-gray-600'}`}>
+                    {viewingEmail.status}
+                  </p>
+                </div>
+              </div>
+
+              {/* Recipient Info */}
+              <div>
+                <label className="text-sm font-medium text-gray-500">Recipient</label>
+                <p className="text-lg text-gray-900">
+                  {viewingEmail.recipients ? 
+                    `${viewingEmail.recipients.first_name} ${viewingEmail.recipients.last_name || ''}`.trim() : 
+                    'Unknown'
+                  }
+                </p>
+                <p className="text-sm text-gray-600">
+                  {viewingEmail.recipients?.email || 'No email'}
+                </p>
+              </div>
+
+              {/* Schedule Info */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Scheduled Date</label>
+                  <p className="text-lg text-gray-900">
+                    {new Date(viewingEmail.scheduled_date).toLocaleDateString()}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Scheduled Time</label>
+                  <p className="text-lg text-gray-900">
+                    {viewingEmail.scheduled_time}
+                  </p>
+                </div>
+              </div>
+
+              {/* Email Content */}
+              <div>
+                <label className="text-sm font-medium text-gray-500">Email Content</label>
+                <div className="mt-2 p-4 bg-gray-50 rounded-lg">
+                  <div 
+                    className="prose max-w-none"
+                    dangerouslySetInnerHTML={{ __html: viewingEmail.content }}
+                  />
+                </div>
+              </div>
+
+              {/* Template Info */}
+              {viewingEmail.templates && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Template Used</label>
+                  <p className="text-lg text-gray-900">{viewingEmail.templates.title}</p>
+                </div>
+              )}
+
+              {/* Personal Message */}
+              {viewingEmail.personal_message && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Personal Message</label>
+                  <div className="mt-2 p-4 bg-gray-50 rounded-lg">
+                    <p className="text-gray-900 whitespace-pre-wrap">{viewingEmail.personal_message}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end space-x-4 p-6 border-t">
+              <Button
+                variant="outline"
+                onClick={() => setShowViewModal(false)}
+                className="px-6"
+              >
+                <X className="h-4 w-4 mr-2" />
+                Close
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowViewModal(false)
+                  handleDeleteScheduledEmail(viewingEmail.id)
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white px-6"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Email
+              </Button>
             </div>
           </div>
         </div>

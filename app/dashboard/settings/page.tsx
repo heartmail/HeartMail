@@ -235,7 +235,6 @@ export default function SettingsPage() {
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'security', label: 'Security', icon: Shield },
     { id: 'billing', label: 'Billing', icon: CreditCard },
     { id: 'appearance', label: 'Appearance', icon: Palette },
@@ -356,86 +355,6 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {activeTab === 'notifications' && (
-              <div className="settings-section">
-                <h2>Notification Preferences</h2>
-                <p className="section-description">Choose how you want to be notified about your HeartMail activities.</p>
-                
-                <div className="notification-settings">
-                  <div className="notification-group">
-                    <h3>Email Notifications</h3>
-                    <div className="notification-item">
-                      <div className="notification-info">
-                        <label>Email delivery confirmations</label>
-                        <p>Get notified when your emails are successfully delivered</p>
-                      </div>
-                      <label className="toggle-switch">
-                        <input 
-                          type="checkbox" 
-                          checked={notifications.email_delivery_confirmations}
-                          onChange={(e) => setNotifications({ ...notifications, email_delivery_confirmations: e.target.checked })}
-                        />
-                        <span className="toggle-slider"></span>
-                      </label>
-                    </div>
-                    
-                    
-                    <div className="notification-item">
-                      <div className="notification-info">
-                        <label>Monthly report</label>
-                        <p>Get detailed monthly reports about your email performance</p>
-                      </div>
-                      <label className="toggle-switch">
-                        <input 
-                          type="checkbox" 
-                          checked={notifications.monthly_reports}
-                          onChange={(e) => setNotifications({ ...notifications, monthly_reports: e.target.checked })}
-                        />
-                        <span className="toggle-slider"></span>
-                      </label>
-                    </div>
-                  </div>
-                  
-                  <div className="notification-group">
-                    <h3>Push Notifications</h3>
-                    <div className="notification-item">
-                      <div className="notification-info">
-                        <label>Browser notifications</label>
-                        <p>Receive push notifications in your browser</p>
-                      </div>
-                      <label className="toggle-switch">
-                        <input 
-                          type="checkbox" 
-                          checked={notifications.push_notifications}
-                          onChange={(e) => setNotifications({ ...notifications, push_notifications: e.target.checked })}
-                        />
-                        <span className="toggle-slider"></span>
-                      </label>
-                    </div>
-                  </div>
-                  
-                  <div className="form-actions">
-                    <Button 
-                      onClick={handleSaveSettings}
-                      disabled={saving}
-                      className="btn-heartmail"
-                    >
-                      {saving ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Saving...
-                        </>
-                      ) : (
-                        <>
-                          <Save className="h-4 w-4 mr-2" />
-                          Save Settings
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {activeTab === 'security' && (
               <div className="settings-section">
