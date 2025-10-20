@@ -2,7 +2,8 @@ import { Inngest } from 'inngest'
 
 export const inngest = new Inngest({ 
   id: 'heartmail',
-  name: 'HeartMail'
+  name: 'HeartMail',
+  signingKey: process.env.INNGEST_SIGNING_KEY
 })
 
 // Define event types

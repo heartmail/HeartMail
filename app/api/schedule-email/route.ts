@@ -54,7 +54,11 @@ export async function POST(request: NextRequest) {
     if (insertError) {
       console.error('Database error:', insertError)
       return NextResponse.json(
-        { error: 'Failed to schedule email' },
+        { 
+          error: 'Failed to schedule email',
+          details: insertError.message,
+          code: insertError.code
+        },
         { status: 500 }
       )
     }
