@@ -172,15 +172,14 @@ export default function SchedulePage() {
   const getEmailsForDate = (date: string) => {
     // Return scheduled emails for the specific date
     return scheduledEmails.filter(email => {
-      const emailDate = new Date(email.send_at).toISOString().split('T')[0]
-      return emailDate === date
+      return email.scheduled_date === date
     }).map(email => ({
       id: email.id,
-      title: email.subject,
+      title: email.title,
       type: 'scheduled',
-      recipient: email.to_email,
-      time: new Date(email.send_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      date: new Date(email.send_at).toISOString().split('T')[0],
+      recipient: email.recipient_id, // We'll need to fetch recipient name separately
+      time: email.scheduled_time || '12:00',
+      date: email.scheduled_date,
       status: email.status
     }))
   }
@@ -191,17 +190,18 @@ export default function SchedulePage() {
     const currentYear = new Date().getFullYear()
     
     return scheduledEmails.filter(email => {
-      const emailDate = new Date(email.send_at)
+      if (!email.scheduled_date) return false
+      const emailDate = new Date(email.scheduled_date)
       return emailDate.getMonth() === currentMonth && emailDate.getFullYear() === currentYear
     }).map(email => {
-      const emailDate = new Date(email.send_at)
+      const emailDate = new Date(email.scheduled_date)
       return {
         id: email.id,
-        title: email.subject,
+        title: email.title,
         type: 'scheduled',
-        recipient: email.to_email,
-        time: emailDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-        date: emailDate.toISOString().split('T')[0],
+        recipient: email.recipient_id, // We'll need to fetch recipient name separately
+        time: email.scheduled_time || '12:00',
+        date: email.scheduled_date,
         status: email.status
       }
     })
@@ -261,15 +261,18 @@ export default function SchedulePage() {
       } else {
         // Trigger Inngest event to schedule the email
         try {
-          const response = await fetch('/api/schedule-email', {
+          const response = await fetch('/api/inngest', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              scheduledEmailId: data.id,
-              userId: user.id,
-              sendAt: sendAt.toISOString()
+              name: 'email/schedule',
+              data: {
+                scheduledEmailId: data.id,
+                userId: user.id,
+                sendAt: sendAt.toISOString()
+              }
             })
           })
 
