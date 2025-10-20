@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, Plus, Edit, Trash2, Mail, Clock, Calendar, Users, Filter, X, MessageSquare, Heart } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Edit, Trash2, Mail, Clock, Calendar, Users, Filter, X, MessageSquare, Heart, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth-context'
 import { supabase } from '@/lib/supabase'
@@ -88,6 +88,14 @@ export default function SchedulePage() {
   const [templates, setTemplates] = useState<Template[]>([])
   const [scheduledEmails, setScheduledEmails] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
+  const [selectedRecipientId, setSelectedRecipientId] = useState<string>('')
+  const [formData, setFormData] = useState({
+    subject: '',
+    personalMessage: ''
+  })
+  const [showTemplatePreview, setShowTemplatePreview] = useState(false)
+  const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null)
   const { user } = useAuth()
 
   // Fetch recipients and templates from database
@@ -278,7 +286,7 @@ export default function SchedulePage() {
 
           if (response.ok) {
             alert('Email scheduled successfully!')
-            setShowAddModal(false)
+            handleCloseModal()
             // Refresh the data
             fetchRecipients()
             fetchTemplates()
@@ -296,6 +304,51 @@ export default function SchedulePage() {
       console.error('Error scheduling email:', error)
       alert('Failed to schedule email. Please try again.')
     }
+  }
+
+  const handleTemplateSelect = (templateId: string) => {
+    setSelectedTemplateId(templateId)
+    const template = templates.find(t => t.id === templateId)
+    if (template) {
+      setFormData(prev => ({
+        ...prev,
+        subject: template.title,
+        personalMessage: template.content
+      }))
+    }
+  }
+
+  const handleTemplatePreview = (templateId: string) => {
+    const template = templates.find(t => t.id === templateId)
+    if (template) {
+      setPreviewTemplate(template)
+      setShowTemplatePreview(true)
+    }
+  }
+
+  const handleRecipientSelect = (recipientId: string) => {
+    setSelectedRecipientId(recipientId)
+  }
+
+  const handleFormChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
+
+  const resetForm = () => {
+    setSelectedTemplateId('')
+    setSelectedRecipientId('')
+    setFormData({
+      subject: '',
+      personalMessage: ''
+    })
+  }
+
+  const handleCloseModal = () => {
+    setShowAddModal(false)
+    resetForm()
   }
 
   const handleDayClick = (date: string) => {
@@ -510,7 +563,7 @@ export default function SchedulePage() {
 
         {/* Add Schedule Modal */}
         {showAddModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowAddModal(false)}>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={handleCloseModal}>
             <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               {/* Header */}
               <div className="bg-gradient-to-r from-heartmail-pink to-pink-500 text-white p-6 rounded-t-2xl">
@@ -526,7 +579,7 @@ export default function SchedulePage() {
                   </div>
                   <button 
                     className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-colors"
-                    onClick={() => setShowAddModal(false)}
+                    onClick={handleCloseModal}
                   >
                     <X className="h-6 w-6" />
                   </button>
@@ -541,7 +594,13 @@ export default function SchedulePage() {
                     <Users className="h-5 w-5 text-heartmail-pink" />
                     <label className="text-lg font-semibold text-gray-800">Recipient</label>
                   </div>
-                  <select name="recipient" className="w-full p-3 border border-pink-200 rounded-lg focus:ring-2 focus:ring-heartmail-pink focus:border-transparent" required>
+                  <select 
+                    name="recipient" 
+                    value={selectedRecipientId}
+                    onChange={(e) => handleRecipientSelect(e.target.value)}
+                    className="w-full p-3 border border-pink-200 rounded-lg focus:ring-2 focus:ring-heartmail-pink focus:border-transparent" 
+                    required
+                  >
                     <option value="">Choose a loved one...</option>
                     {loading ? (
                       <option disabled>Loading recipients...</option>
@@ -563,20 +622,38 @@ export default function SchedulePage() {
                     <Mail className="h-5 w-5 text-purple-600" />
                     <label className="text-lg font-semibold text-gray-800">Template (optional)</label>
                   </div>
-                  <select name="template" className="w-full p-3 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                    <option value="">Start from scratch or use a template...</option>
-                    {loading ? (
-                      <option disabled>Loading templates...</option>
-                    ) : templates.length === 0 ? (
-                      <option disabled>No templates found. Create some in the Templates tab!</option>
-                    ) : (
-                      templates.map((template) => (
-                        <option key={template.id} value={template.id}>
-                          {template.title}
-                        </option>
-                      ))
+                  <div className="flex space-x-2">
+                    <select 
+                      name="template" 
+                      value={selectedTemplateId}
+                      onChange={(e) => handleTemplateSelect(e.target.value)}
+                      className="flex-1 p-3 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    >
+                      <option value="">Start from scratch or use a template...</option>
+                      {loading ? (
+                        <option disabled>Loading templates...</option>
+                      ) : templates.length === 0 ? (
+                        <option disabled>No templates found. Create some in the Templates tab!</option>
+                      ) : (
+                        templates.map((template) => (
+                          <option key={template.id} value={template.id}>
+                            {template.title}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                    {selectedTemplateId && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleTemplatePreview(selectedTemplateId)}
+                        className="px-3 py-3 border-purple-200 hover:bg-purple-50"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
                     )}
-                  </select>
+                  </div>
                 </div>
 
                 {/* Subject Card */}
@@ -588,6 +665,8 @@ export default function SchedulePage() {
                   <input 
                     name="subject"
                     type="text"
+                    value={formData.subject}
+                    onChange={(e) => handleFormChange('subject', e.target.value)}
                     className="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Just wanted to say I love you..."
                     required
@@ -634,6 +713,8 @@ export default function SchedulePage() {
                   </div>
                   <textarea 
                     name="personalMessage"
+                    value={formData.personalMessage}
+                    onChange={(e) => handleFormChange('personalMessage', e.target.value)}
                     className="w-full p-3 border border-rose-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent resize-none"
                     placeholder="Dear [Name],&#10;&#10;I just wanted to take a moment to tell you how much you mean to me..."
                     rows={6}
@@ -646,7 +727,7 @@ export default function SchedulePage() {
                   <Button 
                     type="button"
                     variant="outline" 
-                    onClick={() => setShowAddModal(false)}
+                    onClick={handleCloseModal}
                     className="flex-1 py-3 text-lg font-semibold border-2 border-gray-300 hover:border-gray-400 transition-colors"
                   >
                     <X className="h-5 w-5 mr-2" />
@@ -724,6 +805,74 @@ export default function SchedulePage() {
                   <p className="text-gray-500">No emails scheduled for this day</p>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Template Preview Modal */}
+      {showTemplatePreview && previewTemplate && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowTemplatePreview(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="bg-gradient-to-r from-purple-500 to-blue-500 text-white p-6 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <Eye className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold">Template Preview</h3>
+                    <p className="text-purple-100">{previewTemplate.title}</p>
+                  </div>
+                </div>
+                <button 
+                  className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-colors"
+                  onClick={() => setShowTemplatePreview(false)}
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-800 mb-2">Subject:</h4>
+                  <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{previewTemplate.title}</p>
+                </div>
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-800 mb-2">Content:</h4>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <pre className="whitespace-pre-wrap text-gray-700 font-sans">{previewTemplate.content}</pre>
+                  </div>
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex space-x-4 pt-6">
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  onClick={() => setShowTemplatePreview(false)}
+                  className="flex-1 py-3 text-lg font-semibold border-2 border-gray-300 hover:border-gray-400 transition-colors"
+                >
+                  <X className="h-5 w-5 mr-2" />
+                  Close
+                </Button>
+                <Button 
+                  type="button"
+                  onClick={() => {
+                    handleTemplateSelect(previewTemplate.id)
+                    setShowTemplatePreview(false)
+                  }}
+                  className="flex-1 py-3 text-lg font-semibold bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  <Mail className="h-5 w-5 mr-2" />
+                  Use This Template
+                </Button>
+              </div>
             </div>
           </div>
         </div>
