@@ -6,6 +6,9 @@ import AboutSection from '@/components/sections/about-section'
 import PricingSection from '@/components/sections/pricing-section'
 import CTASection from '@/components/sections/cta-section'
 
+// Force dynamic rendering to prevent AuthProvider issues during build
+export const dynamic = 'force-dynamic'
+
 export default function Home() {
   return (
     <main className="min-h-screen relative">
