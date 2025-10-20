@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, Users, Mail, Calendar, Heart, User } from 'lucide-react'
+import { Plus, Edit, Trash2, Users, Mail, Calendar, Heart, User, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -166,7 +166,7 @@ export default function RecipientsPage() {
               Add Recipient
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
             <DialogHeader className="bg-gradient-to-r from-pink-500 to-purple-600 text-white p-6 -m-6 mb-6 rounded-t-lg">
               <div className="flex items-center gap-3">
                 <div className="bg-white/20 p-2 rounded-lg">
@@ -305,15 +305,16 @@ export default function RecipientsPage() {
                   type="button" 
                   variant="outline" 
                   onClick={handleDialogClose}
-                  className="flex-1 border-pink-300 text-pink-600 hover:bg-pink-50 hover:border-pink-400"
+                  className="flex-1 py-3 text-lg font-semibold border-2 border-gray-300 hover:border-gray-400 transition-colors"
                 >
+                  <X className="h-5 w-5 mr-2" />
                   Cancel
                 </Button>
                 <Button 
                   type="submit" 
-                  className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                  className="flex-1 py-3 text-lg font-semibold bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                 >
-                  <Heart className="h-4 w-4 mr-2" />
+                  <Heart className="h-5 w-5 mr-2" />
                   {editingRecipient ? 'Update Recipient' : 'Add Recipient'}
                 </Button>
               </div>

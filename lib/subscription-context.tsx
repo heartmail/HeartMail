@@ -32,9 +32,17 @@ interface SubscriptionContextType {
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined)
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth()
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  
+  // Safely get user from auth context
+  let user = null
+  try {
+    const authContext = useAuth()
+    user = authContext?.user
+  } catch (error) {
+    console.log('AuthProvider not available in SubscriptionProvider')
+  }
 
   const fetchSubscription = useCallback(async () => {
     if (!user) {
