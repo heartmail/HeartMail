@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "inngest:deploy": "node scripts/deploy-production.js",
-    "inngest:test": "node test-production.js"
+    "inngest:deploy": "node scripts/deploy-production.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.2",
