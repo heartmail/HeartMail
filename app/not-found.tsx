@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Home, Heart, ArrowLeft, Mail } from 'lucide-react'
+import { Home, ArrowLeft, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Logo from '@/components/ui/logo'
 
@@ -29,10 +29,6 @@ export default function NotFound() {
 
         {/* 404 Content */}
         <div className="bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-8 md:p-12">
-          {/* Heart Icon */}
-          <div className="w-20 h-20 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Heart className="h-10 w-10 text-white animate-pulse" />
-          </div>
 
           {/* Error Message */}
           <h1 className="text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600 mb-4">
@@ -40,7 +36,7 @@ export default function NotFound() {
           </h1>
           
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-            Oops! This page got lost in the mail 💌
+            Page not found
           </h2>
           
           <p className="text-gray-600 text-lg mb-8 leading-relaxed">
