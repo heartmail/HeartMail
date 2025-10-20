@@ -1,6 +1,7 @@
 import dynamicImport from 'next/dynamic'
 import Navbar from '@/components/layout/navbar'
 import HeroSection from '@/components/sections/hero-section'
+import { useAuth } from '@/lib/auth-context'
 
 // Force dynamic rendering to prevent AuthProvider issues during build
 export const dynamic = 'force-dynamic'
@@ -27,6 +28,8 @@ const CTASection = dynamicImport(() => import('@/components/sections/cta-section
 })
 
 export default function Home() {
+  const { user } = useAuth()
+
   return (
     <main className="min-h-screen relative">
       {/* Background Image - Optimized loading */}
@@ -47,7 +50,7 @@ export default function Home() {
         <HeroSection />
         <FeaturesSection />
         <AboutSection />
-        <PricingSection />
+        <PricingSection user={user} />
         <CTASection />
         <Footer />
       </div>

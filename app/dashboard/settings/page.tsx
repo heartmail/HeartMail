@@ -23,6 +23,7 @@ export default function SettingsPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(true)
   const [show2FAModal, setShow2FAModal] = useState(false)
+  const [is2FAEnabled, setIs2FAEnabled] = useState(false)
   const [saving, setSaving] = useState(false)
   
   // Email change modal state
@@ -103,6 +104,21 @@ export default function SettingsPage() {
           monthly_reports: settingsData.monthly_reports,
           weekly_reports: settingsData.weekly_reports
         })
+      }
+
+      // Check 2FA status
+      try {
+        const { data: { factors }, error: mfaError } = await supabase.auth.mfa.getFactors()
+        if (mfaError) {
+          console.error('Error fetching 2FA factors:', mfaError)
+        } else {
+          const totpFactor = factors.find(factor => 
+            factor.factor_type === 'totp' && factor.status === 'verified'
+          )
+          setIs2FAEnabled(!!totpFactor)
+        }
+      } catch (error) {
+        console.error('Error checking 2FA status:', error)
       }
     } catch (error) {
       console.error('Error loading user data:', error)
@@ -407,11 +423,11 @@ export default function SettingsPage() {
                     </div>
                     <Button 
                       variant="ghost" 
-                      className="btn-smooth hover:text-heartmail-pink"
+                      className={`btn-smooth ${is2FAEnabled ? 'hover:text-red-600' : 'hover:text-heartmail-pink'}`}
                       onClick={() => setShow2FAModal(true)}
                     >
                       <Shield className="h-4 w-4 mr-2" />
-                      Enable 2FA
+                      {is2FAEnabled ? 'Disable 2FA' : 'Enable 2FA'}
                     </Button>
                   </div>
                   
@@ -649,7 +665,14 @@ export default function SettingsPage() {
           onSuccess={() => {
             setShow2FAModal(false)
             toast.success('2FA enabled successfully!')
+            loadUserData() // Refresh 2FA status
           }}
+          onDisable={() => {
+            setShow2FAModal(false)
+            toast.success('2FA disabled successfully!')
+            loadUserData() // Refresh 2FA status
+          }}
+          is2FAEnabled={is2FAEnabled}
         />
     </div>
   )

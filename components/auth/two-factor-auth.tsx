@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
-import { Shield, Check, X, AlertTriangle } from 'lucide-react'
+import { Shield, Check, X, AlertTriangle, Loader2, QrCode, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 
@@ -13,22 +13,35 @@ interface TwoFactorAuthProps {
   isOpen: boolean
   onClose: () => void
   onSuccess?: () => void
+  onDisable?: () => void
+  is2FAEnabled: boolean
 }
 
-export default function TwoFactorAuth({ isOpen, onClose, onSuccess }: TwoFactorAuthProps) {
-  const [step, setStep] = useState<'setup' | 'verify'>('setup')
+export default function TwoFactorAuth({ isOpen, onClose, onSuccess, onDisable, is2FAEnabled }: TwoFactorAuthProps) {
+  const [step, setStep] = useState<'setup' | 'verify' | 'disable'>('setup')
   const [qrCode, setQrCode] = useState<string>('')
   const [secret, setSecret] = useState<string>('')
   const [verificationCode, setVerificationCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [factorId, setFactorId] = useState<string | null>(null)
 
-  const handleEnable2FA = async () => {
+  useEffect(() => {
+    if (isOpen) {
+      setStep(is2FAEnabled ? 'disable' : 'setup')
+      setQrCode('')
+      setSecret('')
+      setVerificationCode('')
+      setError('')
+      setFactorId(null)
+    }
+  }, [isOpen, is2FAEnabled])
+
+  const handleEnroll = async () => {
     setLoading(true)
     setError('')
     
     try {
-      // Enable 2FA using Supabase's built-in MFA
       const { data, error } = await supabase.auth.mfa.enroll({
         factorType: 'totp'
       })
@@ -40,11 +53,12 @@ export default function TwoFactorAuth({ isOpen, onClose, onSuccess }: TwoFactorA
       if (data) {
         setQrCode(data.qr_code || '')
         setSecret(data.secret || '')
+        setFactorId(data.id)
         setStep('verify')
-        toast.success('2FA setup initiated! Please scan the QR code with your authenticator app.')
+        toast.success('Scan the QR code with your authenticator app')
       }
     } catch (error: any) {
-      console.error('Error enabling 2FA:', error)
+      console.error('Error enrolling 2FA:', error)
       setError(error.message || 'Failed to enable 2FA')
       toast.error('Failed to enable 2FA')
     } finally {
@@ -52,7 +66,7 @@ export default function TwoFactorAuth({ isOpen, onClose, onSuccess }: TwoFactorA
     }
   }
 
-  const handleVerify2FA = async () => {
+  const handleVerify = async () => {
     if (!verificationCode.trim()) {
       setError('Please enter the verification code')
       return
@@ -62,9 +76,12 @@ export default function TwoFactorAuth({ isOpen, onClose, onSuccess }: TwoFactorA
     setError('')
     
     try {
-      // Verify the 2FA setup
-      const { data, error } = await supabase.auth.mfa.challengeAndVerify({
-        factorId: secret, // This should be the factor ID from enrollment
+      if (!factorId) {
+        throw new Error('No 2FA factor found. Please try again.')
+      }
+
+      const { error } = await supabase.auth.mfa.challengeAndVerify({
+        factorId: factorId,
         code: verificationCode
       })
 
@@ -72,11 +89,9 @@ export default function TwoFactorAuth({ isOpen, onClose, onSuccess }: TwoFactorA
         throw error
       }
 
-      if (data) {
-        toast.success('2FA enabled successfully!')
-        onSuccess?.()
-        handleClose()
-      }
+      toast.success('Two-Factor Authentication enabled successfully!')
+      onSuccess?.()
+      onClose()
     } catch (error: any) {
       console.error('Error verifying 2FA:', error)
       setError(error.message || 'Invalid verification code')
@@ -86,35 +101,35 @@ export default function TwoFactorAuth({ isOpen, onClose, onSuccess }: TwoFactorA
     }
   }
 
-  const handleDisable2FA = async () => {
+  const handleDisable = async () => {
     setLoading(true)
     setError('')
     
     try {
-      // Get user's factors
-      const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors()
-      
-      if (factorsError) {
-        throw factorsError
+      const { data: { factors }, error: fetchError } = await supabase.auth.mfa.getFactors()
+      if (fetchError) {
+        throw fetchError
       }
 
-      // Find the TOTP factor
-      const totpFactor = factors?.totp?.[0]
+      const totpFactor = factors.find(factor => 
+        factor.factor_type === 'totp' && factor.status === 'verified'
+      )
+
       if (!totpFactor) {
-        throw new Error('No 2FA factor found')
+        throw new Error('No active 2FA factor found to disable')
       }
 
-      // Unenroll the factor
-      const { error: unenrollError } = await supabase.auth.mfa.unenroll({
+      const { error } = await supabase.auth.mfa.unenroll({
         factorId: totpFactor.id
       })
 
-      if (unenrollError) {
-        throw unenrollError
+      if (error) {
+        throw error
       }
 
-      toast.success('2FA disabled successfully!')
-      onSuccess?.()
+      toast.success('Two-Factor Authentication disabled successfully!')
+      onDisable?.()
+      onClose()
     } catch (error: any) {
       console.error('Error disabling 2FA:', error)
       setError(error.message || 'Failed to disable 2FA')
@@ -130,65 +145,125 @@ export default function TwoFactorAuth({ isOpen, onClose, onSuccess }: TwoFactorA
     setSecret('')
     setVerificationCode('')
     setError('')
+    setFactorId(null)
     onClose()
   }
 
-  return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+  const renderContent = () => {
+    if (is2FAEnabled && step === 'disable') {
+      return (
+        <>
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2 text-2xl">
+              <Shield className="h-6 w-6 text-red-500" />
+              <span>Disable Two-Factor Authentication</span>
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to disable 2FA? This will reduce the security of your account.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 text-center">
+            <AlertTriangle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+            <p className="text-lg text-gray-700">
+              Disabling 2FA will remove an important layer of security.
+            </p>
+          </div>
+          <DialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-4 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              className="flex-1 sm:flex-none py-3 text-lg font-semibold border-2 border-gray-300 hover:border-gray-400 transition-colors"
+              disabled={loading}
+            >
+              <X className="h-5 w-5 mr-2" />
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleDisable}
+              className="flex-1 sm:flex-none py-3 text-lg font-semibold bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 mt-2 sm:mt-0"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  Disabling...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-5 w-5 mr-2" />
+                  Disable 2FA
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </>
+      )
+    }
+
+    // Setup and Verify steps
+    return (
+      <>
         <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
-            <Shield className="h-5 w-5 text-heartmail-pink" />
+          <DialogTitle className="flex items-center space-x-2 text-2xl">
+            <Shield className="h-6 w-6 text-heartmail-pink" />
             <span>Two-Factor Authentication</span>
           </DialogTitle>
           <DialogDescription>
-            {step === 'setup' 
-              ? 'Enable 2FA to add an extra layer of security to your account.'
-              : 'Scan the QR code with your authenticator app and enter the verification code.'
-            }
+            {step === 'setup'
+              ? 'Add an extra layer of security to your account by enabling 2FA.'
+              : 'Scan the QR code with your authenticator app and enter the verification code.'}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="py-4 space-y-4">
           {step === 'setup' && (
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-heartmail-pink/10 rounded-full flex items-center justify-center mx-auto">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-heartmail-pink/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Shield className="h-8 w-8 text-heartmail-pink" />
               </div>
-              <div>
-                <h3 className="text-lg font-semibold">Enable Two-Factor Authentication</h3>
-                <p className="text-sm text-gray-600">
-                  You'll need an authenticator app like Google Authenticator or Authy.
-                </p>
-              </div>
+              <h3 className="text-lg font-semibold mb-2">Enable Two-Factor Authentication</h3>
+              <p className="text-sm text-gray-600">
+                You'll need an authenticator app like Google Authenticator or Authy.
+              </p>
             </div>
           )}
 
-          {step === 'verify' && qrCode && (
-            <div className="space-y-4">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2">Scan QR Code</h3>
-                <div className="bg-white p-4 rounded-lg border-2 border-gray-200 inline-block">
-                  <img src={qrCode} alt="QR Code" className="w-48 h-48" />
-                </div>
-                <p className="text-sm text-gray-600 mt-2">
-                  Scan this QR code with your authenticator app
+          {step === 'verify' && (
+            <>
+              <div className="flex flex-col items-center justify-center space-y-4">
+                {qrCode && (
+                  <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+                    <img src={qrCode} alt="QR Code" className="w-48 h-48" />
+                  </div>
+                )}
+                <p className="text-sm text-gray-600 text-center">
+                  Scan this QR code with your authenticator app (e.g., Google Authenticator, Authy).
                 </p>
+                {secret && (
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 mb-2">Or manually enter this secret:</p>
+                    <p className="text-xs text-gray-800 font-mono bg-gray-100 p-2 rounded break-all">
+                      {secret}
+                    </p>
+                  </div>
+                )}
               </div>
-
-              <div>
-                <Label htmlFor="verification-code">Verification Code</Label>
+              <div className="space-y-2">
+                <Label htmlFor="verificationCode">Verification Code</Label>
                 <Input
-                  id="verification-code"
+                  id="verificationCode"
                   type="text"
                   placeholder="Enter 6-digit code"
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value)}
                   maxLength={6}
                   className="text-center text-lg tracking-widest"
+                  disabled={loading}
                 />
               </div>
-            </div>
+            </>
           )}
 
           {error && (
@@ -199,56 +274,66 @@ export default function TwoFactorAuth({ isOpen, onClose, onSuccess }: TwoFactorA
           )}
         </div>
 
-        <DialogFooter className="flex space-x-2">
+        <DialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-4 pt-4">
           <Button
+            type="button"
             variant="outline"
             onClick={handleClose}
+            className="flex-1 sm:flex-none py-3 text-lg font-semibold border-2 border-gray-300 hover:border-gray-400 transition-colors"
             disabled={loading}
           >
-            <X className="h-4 w-4 mr-2" />
+            <X className="h-5 w-5 mr-2" />
             Cancel
           </Button>
-          
           {step === 'setup' && (
             <Button
-              onClick={handleEnable2FA}
+              type="button"
+              onClick={handleEnroll}
+              className="flex-1 sm:flex-none py-3 text-lg font-semibold bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 mt-2 sm:mt-0"
               disabled={loading}
-              className="bg-heartmail-pink hover:bg-pink-600"
             >
               {loading ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  Setting up...
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  Enrolling...
                 </>
               ) : (
                 <>
-                  <Shield className="h-4 w-4 mr-2" />
-                  Enable 2FA
+                  <QrCode className="h-5 w-5 mr-2" />
+                  Enroll 2FA
                 </>
               )}
             </Button>
           )}
-
           {step === 'verify' && (
             <Button
-              onClick={handleVerify2FA}
+              type="button"
+              onClick={handleVerify}
+              className="flex-1 sm:flex-none py-3 text-lg font-semibold bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 mt-2 sm:mt-0"
               disabled={loading || !verificationCode.trim()}
-              className="bg-heartmail-pink hover:bg-pink-600"
             >
               {loading ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                   Verifying...
                 </>
               ) : (
                 <>
-                  <Check className="h-4 w-4 mr-2" />
+                  <Check className="h-5 w-5 mr-2" />
                   Verify & Enable
                 </>
               )}
             </Button>
           )}
         </DialogFooter>
+      </>
+    )
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        {renderContent()}
       </DialogContent>
     </Dialog>
   )

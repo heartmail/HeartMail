@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/lib/auth-context'
 import { ThemeProvider } from '@/lib/theme-context'
+import { SubscriptionProvider } from '@/lib/subscription-context'
 
 // Force dynamic rendering to prevent AuthProvider issues during build
 export const dynamic = 'force-dynamic'
@@ -73,7 +74,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <ThemeProvider>
-            {children}
+            <SubscriptionProvider>
+              {children}
+            </SubscriptionProvider>
           </ThemeProvider>
         </AuthProvider>
       </body>

@@ -3,19 +3,35 @@ import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase'
 import Stripe from 'stripe'
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
+// Force dynamic rendering to prevent static generation issues
+export const dynamic = 'force-dynamic'
 
-export async function POST(request: NextRequest) {
-  const body = await request.text()
-  const signature = request.headers.get('stripe-signature')!
+const relevantEvents = new Set([
+  'checkout.session.completed',
+  'customer.subscription.created',
+  'customer.subscription.updated',
+  'customer.subscription.deleted',
+])
+
+export async function POST(req: NextRequest) {
+  const body = await req.text()
+  const signature = req.headers.get('stripe-signature') as string
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
   let event: Stripe.Event
 
   try {
+    if (!webhookSecret) {
+      throw new Error('STRIPE_WEBHOOK_SECRET is not set.')
+    }
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
-  } catch (error: any) {
-    console.error('Webhook signature verification failed:', error.message)
-    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
+  } catch (err: any) {
+    console.error(`Webhook Error: ${err.message}`)
+    return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 })
+  }
+
+  if (!relevantEvents.has(event.type)) {
+    return new NextResponse(JSON.stringify({ received: true }), { status: 200 })
   }
 
   const supabase = createAdminClient()
@@ -23,157 +39,79 @@ export async function POST(request: NextRequest) {
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session
-        const customerId = session.customer as string
-        const subscriptionId = session.subscription as string
+        const checkoutSession = event.data.object as Stripe.CheckoutSession
+        const subscriptionId = checkoutSession.subscription as string
+        const customerId = checkoutSession.customer as string
+        const userId = checkoutSession.metadata?.userId as string
 
-        if (subscriptionId) {
-          // Get subscription details
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId)
-          const priceId = subscription.items.data[0].price.id
-
-          // Update user subscription in database
-          const { error } = await supabase
-            .from('subscriptions')
-            .upsert({
-              user_id: session.metadata?.userId,
-              stripe_customer_id: customerId,
-              stripe_subscription_id: subscriptionId,
-              stripe_price_id: priceId,
-              status: subscription.status,
-              current_period_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
-              current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
-              cancel_at_period_end: (subscription as any).cancel_at_period_end,
-            })
-
-          if (error) {
-            console.error('Error updating subscription:', error)
-          }
-
-          // Initialize usage tracking
-          await supabase
-            .from('subscription_usage')
-            .upsert({
-              user_id: session.metadata?.userId,
-              subscription_id: subscriptionId,
-              recipients_count: 0,
-              templates_used: 0,
-              emails_sent_this_month: 0,
-            })
+        if (!subscriptionId || !customerId || !userId) {
+          throw new Error('Missing data in checkout.session.completed event.')
         }
-        break
-      }
 
-      case 'customer.subscription.updated': {
-        const subscription = event.data.object as Stripe.Subscription
-        const customerId = subscription.customer as string
+        // Retrieve the subscription to get full details
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId)
 
-        // Update subscription status
         const { error } = await supabase
           .from('subscriptions')
-          .update({
+          .upsert({
+            user_id: userId,
+            stripe_customer_id: customerId,
+            stripe_subscription_id: subscription.id,
             status: subscription.status,
-            current_period_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
-            current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
-            cancel_at_period_end: (subscription as any).cancel_at_period_end,
-          })
-          .eq('stripe_customer_id', customerId)
+            plan_id: subscription.items.data[0].price.id,
+            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            cancel_at_period_end: subscription.cancel_at_period_end,
+          }, { onConflict: 'stripe_subscription_id' })
 
-        if (error) {
-          console.error('Error updating subscription:', error)
-        }
+        if (error) throw error
+        console.log(`Subscription created/updated for user ${userId}: ${subscription.id}`)
         break
       }
-
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated':
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription
         const customerId = subscription.customer as string
 
-        // Cancel subscription
+        // Find the user associated with this customer ID
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('stripe_customer_id', customerId)
+          .single()
+
+        if (profileError || !profile) {
+          console.error(`User not found for Stripe customer ID: ${customerId}`)
+          throw new Error(`User not found for Stripe customer ID: ${customerId}`)
+        }
+
+        const userId = profile.id
+
         const { error } = await supabase
           .from('subscriptions')
-          .update({ 
-            status: 'canceled',
-            cancel_at_period_end: false,
-          })
-          .eq('stripe_customer_id', customerId)
+          .upsert({
+            user_id: userId,
+            stripe_customer_id: customerId,
+            stripe_subscription_id: subscription.id,
+            status: subscription.status,
+            plan_id: subscription.items.data[0].price.id,
+            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            cancel_at_period_end: subscription.cancel_at_period_end,
+          }, { onConflict: 'stripe_subscription_id' })
 
-        if (error) {
-          console.error('Error canceling subscription:', error)
-        }
+        if (error) throw error
+        console.log(`Subscription ${event.type} for user ${userId}: ${subscription.id}`)
         break
       }
-
-      case 'invoice.payment_succeeded': {
-        const invoice = event.data.object as Stripe.Invoice
-        const customerId = invoice.customer as string
-        const subscriptionId = (invoice as any).subscription as string
-
-        // Get user ID from subscription
-        const { data: subscriptionData } = await supabase
-          .from('subscriptions')
-          .select('user_id')
-          .eq('stripe_customer_id', customerId)
-          .single()
-
-        if (subscriptionData) {
-          // Record successful payment
-          await supabase
-            .from('billing_history')
-            .insert({
-              user_id: subscriptionData.user_id,
-              subscription_id: subscriptionId,
-              stripe_invoice_id: invoice.id,
-              amount_paid: invoice.amount_paid,
-              currency: invoice.currency,
-              status: 'paid',
-              invoice_url: invoice.invoice_pdf,
-              hosted_invoice_url: invoice.hosted_invoice_url,
-            })
-        }
-        break
-      }
-
-      case 'invoice.payment_failed': {
-        const invoice = event.data.object as Stripe.Invoice
-        const customerId = invoice.customer as string
-        const subscriptionId = (invoice as any).subscription as string
-
-        // Get user ID from subscription
-        const { data: subscriptionData } = await supabase
-          .from('subscriptions')
-          .select('user_id')
-          .eq('stripe_customer_id', customerId)
-          .single()
-
-        if (subscriptionData) {
-          // Record failed payment
-          await supabase
-            .from('billing_history')
-            .insert({
-              user_id: subscriptionData.user_id,
-              subscription_id: subscriptionId,
-              stripe_invoice_id: invoice.id,
-              amount_paid: 0,
-              currency: invoice.currency,
-              status: 'uncollectible',
-              invoice_url: invoice.invoice_pdf,
-              hosted_invoice_url: invoice.hosted_invoice_url,
-            })
-        }
-        break
-      }
-
       default:
-        console.log(`Unhandled event type: ${event.type}`)
+        console.warn(`Unhandled event type: ${event.type}`)
     }
-
-    return NextResponse.json({ received: true })
   } catch (error: any) {
-    console.error('Webhook handler error:', error)
-    return NextResponse.json(
-      { error: 'Webhook handler failed' },
-      { status: 500 }
-    )
+    console.error('Error handling Stripe webhook event:', error.message)
+    return new NextResponse(`Webhook handler failed: ${error.message}`, { status: 500 })
   }
+
+  return new NextResponse(JSON.stringify({ received: true }), { status: 200 })
 }
