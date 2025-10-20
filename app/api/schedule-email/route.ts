@@ -25,14 +25,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate sendAt is in the future
-    const sendDate = new Date(sendAt)
-    if (sendDate <= new Date()) {
-      return NextResponse.json(
-        { error: 'Send date must be in the future' },
-        { status: 400 }
-      )
-    }
+            // Validate sendAt is at least 5 minutes in the future
+            const sendDate = new Date(sendAt)
+            const now = new Date()
+            const fiveMinutesFromNow = new Date(now.getTime() + 5 * 60 * 1000) // 5 minutes from now
+            
+            if (sendDate <= fiveMinutesFromNow) {
+              return NextResponse.json(
+                { error: 'Email must be scheduled for at least 5 minutes in the future' },
+                { status: 400 }
+              )
+            }
 
     const supabase = createAdminClient()
 

@@ -96,6 +96,8 @@ export default function SchedulePage() {
   })
   const [showTemplatePreview, setShowTemplatePreview] = useState(false)
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null)
+  const [showTemplateConfirm, setShowTemplateConfirm] = useState(false)
+  const [pendingTemplateId, setPendingTemplateId] = useState<string>('')
   const { user } = useAuth()
 
   // Fetch recipients and templates from database
@@ -233,6 +235,16 @@ export default function SchedulePage() {
       return
     }
 
+    // Validate that the scheduled time is at least 5 minutes in the future
+    const sendAt = new Date(`${date}T${time}`)
+    const now = new Date()
+    const fiveMinutesFromNow = new Date(now.getTime() + 5 * 60 * 1000) // 5 minutes from now
+
+    if (sendAt <= fiveMinutesFromNow) {
+      alert('Please schedule the email for at least 5 minutes in the future')
+      return
+    }
+
     try {
       // Find the selected recipient and template
       const recipient = recipients.find(r => r.id === recipientId)
@@ -242,9 +254,6 @@ export default function SchedulePage() {
         alert('Please select a valid recipient')
         return
       }
-
-      // Create the scheduled email
-      const sendAt = new Date(`${date}T${time}`)
       
       const { data, error } = await supabase
         .from('scheduled_emails')
@@ -307,6 +316,18 @@ export default function SchedulePage() {
   }
 
   const handleTemplateSelect = (templateId: string) => {
+    // Check if there's existing content in the message or subject fields
+    if (formData.personalMessage.trim() !== '' || formData.subject.trim() !== '') {
+      setPendingTemplateId(templateId)
+      setShowTemplateConfirm(true)
+      return
+    }
+    
+    // If no existing content, apply template directly
+    applyTemplate(templateId)
+  }
+
+  const applyTemplate = (templateId: string) => {
     setSelectedTemplateId(templateId)
     const template = templates.find(t => t.id === templateId)
     if (template) {
@@ -316,6 +337,15 @@ export default function SchedulePage() {
         personalMessage: template.content
       }))
     }
+    setShowTemplateConfirm(false)
+    setPendingTemplateId('')
+  }
+
+  const cancelTemplateSelection = () => {
+    setShowTemplateConfirm(false)
+    setPendingTemplateId('')
+    // Reset the select to show no selection
+    setSelectedTemplateId('')
   }
 
   const handleTemplatePreview = (templateId: string) => {
@@ -871,6 +901,67 @@ export default function SchedulePage() {
                 >
                   <Mail className="h-5 w-5 mr-2" />
                   Use This Template
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Template Confirmation Dialog */}
+      {showTemplateConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowTemplateConfirm(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="bg-gradient-to-r from-pink-500 to-purple-500 text-white p-6 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <Heart className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold">Overwrite Existing Content?</h3>
+                    <p className="text-pink-100">You have existing content in your message or subject</p>
+                  </div>
+                </div>
+                <button
+                  className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-colors"
+                  onClick={() => setShowTemplateConfirm(false)}
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <div className="space-y-4">
+                <p className="text-gray-600">
+                  You have existing content in your message or subject fields. Applying this template will overwrite your current work.
+                </p>
+                <p className="text-sm text-gray-500">
+                  Do you want to continue and replace your content with the template?
+                </p>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex space-x-4 pt-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={cancelTemplateSelection}
+                  className="flex-1 py-3 text-lg font-semibold border-2 border-gray-300 hover:border-gray-400 transition-colors"
+                >
+                  <X className="h-5 w-5 mr-2" />
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => applyTemplate(pendingTemplateId)}
+                  className="flex-1 py-3 text-lg font-semibold bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  <Mail className="h-5 w-5 mr-2" />
+                  Apply Template
                 </Button>
               </div>
             </div>
