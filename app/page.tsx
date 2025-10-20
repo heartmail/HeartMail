@@ -1,18 +1,35 @@
+import dynamic from 'next/dynamic'
 import Navbar from '@/components/layout/navbar'
-import Footer from '@/components/layout/footer'
 import HeroSection from '@/components/sections/hero-section'
-import FeaturesSection from '@/components/sections/features-section'
-import AboutSection from '@/components/sections/about-section'
-import PricingSection from '@/components/sections/pricing-section'
-import CTASection from '@/components/sections/cta-section'
 
 // Force dynamic rendering to prevent AuthProvider issues during build
 export const dynamic = 'force-dynamic'
 
+// Lazy load non-critical components
+const Footer = dynamic(() => import('@/components/layout/footer'), {
+  loading: () => <div className="h-32 bg-gray-50" />,
+})
+
+const FeaturesSection = dynamic(() => import('@/components/sections/features-section'), {
+  loading: () => <div className="h-96 bg-gray-50" />,
+})
+
+const AboutSection = dynamic(() => import('@/components/sections/about-section'), {
+  loading: () => <div className="h-96 bg-gray-50" />,
+})
+
+const PricingSection = dynamic(() => import('@/components/sections/pricing-section'), {
+  loading: () => <div className="h-96 bg-gray-50" />,
+})
+
+const CTASection = dynamic(() => import('@/components/sections/cta-section'), {
+  loading: () => <div className="h-64 bg-gray-50" />,
+})
+
 export default function Home() {
   return (
     <main className="min-h-screen relative">
-      {/* Background Image */}
+      {/* Background Image - Optimized loading */}
       <div 
         className="fixed inset-0 z-0"
         style={{

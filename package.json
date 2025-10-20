@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "inngest:deploy": "node scripts/deploy-production.js"
+    "inngest:deploy": "node scripts/deploy-production.js",
+    "analyze": "ANALYZE=true next build",
+    "build:prod": "NODE_ENV=production next build"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.2",
@@ -51,6 +53,7 @@
     "zustand": "^4.4.6"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^15.5.6",
     "eslint": "^8.52.0",
     "eslint-config-next": "14.0.0"
   }
