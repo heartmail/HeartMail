@@ -249,7 +249,7 @@ export default function SchedulePage() {
           scheduled_date: date,
           scheduled_time: time,
           frequency: frequency,
-          status: 'pending',
+          status: 'scheduled',
           personal_message: personalMessage
         })
         .select()

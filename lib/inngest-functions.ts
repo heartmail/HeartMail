@@ -27,15 +27,12 @@ export const sendScheduledEmail = inngest.createFunction(
       }
 
       // Check if already sent or cancelled
-      if (scheduledEmail.status !== 'pending') {
+      if (scheduledEmail.status !== 'scheduled') {
         return { message: 'Email already processed', status: scheduledEmail.status }
       }
 
-      // Update status to sending
-      await supabase
-        .from('scheduled_emails')
-        .update({ status: 'sending' })
-        .eq('id', scheduledEmailId)
+      // Update status to sending (we'll use 'scheduled' since 'sending' is not in enum)
+      // We'll update to 'sent' or 'failed' after the operation
 
       try {
         // Get recipient email from recipients table

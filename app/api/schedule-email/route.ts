@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
         content: bodyHtml,
         scheduled_date: new Date(sendAt).toISOString().split('T')[0],
         scheduled_time: new Date(sendAt).toTimeString().split(' ')[0],
-        status: 'pending'
+        status: 'scheduled'
       })
       .select()
       .single()
