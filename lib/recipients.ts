@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { logRecipientActivity } from './activity-history'
 
 export interface Recipient {
   id: string
@@ -38,6 +39,21 @@ export async function createRecipient(userId: string, recipientData: Omit<Recipi
     .single()
 
   if (error) throw error
+
+  // Log activity
+  try {
+    const fullName = `${recipientData.first_name} ${recipientData.last_name || ''}`.trim()
+    await logRecipientActivity(
+      userId,
+      'recipient_added',
+      fullName,
+      recipientData.email
+    )
+  } catch (activityError) {
+    console.error('Failed to log recipient activity:', activityError)
+    // Don't fail the recipient creation if activity logging fails
+  }
+
   return data
 }
 
@@ -54,6 +70,23 @@ export async function updateRecipient(recipientId: string, updates: Partial<Omit
     .single()
 
   if (error) throw error
+
+  // Log activity
+  try {
+    const fullName = `${updates.first_name || ''} ${updates.last_name || ''}`.trim()
+    if (fullName && updates.email) {
+      await logRecipientActivity(
+        data.user_id,
+        'recipient_updated',
+        fullName,
+        updates.email
+      )
+    }
+  } catch (activityError) {
+    console.error('Failed to log recipient activity:', activityError)
+    // Don't fail the recipient update if activity logging fails
+  }
+
   return data
 }
 

@@ -1,6 +1,7 @@
 import { inngest } from '@/lib/inngest'
 import { createAdminClient } from '@/lib/supabase'
 import { Resend } from 'resend'
+import { logEmailSent } from '@/lib/activity-history'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -67,6 +68,19 @@ export const sendScheduledEmail = inngest.createFunction(
             error_message: null
           })
           .eq('id', scheduledEmailId)
+
+        // Log activity for email sent
+        try {
+          await logEmailSent(
+            userId,
+            recipient.email,
+            scheduledEmail.title,
+            data?.id
+          )
+        } catch (activityError) {
+          console.error('Failed to log email sent activity:', activityError)
+          // Don't fail the email send if activity logging fails
+        }
 
         return { 
           message: 'Email sent successfully', 

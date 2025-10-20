@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { addActivity } from './activity-history'
 
 export interface Template {
   id: string
@@ -48,6 +49,20 @@ export async function createTemplate(userId: string, templateData: Omit<Template
     .single()
 
   if (error) throw error
+
+  // Log activity
+  try {
+    await addActivity(
+      userId,
+      'template_created',
+      `Template created: "${templateData.title}"`,
+      `New template added to your collection`
+    )
+  } catch (activityError) {
+    console.error('Failed to log template activity:', activityError)
+    // Don't fail the template creation if activity logging fails
+  }
+
   return data
 }
 
