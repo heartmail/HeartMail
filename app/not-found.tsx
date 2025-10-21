@@ -9,15 +9,15 @@ export default function NotFound() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-pink-900 to-red-900 flex items-center justify-center relative overflow-hidden">
       {/* Floating Hearts */}
-      <div className="floating-hearts">
-        <div className="floating-heart">💖</div>
-        <div className="floating-heart">💕</div>
-        <div className="floating-heart">💗</div>
-        <div className="floating-heart">💝</div>
-        <div className="floating-heart">💘</div>
-        <div className="floating-heart">💖</div>
-        <div className="floating-heart">💕</div>
-        <div className="floating-heart">💗</div>
+      <div className="not-found-floating-hearts">
+        <div className="not-found-floating-heart">💖</div>
+        <div className="not-found-floating-heart">💕</div>
+        <div className="not-found-floating-heart">💗</div>
+        <div className="not-found-floating-heart">💝</div>
+        <div className="not-found-floating-heart">💘</div>
+        <div className="not-found-floating-heart">💖</div>
+        <div className="not-found-floating-heart">💕</div>
+        <div className="not-found-floating-heart">💗</div>
       </div>
 
       <div className="relative z-10 text-center px-4 max-w-2xl mx-auto">
@@ -91,82 +91,6 @@ export default function NotFound() {
         </div>
       </div>
 
-      {/* Custom Styles */}
-      <style jsx>{`
-        .floating-hearts {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          pointer-events: none;
-          z-index: 1;
-        }
-
-        .floating-heart {
-          position: absolute;
-          font-size: 2rem;
-          animation: float 6s ease-in-out infinite;
-          opacity: 0.7;
-        }
-
-        .floating-heart:nth-child(1) {
-          top: 10%;
-          left: 10%;
-          animation-delay: 0s;
-        }
-
-        .floating-heart:nth-child(2) {
-          top: 20%;
-          right: 10%;
-          animation-delay: 1s;
-        }
-
-        .floating-heart:nth-child(3) {
-          top: 60%;
-          left: 5%;
-          animation-delay: 2s;
-        }
-
-        .floating-heart:nth-child(4) {
-          top: 80%;
-          right: 15%;
-          animation-delay: 3s;
-        }
-
-        .floating-heart:nth-child(5) {
-          top: 30%;
-          left: 50%;
-          animation-delay: 4s;
-        }
-
-        .floating-heart:nth-child(6) {
-          top: 70%;
-          right: 30%;
-          animation-delay: 5s;
-        }
-
-        .floating-heart:nth-child(7) {
-          top: 40%;
-          left: 80%;
-          animation-delay: 2.5s;
-        }
-
-        .floating-heart:nth-child(8) {
-          top: 90%;
-          left: 70%;
-          animation-delay: 1.5s;
-        }
-
-        @keyframes float {
-          0%, 100% {
-            transform: translateY(0px) rotate(0deg);
-          }
-          50% {
-            transform: translateY(-20px) rotate(5deg);
-          }
-        }
-      `}</style>
     </div>
   )
 }

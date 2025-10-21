@@ -12,7 +12,24 @@ interface PricingSectionProps {
 
 export default function PricingSection({ user }: PricingSectionProps) {
   const router = useRouter()
-  const { subscription, isLoading, isPro, isPremium, isFree } = useSubscription()
+  // Safely get subscription context
+  let subscription, isLoading, isPro, isPremium, isFree
+  try {
+    const subscriptionContext = useSubscription()
+    subscription = subscriptionContext.subscription
+    isLoading = subscriptionContext.isLoading
+    isPro = subscriptionContext.isPro
+    isPremium = subscriptionContext.isPremium
+    isFree = subscriptionContext.isFree
+  } catch (error) {
+    // SubscriptionProvider not available, use default values
+    console.log('SubscriptionProvider not available in PricingSection')
+    subscription = null
+    isLoading = false
+    isPro = false
+    isPremium = false
+    isFree = true
+  }
 
   const handleCheckout = async (priceId: string) => {
     if (!user) {

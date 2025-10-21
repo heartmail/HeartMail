@@ -101,17 +101,109 @@
   .floating-heart:nth-child(3) { top: 40%; left: 15%; animation-delay: 2s; }
   .floating-heart:nth-child(4) { top: 60%; right: 20%; animation-delay: 3s; }
   .floating-heart:nth-child(5) { top: 80%; left: 25%; animation-delay: 4s; }
-  .floating-heart:nth-child(6) { top: 30%; left: 50%; animation-delay: 1.5s; }
+  .floating-heart:nth-child(6) { top: 30%; left: 75%; animation-delay: 1.5s; }
   .floating-heart:nth-child(7) { top: 70%; right: 5%; animation-delay: 2.5s; }
   .floating-heart:nth-child(8) { top: 15%; left: 80%; animation-delay: 3.5s; }
   
   .hero-title {
     @apply text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    line-height: 1.1;
   }
   
   .hero-subtitle {
     @apply text-lg md:text-xl text-white/90 mb-8 max-w-2xl;
+    line-height: 1.6;
+  }
+  
+  /* Navbar improvements */
+  .navbar-blur {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  /* Better mobile menu */
+  @media (max-width: 768px) {
+    .mobile-menu {
+      animation: slideDown 0.3s ease-out;
+    }
+  }
+  
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* 404 Page Styles */
+  .not-found-floating-hearts {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .not-found-floating-heart {
+    position: absolute;
+    font-size: 2rem;
+    animation: float 6s ease-in-out infinite;
+    opacity: 0.7;
+  }
+
+  .not-found-floating-heart:nth-child(1) {
+    top: 10%;
+    left: 10%;
+    animation-delay: 0s;
+  }
+
+  .not-found-floating-heart:nth-child(2) {
+    top: 20%;
+    right: 10%;
+    animation-delay: 1s;
+  }
+
+  .not-found-floating-heart:nth-child(3) {
+    top: 60%;
+    left: 5%;
+    animation-delay: 2s;
+  }
+
+  .not-found-floating-heart:nth-child(4) {
+    top: 80%;
+    right: 15%;
+    animation-delay: 3s;
+  }
+
+  .not-found-floating-heart:nth-child(5) {
+    top: 30%;
+    left: 50%;
+    animation-delay: 4s;
+  }
+
+  .not-found-floating-heart:nth-child(6) {
+    top: 70%;
+    right: 30%;
+    animation-delay: 5s;
+  }
+
+  .not-found-floating-heart:nth-child(7) {
+    top: 40%;
+    left: 80%;
+    animation-delay: 2.5s;
+  }
+
+  .not-found-floating-heart:nth-child(8) {
+    top: 90%;
+    left: 70%;
+    animation-delay: 1.5s;
   }
   
   .btn-heartmail {

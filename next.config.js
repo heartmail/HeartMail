@@ -5,6 +5,9 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Remove deprecated appDir (not needed in Next.js 14)
+  experimental: {
+    webpackBuildWorker: true,
+  },
   images: {
     domains: ['images.unsplash.com'],
     formats: ['image/webp', 'image/avif'],
