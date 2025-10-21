@@ -87,6 +87,15 @@ export async function POST(req: NextRequest) {
         }
 
         const userId = profile.id
+        const priceId = subscription.items.data[0].price.id
+        
+        // Determine plan based on price ID
+        let plan = 'free'
+        if (priceId === process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID) {
+          plan = 'pro'
+        } else if (priceId === process.env.NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID) {
+          plan = 'premium'
+        }
 
         const { error } = await supabase
           .from('subscriptions')
@@ -95,7 +104,8 @@ export async function POST(req: NextRequest) {
             stripe_customer_id: customerId,
             stripe_subscription_id: subscription.id,
             status: subscription.status,
-            plan_id: subscription.items.data[0].price.id,
+            plan: plan,
+            plan_id: priceId,
             current_period_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
             current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
             cancel_at_period_end: (subscription as any).cancel_at_period_end,

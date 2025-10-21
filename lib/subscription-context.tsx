@@ -80,8 +80,30 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         throw error
       }
 
-      console.log('SubscriptionContext - Found subscription:', data)
-      setSubscription(data || null)
+      if (!data) {
+        // No subscription found, create a default free subscription
+        console.log('SubscriptionContext - No subscription found, creating default free subscription')
+        const { data: newSubscription, error: createError } = await supabase
+          .from('subscriptions')
+          .insert({
+            user_id: user.id,
+            plan: 'free',
+            status: 'active'
+          })
+          .select()
+          .single()
+
+        if (createError) {
+          console.error('Error creating default subscription:', createError)
+          setSubscription(null)
+        } else {
+          console.log('SubscriptionContext - Created default subscription:', newSubscription)
+          setSubscription(newSubscription)
+        }
+      } else {
+        console.log('SubscriptionContext - Found subscription:', data)
+        setSubscription(data)
+      }
     } catch (error) {
       console.error('Error fetching subscription:', error)
       setSubscription(null)
@@ -96,9 +118,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
   }, [user, fetchSubscription, mounted])
 
-  const isPro = subscription?.plan_id === process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID && subscription?.status === 'active'
-  const isPremium = subscription?.plan_id === process.env.NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID && subscription?.status === 'active'
-  const isFree = !subscription || subscription?.status === 'canceled' || subscription?.status === 'unpaid' || subscription?.status === 'incomplete' || subscription?.status === 'incomplete_expired' || subscription?.status === 'paused'
+  const isPro = subscription?.plan === 'pro' && subscription?.status === 'active'
+  const isPremium = subscription?.plan === 'premium' && subscription?.status === 'active'
+  const isFree = !subscription || subscription?.plan === 'free' || subscription?.status === 'canceled' || subscription?.status === 'unpaid' || subscription?.status === 'incomplete' || subscription?.status === 'incomplete_expired' || subscription?.status === 'paused'
 
   // Prevent hydration mismatch
   if (!mounted) {

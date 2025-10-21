@@ -50,6 +50,20 @@ The HeartMail Team`,
       // Don't throw here as this is not critical
     }
 
+    // Create default free subscription for the user
+    const { error: subscriptionError } = await supabase
+      .from('subscriptions')
+      .insert({
+        user_id: userId,
+        plan: 'free',
+        status: 'active'
+      })
+
+    if (subscriptionError) {
+      console.error('Error creating default subscription:', subscriptionError)
+      // Don't throw here as this is not critical
+    }
+
     console.log('User initialization completed successfully')
     return { success: true }
   } catch (error) {
