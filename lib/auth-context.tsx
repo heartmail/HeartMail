@@ -117,17 +117,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     })
     
-    // Create profile after successful signup
+    // Create profile and username after successful signup
     if (data.user && !error) {
       try {
-        await supabase.from('profiles').insert({
-          id: data.user.id,
+        // Create user profile
+        await supabase.from('user_profiles').insert({
+          user_id: data.user.id,
           email: data.user.email,
-          username: username || `user_${Date.now()}`,
-          display_name: username || firstName || email.split('@')[0],
           first_name: firstName,
-          last_name: lastName
+          last_name: lastName,
+          bio: ''
         })
+
+        // Add username to usernames table if provided
+        if (username) {
+          const { error: usernameError } = await supabase
+            .rpc('add_username', { 
+              user_uuid: data.user.id, 
+              username_text: username 
+            })
+          
+          if (usernameError) {
+            console.error('Error adding username:', usernameError)
+          }
+        }
       } catch (profileError) {
         console.error('Error creating profile:', profileError)
         // Don't fail signup if profile creation fails

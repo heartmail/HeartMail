@@ -88,21 +88,21 @@ export default function SignupForm() {
       return
     }
 
-    // Check for duplicate username
+    // Check for duplicate username using the dedicated usernames table
     try {
-      const { data: existingUser } = await supabase
-        .from('user_profiles')
-        .select('username')
-        .eq('username', formData.username)
-        .single()
+      const { data: usernameExists } = await supabase
+        .rpc('check_username_exists', { username_to_check: formData.username })
 
-      if (existingUser) {
+      if (usernameExists) {
         setError('Username already exists. Please choose a different one.')
         setIsLoading(false)
         return
       }
     } catch (error) {
-      // Username doesn't exist, which is good
+      console.error('Error checking username:', error)
+      setError('Error checking username availability. Please try again.')
+      setIsLoading(false)
+      return
     }
 
     const { error } = await signUp(
