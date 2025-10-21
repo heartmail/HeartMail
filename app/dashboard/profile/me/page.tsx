@@ -131,6 +131,7 @@ export default function MyProfilePage() {
   }
 
   const displayName = userProfile.username || userProfile.display_name || userProfile.email?.split('@')[0] || 'Anonymous User'
+  const fullName = `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim() || displayName
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -173,7 +174,7 @@ export default function MyProfilePage() {
 
               {/* Profile Info */}
               <div className="flex-1">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">{displayName}</h1>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">{fullName}</h1>
                 <p className="text-gray-600 mb-4">@{displayName}</p>
                 
                 {userProfile.bio && (
