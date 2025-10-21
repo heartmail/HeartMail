@@ -239,7 +239,6 @@ export default function SettingsPage() {
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'security', label: 'Security', icon: Shield },
     { id: 'billing', label: 'Billing', icon: CreditCard },
-    { id: 'appearance', label: 'Appearance', icon: Palette },
     { id: 'preferences', label: 'Preferences', icon: Globe }
   ]
 
@@ -458,14 +457,15 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {activeTab === 'appearance' && (
+
+            {activeTab === 'preferences' && (
               <div className="settings-section">
-                <h2>Appearance Settings</h2>
-                <p className="section-description">Customize the look and feel of your HeartMail experience.</p>
+                <h2>Preferences</h2>
+                <p className="section-description">Customize your HeartMail experience with personal preferences.</p>
                 
-                <div className="appearance-settings">
-                  <div className="appearance-group">
-                    <h3>Theme</h3>
+                <div className="preferences-settings">
+                  <div className="preference-group">
+                    <h3>Appearance</h3>
                     <div className="theme-options">
                       <label className="theme-option">
                         <input 
@@ -495,37 +495,6 @@ export default function SettingsPage() {
                         </div>
                         <span>Dark</span>
                       </label>
-                    </div>
-                  </div>
-                  
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'preferences' && (
-              <div className="settings-section">
-                <h2>Preferences</h2>
-                <p className="section-description">Customize your HeartMail experience with personal preferences.</p>
-                
-                <div className="preferences-settings">
-                  <div className="preference-group">
-                    <h3>Email Preferences</h3>
-                    <div className="preference-item">
-                      <label>Default email frequency</label>
-                      <select className="form-select">
-                        <option value="daily">Daily</option>
-                        <option value="weekly" selected>Weekly</option>
-                        <option value="monthly">Monthly</option>
-                      </select>
-                    </div>
-                    
-                    <div className="preference-item">
-                      <label>Preferred send time</label>
-                      <select className="form-select">
-                        <option value="morning">Morning (9:00 AM)</option>
-                        <option value="afternoon" selected>Afternoon (2:00 PM)</option>
-                        <option value="evening">Evening (6:00 PM)</option>
-                      </select>
                     </div>
                   </div>
                   

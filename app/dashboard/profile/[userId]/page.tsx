@@ -163,7 +163,7 @@ export default function ProfilePage() {
                 {profilePhoto ? (
                   <img
                     src={getPhotoUrl(profilePhoto.storage_path)}
-                    alt={fullName}
+                    alt={displayName}
                     className="w-24 h-24 rounded-full object-cover border-4 border-heartmail-pink"
                   />
                 ) : (
