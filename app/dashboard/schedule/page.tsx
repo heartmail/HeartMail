@@ -189,6 +189,7 @@ export default function SchedulePage() {
       if (error) {
         console.error('Error fetching scheduled emails:', error)
       } else {
+        console.log('Fetched scheduled emails:', data)
         setScheduledEmails(data || [])
       }
     } catch (error) {
@@ -206,17 +207,39 @@ export default function SchedulePage() {
 
   const getEmailsForDate = (date: string) => {
     // Return scheduled emails for the specific date
-    return scheduledEmails.filter(email => {
+    const emails = scheduledEmails.filter(email => {
       return email.scheduled_date === date
-    }).map(email => ({
-      id: email.id,
-      title: email.title,
-      type: 'scheduled',
-      recipient: email.recipient_id, // We'll need to fetch recipient name separately
-      time: email.scheduled_time || '12:00',
-      date: email.scheduled_date,
-      status: email.status
-    }))
+    }).map(email => {
+      // Determine email type based on title content for legend colors
+      let emailType = 'one-time' // default
+      
+      if (email.title?.toLowerCase().includes('birthday')) {
+        emailType = 'special'
+      } else if (email.title?.toLowerCase().includes('weekly')) {
+        emailType = 'weekly'
+      } else if (email.title?.toLowerCase().includes('monthly')) {
+        emailType = 'monthly'
+      } else if (email.title?.toLowerCase().includes('family') || email.title?.toLowerCase().includes('gang')) {
+        emailType = 'special'
+      }
+      
+      return {
+        id: email.id,
+        title: email.title,
+        type: emailType,
+        recipient: email.recipient_id,
+        time: email.scheduled_time || '12:00',
+        date: email.scheduled_date,
+        status: email.status
+      }
+    })
+    
+    // Debug logging
+    if (emails.length > 0) {
+      console.log(`Found ${emails.length} emails for date ${date}:`, emails)
+    }
+    
+    return emails
   }
 
   const getEmailsForMonth = () => {
@@ -516,6 +539,61 @@ export default function SchedulePage() {
 
   return (
     <div className="space-y-6">
+      <style jsx>{`
+        .legend-dot {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          display: inline-block;
+          margin-right: 8px;
+        }
+        .legend-dot.weekly {
+          background-color: #3b82f6; /* Blue */
+        }
+        .legend-dot.monthly {
+          background-color: #10b981; /* Green */
+        }
+        .legend-dot.one-time {
+          background-color: #f59e0b; /* Orange */
+        }
+        .legend-dot.special {
+          background-color: #ef4444; /* Red */
+        }
+        .event-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          display: inline-block;
+          margin: 1px;
+        }
+        .event-dot.weekly {
+          background-color: #3b82f6; /* Blue */
+        }
+        .event-dot.monthly {
+          background-color: #10b981; /* Green */
+        }
+        .event-dot.one-time {
+          background-color: #f59e0b; /* Orange */
+        }
+        .event-dot.special {
+          background-color: #ef4444; /* Red */
+        }
+        .day-events {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 2px;
+          margin-top: 2px;
+        }
+        .legend-items {
+          display: flex;
+          gap: 16px;
+          flex-wrap: wrap;
+        }
+        .legend-item {
+          display: flex;
+          align-items: center;
+        }
+      `}</style>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Schedule</h1>
