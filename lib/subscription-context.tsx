@@ -34,14 +34,21 @@ const SubscriptionContext = createContext<SubscriptionContextType | undefined>(u
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
   
   // Get user from Supabase session instead of context
   const [user, setUser] = useState<any>(null)
   
   useEffect(() => {
+    setMounted(true)
     const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user || null)
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        setUser(session?.user || null)
+      } catch (error) {
+        console.error('Error getting user session:', error)
+        setUser(null)
+      }
     }
     getUser()
   }, [])
@@ -78,12 +85,19 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   }, [user])
 
   useEffect(() => {
-    fetchSubscription()
-  }, [user, fetchSubscription])
+    if (mounted) {
+      fetchSubscription()
+    }
+  }, [user, fetchSubscription, mounted])
 
   const isPro = subscription?.plan_id === process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID && subscription?.status === 'active'
   const isPremium = subscription?.plan_id === process.env.NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID && subscription?.status === 'active'
   const isFree = !subscription || subscription?.status === 'canceled' || subscription?.status === 'unpaid' || subscription?.status === 'incomplete' || subscription?.status === 'incomplete_expired' || subscription?.status === 'paused'
+
+  // Prevent hydration mismatch
+  if (!mounted) {
+    return <>{children}</>
+  }
 
   return (
     <SubscriptionContext.Provider value={{ subscription, isLoading, fetchSubscription, isPro, isPremium, isFree }}>
