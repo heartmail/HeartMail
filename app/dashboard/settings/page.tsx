@@ -41,8 +41,7 @@ export default function SettingsPage() {
   const [profileForm, setProfileForm] = useState({
     first_name: '',
     last_name: '',
-    email: '',
-    bio: ''
+    email: ''
   })
   
   // Settings state
@@ -233,7 +232,6 @@ export default function SettingsPage() {
   }
 
   const tabs = [
-    { id: 'profile', label: 'Profile', icon: User },
     { id: 'security', label: 'Security', icon: Shield },
     { id: 'billing', label: 'Billing', icon: CreditCard },
     { id: 'preferences', label: 'Preferences', icon: Globe }
@@ -274,85 +272,6 @@ export default function SettingsPage() {
 
           {/* Settings Content */}
           <div className="settings-main">
-            {activeTab === 'profile' && (
-              <div className="settings-section">
-                <h2>Profile Information</h2>
-                <p className="section-description">Update your personal information and contact details.</p>
-                
-                <form className="settings-form">
-                  <div className="form-row">
-                    <div className="form-group">
-                      <Label htmlFor="first_name">First Name</Label>
-                      <Input 
-                        id="first_name"
-                        type="text" 
-                        value={profileForm.first_name}
-                        onChange={(e) => setProfileForm({ ...profileForm, first_name: e.target.value })}
-                        className="form-input"
-                        placeholder="Enter your first name"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <Label htmlFor="last_name">Last Name</Label>
-                      <Input 
-                        id="last_name"
-                        type="text" 
-                        value={profileForm.last_name}
-                        onChange={(e) => setProfileForm({ ...profileForm, last_name: e.target.value })}
-                        className="form-input"
-                        placeholder="Enter your last name"
-                      />
-                    </div>
-                  </div>
-                  
-                  
-                  <div className="form-group">
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input 
-                      id="email"
-                      type="email" 
-                      value={profileForm.email}
-                      onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                      className="form-input"
-                      placeholder="Enter your email"
-                    />
-                  </div>
-                  
-                  
-                  <div className="form-group">
-                    <Label htmlFor="bio">Bio</Label>
-                    <Textarea 
-                      id="bio"
-                      className="form-input" 
-                      rows={4}
-                      value={profileForm.bio}
-                      onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
-                      placeholder="Share a bit about yourself and what HeartMail means to you..."
-                    />
-                  </div>
-                  
-                  <div className="form-actions">
-                    <Button 
-                      onClick={handleSaveProfile}
-                      disabled={saving}
-                      className="btn-heartmail"
-                    >
-                      {saving ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Saving...
-                        </>
-                      ) : (
-                        <>
-                          <Save className="h-4 w-4 mr-2" />
-                          Save Changes
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </form>
-              </div>
-            )}
 
 
             {activeTab === 'security' && (
@@ -447,6 +366,53 @@ export default function SettingsPage() {
               <div className="settings-section">
                 <h2>Preferences</h2>
                 <p className="section-description">Customize your HeartMail experience with personal preferences.</p>
+                
+                <form className="settings-form mb-8">
+                  <div className="form-row">
+                    <div className="form-group">
+                      <Label htmlFor="first_name">First Name</Label>
+                      <Input 
+                        id="first_name"
+                        type="text" 
+                        value={profileForm.first_name}
+                        onChange={(e) => setProfileForm({ ...profileForm, first_name: e.target.value })}
+                        className="form-input"
+                        placeholder="Enter your first name"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <Label htmlFor="last_name">Last Name</Label>
+                      <Input 
+                        id="last_name"
+                        type="text" 
+                        value={profileForm.last_name}
+                        onChange={(e) => setProfileForm({ ...profileForm, last_name: e.target.value })}
+                        className="form-input"
+                        placeholder="Enter your last name"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="form-actions">
+                    <Button 
+                      onClick={handleSaveProfile}
+                      disabled={saving}
+                      className="btn-heartmail"
+                    >
+                      {saving ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          Save Changes
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
                 
                 <div className="preferences-settings">
                   <div className="preference-group">

@@ -21,8 +21,8 @@ export default function LetterLibraryHero() {
         {/* Dashboard Button */}
         <div className="flex justify-start mb-8">
           <Link href="/dashboard">
-            <Button variant="outline" className="bg-white/90 backdrop-blur-sm border-white/20 text-gray-700 hover:bg-white hover:text-heartmail-pink">
-              <Home className="h-4 w-4 mr-2" />
+            <Button variant="outline" className="bg-white/95 backdrop-blur-sm border-white/30 text-gray-800 hover:bg-white hover:text-heartmail-pink px-6 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
+              <Home className="h-5 w-5 mr-3" />
               Dashboard
             </Button>
           </Link>
@@ -40,7 +40,7 @@ export default function LetterLibraryHero() {
           
           {/* Coming Soon Badge */}
           <div className="mb-8">
-            <span className="inline-block bg-white/20 backdrop-blur-sm text-white text-2xl font-bold px-8 py-4 rounded-full border border-white/30 shadow-lg">
+            <span className="inline-block bg-white/20 backdrop-blur-sm text-red-500 text-2xl font-bold px-8 py-4 rounded-full border border-white/30 shadow-lg">
               Coming Soon
             </span>
           </div>
