@@ -21,6 +21,11 @@ export default function PricingSection({ user }: PricingSectionProps) {
     isPro = subscriptionContext.isPro
     isPremium = subscriptionContext.isPremium
     isFree = subscriptionContext.isFree
+    
+    // Debug logging
+    console.log('PricingSection - User:', user?.email)
+    console.log('PricingSection - Subscription:', subscription)
+    console.log('PricingSection - isPro:', isPro, 'isPremium:', isPremium, 'isFree:', isFree)
   } catch (error) {
     // SubscriptionProvider not available, use default values
     console.log('SubscriptionProvider not available in PricingSection')

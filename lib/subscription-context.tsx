@@ -58,11 +58,13 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
   const fetchSubscription = useCallback(async () => {
     if (!user) {
+      console.log('SubscriptionContext - No user, setting subscription to null')
       setSubscription(null)
       setIsLoading(false)
       return
     }
 
+    console.log('SubscriptionContext - Fetching subscription for user:', user.email)
     setIsLoading(true)
     try {
       const { data, error } = await supabase
@@ -78,6 +80,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         throw error
       }
 
+      console.log('SubscriptionContext - Found subscription:', data)
       setSubscription(data || null)
     } catch (error) {
       console.error('Error fetching subscription:', error)
