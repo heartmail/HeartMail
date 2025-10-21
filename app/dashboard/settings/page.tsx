@@ -16,14 +16,11 @@ import { getUserProfile, upsertUserProfile, UserProfile } from '@/lib/profile'
 import { getUserSettings, upsertUserSettings, UserSettings } from '@/lib/settings'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
-import TwoFactorAuth from '@/components/auth/two-factor-auth'
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profile')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [show2FAModal, setShow2FAModal] = useState(false)
-  const [is2FAEnabled, setIs2FAEnabled] = useState(false)
   const [saving, setSaving] = useState(false)
   
   // Email change modal state
@@ -106,21 +103,6 @@ export default function SettingsPage() {
         })
       }
 
-      // Check 2FA status
-      try {
-        const { data, error: mfaError } = await supabase.auth.mfa.listFactors()
-        if (mfaError) {
-          console.error('Error fetching 2FA factors:', mfaError)
-        } else {
-          const factors = data?.all || []
-          const totpFactor = factors.find(factor => 
-            factor.factor_type === 'totp' && factor.status === 'verified'
-          )
-          setIs2FAEnabled(!!totpFactor)
-        }
-      } catch (error) {
-        console.error('Error checking 2FA status:', error)
-      }
     } catch (error) {
       console.error('Error loading user data:', error)
       toast.error('Failed to load user data')
@@ -417,18 +399,18 @@ export default function SettingsPage() {
                     </Button>
                   </div>
                   
-                  <div className="security-item">
+                  <div className="security-item opacity-50 pointer-events-none">
                     <div className="security-info">
-                      <h3>Two-Factor Authentication</h3>
+                      <h3>Two-Factor Authentication (coming soon)</h3>
                       <p>Add an extra layer of security to your account</p>
                     </div>
                     <Button 
                       variant="ghost" 
-                      className={`btn-smooth ${is2FAEnabled ? 'hover:text-red-600' : 'hover:text-heartmail-pink'}`}
-                      onClick={() => setShow2FAModal(true)}
+                      className="btn-smooth cursor-not-allowed"
+                      disabled
                     >
                       <Shield className="h-4 w-4 mr-2" />
-                      {is2FAEnabled ? 'Disable 2FA' : 'Enable 2FA'}
+                      Enable 2FA
                     </Button>
                   </div>
                   
@@ -659,22 +641,6 @@ export default function SettingsPage() {
           </DialogContent>
         </Dialog>
 
-        {/* 2FA Modal */}
-        <TwoFactorAuth
-          isOpen={show2FAModal}
-          onClose={() => setShow2FAModal(false)}
-          onSuccess={() => {
-            setShow2FAModal(false)
-            toast.success('2FA enabled successfully!')
-            loadUserData() // Refresh 2FA status
-          }}
-          onDisable={() => {
-            setShow2FAModal(false)
-            toast.success('2FA disabled successfully!')
-            loadUserData() // Refresh 2FA status
-          }}
-          is2FAEnabled={is2FAEnabled}
-        />
     </div>
   )
 }
