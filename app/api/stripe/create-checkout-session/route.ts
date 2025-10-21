@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     const checkoutSession = await stripe.checkout.sessions.create({
-      customer: customerId,
+      customer: customerId || undefined,
       line_items: [
         {
           price: priceId,

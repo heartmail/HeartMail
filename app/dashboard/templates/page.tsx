@@ -57,7 +57,7 @@ export default function TemplatesPage() {
         template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         template.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
         template.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        template.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+        template.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
       )
       setFilteredTemplates(filtered)
     }

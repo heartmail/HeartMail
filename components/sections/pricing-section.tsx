@@ -90,7 +90,7 @@ export default function PricingSection({ user }: PricingSectionProps) {
   ]
 
   // Adjust button text and actions based on user and subscription status
-  const getButtonProps = (planName: string, planPriceId: string | null) => {
+  const getButtonProps = (planName: string, planPriceId: string | null | undefined) => {
     if (!user) {
       return {
         text: 'Get Started',

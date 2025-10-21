@@ -114,7 +114,7 @@ export async function deleteScheduledEmail(scheduledEmailId: string): Promise<vo
 
   // Log activity
   try {
-    const recipient = scheduledEmail.recipients
+    const recipient = scheduledEmail.recipients[0]
     const recipientName = `${recipient.first_name} ${recipient.last_name || ''}`.trim()
     await logScheduledEmailDeleted(
       scheduledEmail.user_id,

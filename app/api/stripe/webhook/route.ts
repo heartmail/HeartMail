@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
-        const checkoutSession = event.data.object as Stripe.CheckoutSession
+        const checkoutSession = event.data.object as Stripe.Checkout.Session
         const subscriptionId = checkoutSession.subscription as string
         const customerId = checkoutSession.customer as string
         const userId = checkoutSession.metadata?.userId as string
@@ -59,9 +59,9 @@ export async function POST(req: NextRequest) {
             stripe_subscription_id: subscription.id,
             status: subscription.status,
             plan_id: subscription.items.data[0].price.id,
-            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            cancel_at_period_end: subscription.cancel_at_period_end,
+            current_period_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
+            current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
+            cancel_at_period_end: (subscription as any).cancel_at_period_end,
           }, { onConflict: 'stripe_subscription_id' })
 
         if (error) throw error
@@ -96,9 +96,9 @@ export async function POST(req: NextRequest) {
             stripe_subscription_id: subscription.id,
             status: subscription.status,
             plan_id: subscription.items.data[0].price.id,
-            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            cancel_at_period_end: subscription.cancel_at_period_end,
+            current_period_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
+            current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
+            cancel_at_period_end: (subscription as any).cancel_at_period_end,
           }, { onConflict: 'stripe_subscription_id' })
 
         if (error) throw error

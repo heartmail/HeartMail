@@ -51,8 +51,8 @@ export default function TwoFactorAuth({ isOpen, onClose, onSuccess, onDisable, i
       }
 
       if (data) {
-        setQrCode(data.qr_code || '')
-        setSecret(data.secret || '')
+        setQrCode(data.totp.qr_code || '')
+        setSecret(data.totp.secret || '')
         setFactorId(data.id)
         setStep('verify')
         toast.success('Scan the QR code with your authenticator app')
@@ -106,11 +106,12 @@ export default function TwoFactorAuth({ isOpen, onClose, onSuccess, onDisable, i
     setError('')
     
     try {
-      const { data: { factors }, error: fetchError } = await supabase.auth.mfa.getFactors()
+      const { data, error: fetchError } = await supabase.auth.mfa.listFactors()
       if (fetchError) {
         throw fetchError
       }
 
+      const factors = data?.all || []
       const totpFactor = factors.find(factor => 
         factor.factor_type === 'totp' && factor.status === 'verified'
       )

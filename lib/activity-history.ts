@@ -3,7 +3,7 @@ import { supabase } from './supabase'
 export interface ActivityHistory {
   id: string
   user_id: string
-  activity_type: 'email_sent' | 'email_scheduled' | 'recipient_added' | 'recipient_updated' | 'template_created' | 'template_updated' | 'settings_changed'
+  activity_type: 'email_sent' | 'email_scheduled' | 'email_cancelled' | 'recipient_added' | 'recipient_updated' | 'recipient_deleted' | 'template_created' | 'template_updated' | 'template_deleted' | 'settings_changed'
   title: string
   description?: string
   metadata?: any

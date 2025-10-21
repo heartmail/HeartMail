@@ -108,10 +108,11 @@ export default function SettingsPage() {
 
       // Check 2FA status
       try {
-        const { data: { factors }, error: mfaError } = await supabase.auth.mfa.getFactors()
+        const { data, error: mfaError } = await supabase.auth.mfa.listFactors()
         if (mfaError) {
           console.error('Error fetching 2FA factors:', mfaError)
         } else {
+          const factors = data?.all || []
           const totpFactor = factors.find(factor => 
             factor.factor_type === 'totp' && factor.status === 'verified'
           )
