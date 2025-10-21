@@ -107,10 +107,12 @@ export default function BillingSettings() {
 
   const getPlanPrice = (plan: string) => {
     switch (plan) {
-      case 'Family':
-        return '$9.99'
-      case 'Extended Family':
-        return '$19.99'
+      case 'Pro':
+        return '$9'
+      case 'Premium':
+        return '$29'
+      case 'Free':
+        return '$0'
       default:
         return '$0'
     }
@@ -196,14 +198,25 @@ export default function BillingSettings() {
                 </div>
               </div>
 
-              {subscription?.status === 'free' ? (
+              {subscription?.plan === 'Free' || !subscription ? (
                 <div className="text-center py-8">
                   <p className="text-gray-600 mb-4">No active subscription</p>
                   <Button 
-                    onClick={() => window.location.href = '/#pricing'}
+                    onClick={openCustomerPortal}
+                    disabled={portalLoading}
                     className="btn-heartmail"
                   >
-                    View Plans
+                    {portalLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Opening Portal...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="mr-2 h-5 w-5" />
+                        Manage Plans
+                      </>
+                    )}
                   </Button>
                 </div>
               ) : (
@@ -230,10 +243,21 @@ export default function BillingSettings() {
             <div className="text-center py-8">
               <p className="text-gray-600 mb-4">No active subscription</p>
               <Button 
-                onClick={() => window.location.href = '/#pricing'}
+                onClick={openCustomerPortal}
+                disabled={portalLoading}
                 className="btn-heartmail"
               >
-                View Plans
+                {portalLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Opening Portal...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="mr-2 h-5 w-5" />
+                    Manage Plans
+                  </>
+                )}
               </Button>
             </div>
           )}

@@ -25,12 +25,10 @@ export async function POST(request: NextRequest) {
     let customerId: string
 
     if (error || !subscription?.stripe_customer_id) {
-      // No subscription found - return error for now
-      // Free users don't need customer portal access
-      return NextResponse.json(
-        { error: 'No subscription found. Please upgrade to access billing portal.' },
-        { status: 404 }
-      )
+      // No Stripe customer found - redirect to pricing page for free users
+      return NextResponse.json({ 
+        url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/#pricing` 
+      })
     } else {
       customerId = subscription.stripe_customer_id
     }

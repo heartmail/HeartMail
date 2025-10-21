@@ -40,16 +40,47 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // If no subscription found, return free plan
+    // If no subscription found, create a default free subscription
     if (!subscription) {
+      console.log('No subscription found, creating default free subscription for user:', userId)
+      const { data: newSubscription, error: createError } = await supabase
+        .from('subscriptions')
+        .insert({
+          user_id: userId,
+          plan: 'free',
+          status: 'active'
+        })
+        .select()
+        .single()
+
+      if (createError) {
+        console.error('Error creating default subscription:', createError)
+        return NextResponse.json({
+          subscription: {
+            status: 'active',
+            plan: 'Free',
+            price_id: null,
+            current_period_start: null,
+            current_period_end: null,
+            cancel_at_period_end: false,
+            usage: {
+              recipients_count: 0,
+              templates_used: 0,
+              emails_sent_this_month: 0
+            }
+          }
+        })
+      }
+
       return NextResponse.json({
         subscription: {
-          status: 'free',
+          id: newSubscription.id,
+          status: newSubscription.status,
           plan: 'Free',
-          price_id: null,
-          current_period_start: null,
-          current_period_end: null,
-          cancel_at_period_end: false,
+          price_id: newSubscription.plan_id,
+          current_period_start: newSubscription.current_period_start,
+          current_period_end: newSubscription.current_period_end,
+          cancel_at_period_end: newSubscription.cancel_at_period_end,
           usage: {
             recipients_count: 0,
             templates_used: 0,
@@ -59,12 +90,12 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Determine plan name from price ID
+    // Determine plan name from plan field
     let planName = 'Free'
-    if (subscription.stripe_price_id === 'price_1SJ3gL8h6OhnnNXPXyTiD9Yo') {
-      planName = 'Family'
-    } else if (subscription.stripe_price_id === 'price_1SJ3gO8h6OhnnNXPY430Z8DW') {
-      planName = 'Extended Family'
+    if (subscription.plan === 'pro') {
+      planName = 'Pro'
+    } else if (subscription.plan === 'premium') {
+      planName = 'Premium'
     }
 
     return NextResponse.json({
