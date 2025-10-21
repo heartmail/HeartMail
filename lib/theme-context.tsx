@@ -2,9 +2,6 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
-import { updateUserPreferences } from '@/lib/database'
-import { useAuth } from '@/lib/auth-context'
-
 interface ThemeContextType {
   theme: 'light' | 'dark'
   toggleTheme: () => void
@@ -16,16 +13,6 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<'light' | 'dark'>('light')
   const [mounted, setMounted] = useState(false)
-  
-  // Safely get user from auth context
-  let user = null
-  try {
-    const authContext = useAuth()
-    user = authContext?.user
-  } catch (error) {
-    // AuthProvider not available, continue without user
-    console.log('AuthProvider not available in ThemeProvider')
-  }
   
   const pathname = usePathname()
 
@@ -56,7 +43,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [shouldForceLightMode])
 
-  const setTheme = async (newTheme: 'light' | 'dark') => {
+  const setTheme = (newTheme: 'light' | 'dark') => {
     // Don't allow dark mode on auth pages
     if (shouldForceLightMode && newTheme === 'dark') {
       return
@@ -65,15 +52,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setThemeState(newTheme)
     localStorage.setItem('heartmail-theme', newTheme)
     document.documentElement.classList.toggle('dark', newTheme === 'dark')
-    
-    // Save to database if user is logged in
-    if (user) {
-      try {
-        await updateUserPreferences(user.id, { theme: newTheme })
-      } catch (error) {
-        console.error('Failed to save theme preference:', error)
-      }
-    }
   }
 
   const toggleTheme = () => {

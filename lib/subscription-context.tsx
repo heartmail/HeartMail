@@ -41,6 +41,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     const authContext = useAuth()
     user = authContext?.user
   } catch (error) {
+    // AuthProvider not available, continue without user
     console.log('AuthProvider not available in SubscriptionProvider')
   }
 
