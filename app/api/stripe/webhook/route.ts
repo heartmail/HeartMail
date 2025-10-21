@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Get the subscription
-        const subscription: Stripe.Subscription = await stripe.subscriptions.retrieve(
+        const subscription = await stripe.subscriptions.retrieve(
           session.subscription as string
         )
 
@@ -56,8 +56,8 @@ export async function POST(request: NextRequest) {
             stripe_subscription_id: subscription.id,
             plan: planType,
             status: subscription.status,
-            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            current_period_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
+            current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
           })
 
         if (error) {
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'customer.subscription.updated': {
-        const subscription: Stripe.Subscription = event.data.object
+        const subscription = event.data.object
 
         // Find user by customer ID
         const { data: userData } = await supabase
@@ -84,8 +84,8 @@ export async function POST(request: NextRequest) {
             .from('subscriptions')
             .update({
               status: subscription.status,
-              current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+              current_period_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
+              current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
             })
             .eq('user_id', userData.user_id)
 
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'customer.subscription.deleted': {
-        const subscription: Stripe.Subscription = event.data.object
+        const subscription = event.data.object
 
         // Find user by customer ID
         const { data: userData } = await supabase
