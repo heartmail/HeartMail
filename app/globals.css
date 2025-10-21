@@ -1240,6 +1240,61 @@
     transform: translateY(-1px) scale(1.02) !important;
   }
 
+  /* Calendar Legend Styles */
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+  }
+  .legend-dot.weekly {
+    background-color: #3b82f6; /* Blue */
+  }
+  .legend-dot.monthly {
+    background-color: #10b981; /* Green */
+  }
+  .legend-dot.one-time {
+    background-color: #f59e0b; /* Orange */
+  }
+  .legend-dot.special {
+    background-color: #ef4444; /* Red */
+  }
+  .event-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 1px;
+  }
+  .event-dot.weekly {
+    background-color: #3b82f6; /* Blue */
+  }
+  .event-dot.monthly {
+    background-color: #10b981; /* Green */
+  }
+  .event-dot.one-time {
+    background-color: #f59e0b; /* Orange */
+  }
+  .event-dot.special {
+    background-color: #ef4444; /* Red */
+  }
+  .day-events {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin-top: 2px;
+  }
+  .legend-items {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+  }
+
   /* Modal Styles */
   .modal-overlay {
     position: fixed;
