@@ -1,10 +1,15 @@
 import { supabase } from './supabase'
 
 export const signInWithGoogle = async () => {
+  // Use production URL in production, localhost in development
+  const redirectUrl = process.env.NODE_ENV === 'production' 
+    ? 'https://heartsmail.com/api/auth/callback/google'
+    : `${window.location.origin}/api/auth/callback/google`
+    
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/api/auth/callback/google`,
+      redirectTo: redirectUrl,
       queryParams: {
         access_type: 'offline',
         prompt: 'consent',

@@ -53,9 +53,9 @@ export default function RootLayout({
   return (
     <html lang="en">
               <head>
-                <link rel="icon" href="/favicon.ico" sizes="any" />
-                <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-                <link rel="shortcut icon" href="/favicon.ico" />
+                <link rel="icon" href="https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/logo.png" sizes="any" />
+                <link rel="icon" href="https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/logo.png" type="image/png" />
+                <link rel="shortcut icon" href="https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/logo.png" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <meta name="theme-color" content="#E63365" />
                 {/* Preload critical resources */}
