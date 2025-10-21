@@ -197,7 +197,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 )}
               </div>
               <div className="user-info">
-                <div className="user-name">{user?.email || 'User'}</div>
+                <div className="user-name">{user?.user_metadata?.username || user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'User'}</div>
                 <div className="user-plan">Free Plan</div>
               </div>
             </div>

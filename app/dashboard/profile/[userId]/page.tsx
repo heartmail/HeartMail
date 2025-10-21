@@ -5,7 +5,8 @@ import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Heart, Calendar, Mail, User, Image as ImageIcon } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { ArrowLeft, Heart, Calendar, Mail, User, Image as ImageIcon, X } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { getUserPhotos, getPhotoUrl, UserPhoto } from '@/lib/photo-library'
 import { supabase } from '@/lib/supabase'
@@ -25,6 +26,8 @@ export default function ProfilePage() {
   const [publicTemplates, setPublicTemplates] = useState<PublicTemplate[]>([])
   const [profilePhoto, setProfilePhoto] = useState<UserPhoto | null>(null)
   const [loading, setLoading] = useState(true)
+  const [selectedTemplate, setSelectedTemplate] = useState<PublicTemplate | null>(null)
+  const [showTemplateModal, setShowTemplateModal] = useState(false)
   const { user } = useAuth()
   const params = useParams()
   const router = useRouter()
@@ -95,6 +98,11 @@ export default function ProfilePage() {
     }
   }
 
+  const handleViewTemplate = (template: PublicTemplate) => {
+    setSelectedTemplate(template)
+    setShowTemplateModal(true)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -124,7 +132,7 @@ export default function ProfilePage() {
     )
   }
 
-  const fullName = `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim() || 'Anonymous User'
+  const displayName = userProfile.username || userProfile.display_name || userProfile.email?.split('@')[0] || 'Anonymous User'
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -167,8 +175,8 @@ export default function ProfilePage() {
 
               {/* Profile Info */}
               <div className="flex-1">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">{fullName}</h1>
-                <p className="text-gray-600 mb-4">{userProfile.email}</p>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">{displayName}</h1>
+                <p className="text-gray-600 mb-4">@{displayName}</p>
                 
                 {userProfile.bio && (
                   <p className="text-gray-700 mb-4">{userProfile.bio}</p>
@@ -223,7 +231,11 @@ export default function ProfilePage() {
                     </CardDescription>
                     <div className="flex items-center justify-between text-sm text-gray-500">
                       <span>{new Date(template.created_at).toLocaleDateString()}</span>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleViewTemplate(template)}
+                      >
                         View Template
                       </Button>
                     </div>
@@ -234,6 +246,48 @@ export default function ProfilePage() {
           )}
         </div>
       </div>
+
+      {/* Template View Modal */}
+      <Dialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span>{selectedTemplate?.title}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowTemplateModal(false)}
+                className="h-8 w-8 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogTitle>
+            <DialogDescription>
+              <Badge variant="secondary" className="mt-2">
+                {selectedTemplate?.category}
+              </Badge>
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedTemplate && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-2">Template Content:</h4>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <pre className="whitespace-pre-wrap text-sm text-gray-700 font-mono">
+                    {selectedTemplate.content}
+                  </pre>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between text-sm text-gray-500 pt-4 border-t">
+                <span>Created: {new Date(selectedTemplate.created_at).toLocaleDateString()}</span>
+                <span>Public Template</span>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
