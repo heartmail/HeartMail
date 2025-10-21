@@ -8,7 +8,7 @@ interface AuthContextType {
   user: (User & { avatar_url?: string }) | null
   session: Session | null
   loading: boolean
-  signUp: (email: string, password: string) => Promise<{ error: any }>
+  signUp: (email: string, password: string, username?: string, firstName?: string, lastName?: string) => Promise<{ error: any }>
   signIn: (email: string, password: string) => Promise<{ error: any }>
   signOut: () => Promise<{ error: any }>
   resetPassword: (email: string) => Promise<{ error: any }>
@@ -102,14 +102,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
+  const signUp = async (email: string, password: string, username?: string, firstName?: string, lastName?: string) => {
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: {
+          username: username || `user_${Date.now()}`,
+          first_name: firstName,
+          last_name: lastName,
+          display_name: username || firstName || email.split('@')[0]
+        }
       },
     })
+    
+    // Create profile after successful signup
+    if (data.user && !error) {
+      try {
+        await supabase.from('profiles').insert({
+          id: data.user.id,
+          email: data.user.email,
+          username: username || `user_${Date.now()}`,
+          display_name: username || firstName || email.split('@')[0],
+          first_name: firstName,
+          last_name: lastName
+        })
+      } catch (profileError) {
+        console.error('Error creating profile:', profileError)
+        // Don't fail signup if profile creation fails
+      }
+    }
+    
     return { error }
   }
 

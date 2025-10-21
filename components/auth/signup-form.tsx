@@ -22,6 +22,7 @@ export default function SignupForm() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
+    username: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -72,7 +73,13 @@ export default function SignupForm() {
       return
     }
 
-    const { error } = await signUp(formData.email, formData.password)
+    const { error } = await signUp(
+      formData.email, 
+      formData.password, 
+      formData.username, 
+      formData.firstName, 
+      formData.lastName
+    )
     
     if (error) {
       setError(error.message)
@@ -171,6 +178,26 @@ export default function SignupForm() {
                 />
               </div>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="username" className="text-sm font-medium text-gray-700">
+              Username
+            </label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <Input
+                id="username"
+                name="username"
+                type="text"
+                placeholder="Choose a username"
+                className="pl-10"
+                value={formData.username}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <p className="text-xs text-gray-500">This will be your public display name</p>
           </div>
 
           <div className="space-y-2">

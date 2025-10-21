@@ -41,6 +41,7 @@ export default function SettingsPage() {
   const [profileForm, setProfileForm] = useState({
     first_name: '',
     last_name: '',
+    username: '',
     email: '',
     bio: ''
   })
@@ -79,6 +80,7 @@ export default function SettingsPage() {
         setProfileForm({
           first_name: profileData.first_name || '',
           last_name: profileData.last_name || '',
+          username: profileData.username || '',
           email: profileData.email || user!.email || '',
           bio: profileData.bio || ''
         })
@@ -87,6 +89,7 @@ export default function SettingsPage() {
         setProfileForm({
           first_name: '',
           last_name: '',
+          username: '',
           email: user!.email || '',
           bio: ''
         })
@@ -304,6 +307,19 @@ export default function SettingsPage() {
                         placeholder="Enter your last name"
                       />
                     </div>
+                  </div>
+                  
+                  <div className="form-group">
+                    <Label htmlFor="username">Username</Label>
+                    <Input 
+                      id="username"
+                      type="text" 
+                      value={profileForm.username}
+                      onChange={(e) => setProfileForm({ ...profileForm, username: e.target.value })}
+                      className="form-input"
+                      placeholder="Enter your username"
+                    />
+                    <p className="text-sm text-gray-500 mt-1">This will be your public display name</p>
                   </div>
                   
                   <div className="form-group">
