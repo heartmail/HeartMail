@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Check } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -65,11 +66,13 @@ export default function PricingSection({ user }: PricingSectionProps) {
     }
   }
 
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly')
+
   const pricingPlans = [
     {
       name: 'Free',
       price: '$0',
-      frequency: 'per month',
+      frequency: billingPeriod === 'yearly' ? 'per year' : 'per month',
       features: [
         'Send 5 emails/month',
         'Basic templates',
@@ -80,9 +83,9 @@ export default function PricingSection({ user }: PricingSectionProps) {
       priceId: null,
     },
     {
-      name: 'Pro',
-      price: '$9',
-      frequency: 'per month',
+      name: 'Family',
+      price: billingPeriod === 'yearly' ? '$99' : '$9',
+      frequency: billingPeriod === 'yearly' ? 'per year' : 'per month',
       features: [
         'Send 100 emails/month',
         'Access to all templates',
@@ -92,22 +95,26 @@ export default function PricingSection({ user }: PricingSectionProps) {
         'Scheduled emails',
       ],
       isPrimary: true,
-      priceId: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID,
+      priceId: billingPeriod === 'yearly' 
+        ? process.env.NEXT_PUBLIC_STRIPE_FAMILY_YEARLY_PRICE_ID 
+        : process.env.NEXT_PUBLIC_STRIPE_FAMILY_MONTHLY_PRICE_ID,
     },
     {
-      name: 'Premium',
-      price: '$29',
-      frequency: 'per month',
+      name: 'Extended',
+      price: billingPeriod === 'yearly' ? '$299' : '$29',
+      frequency: billingPeriod === 'yearly' ? 'per year' : 'per month',
       features: [
         'Send unlimited emails',
         'Custom templates',
         'Dedicated account manager',
         'Advanced analytics',
         'Early access to new features',
-        'All Pro features',
+        'All Family features',
       ],
       isPrimary: false,
-      priceId: process.env.NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID,
+      priceId: billingPeriod === 'yearly' 
+        ? process.env.NEXT_PUBLIC_STRIPE_EXTENDED_YEARLY_PRICE_ID 
+        : process.env.NEXT_PUBLIC_STRIPE_EXTENDED_MONTHLY_PRICE_ID,
     },
   ]
 
@@ -153,8 +160,8 @@ export default function PricingSection({ user }: PricingSectionProps) {
       }
     }
 
-    // Pro plan logic
-    if (planName === 'Pro') {
+    // Family plan logic
+    if (planName === 'Family') {
       if (isPro) {
         return { 
           text: 'Active', 
@@ -163,7 +170,7 @@ export default function PricingSection({ user }: PricingSectionProps) {
           className: 'w-full py-3 text-lg font-semibold bg-green-100 text-green-800 cursor-not-allowed'
         }
       } else if (isPremium) {
-        // Premium users can manage their plan
+        // Extended users can manage their plan
         return { 
           text: 'Manage Plan', 
           action: () => router.push('/dashboard/settings?tab=billing'), 
@@ -171,7 +178,7 @@ export default function PricingSection({ user }: PricingSectionProps) {
           className: 'w-full py-3 text-lg font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300'
         }
       } else {
-        // Free users can upgrade to Pro
+        // Free users can upgrade to Family
         return { 
           text: 'Upgrade', 
           action: () => handleCheckout(planPriceId!), 
@@ -181,8 +188,8 @@ export default function PricingSection({ user }: PricingSectionProps) {
       }
     }
 
-    // Premium plan logic
-    if (planName === 'Premium') {
+    // Extended plan logic
+    if (planName === 'Extended') {
       if (isPremium) {
         return { 
           text: 'Active', 
@@ -191,7 +198,7 @@ export default function PricingSection({ user }: PricingSectionProps) {
           className: 'w-full py-3 text-lg font-semibold bg-green-100 text-green-800 cursor-not-allowed'
         }
       } else {
-        // Free or Pro users can upgrade to Premium
+        // Free or Family users can upgrade to Extended
         return { 
           text: 'Upgrade', 
           action: () => handleCheckout(planPriceId!), 
@@ -214,9 +221,38 @@ export default function PricingSection({ user }: PricingSectionProps) {
     <section id="pricing" className="py-20 bg-white dark:bg-gray-900">
       <div className="container mx-auto px-4 text-center">
         <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Simple & Transparent Pricing</h2>
-        <p className="text-xl text-gray-600 dark:text-gray-300 mb-12">
+        <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
           Choose the plan that's right for you and start sending heartfelt messages.
         </p>
+        
+        {/* Billing Period Toggle */}
+        <div className="flex items-center justify-center mb-12">
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-1 flex">
+            <button
+              onClick={() => setBillingPeriod('monthly')}
+              className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
+                billingPeriod === 'monthly'
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setBillingPeriod('yearly')}
+              className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
+                billingPeriod === 'yearly'
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Yearly
+              <span className="ml-2 bg-heartmail-pink text-white text-xs px-2 py-1 rounded-full">
+                Save 20%
+              </span>
+            </button>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {pricingPlans.map((plan, index) => {
