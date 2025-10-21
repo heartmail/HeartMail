@@ -78,16 +78,14 @@ export default function SettingsPage() {
         setProfileForm({
           first_name: profileData.first_name || '',
           last_name: profileData.last_name || '',
-          email: profileData.email || user!.email || '',
-          bio: profileData.bio || ''
+          email: profileData.email || user!.email || ''
         })
       } else {
         // Initialize with user email if no profile exists
         setProfileForm({
           first_name: '',
           last_name: '',
-          email: user!.email || '',
-          bio: ''
+          email: user!.email || ''
         })
       }
       
