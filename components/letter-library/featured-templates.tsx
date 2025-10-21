@@ -134,11 +134,11 @@ export default function FeaturedTemplates() {
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button variant="outline" size="sm" className="flex-1 opacity-50 cursor-not-allowed" disabled>
                       <Eye className="h-4 w-4 mr-2" />
                       Preview
                     </Button>
-                    <Button size="sm" className="flex-1 btn-heartmail">
+                    <Button size="sm" className="flex-1 btn-heartmail opacity-50 cursor-not-allowed" disabled>
                       <Plus className="h-4 w-4 mr-2" />
                       Use Template
                     </Button>

@@ -126,8 +126,8 @@ export default function CategoriesSection() {
             const IconComponent = iconMap[category.name.toLowerCase() as keyof typeof iconMap] || iconMap.default
             const colorClass = colorMap[category.name.toLowerCase() as keyof typeof colorMap] || colorMap.default
             return (
-              <Link key={category.id} href={`/letter-library/${category.name.toLowerCase()}`}>
-                <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer group">
+              <div key={category.id} className="relative">
+                <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-not-allowed group opacity-75">
                   <CardHeader>
                     <div className={`w-16 h-16 bg-gradient-to-r ${colorClass} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
                       <IconComponent className="h-8 w-8 text-white" />
@@ -144,7 +144,11 @@ export default function CategoriesSection() {
                     </div>
                   </CardContent>
                 </Card>
-              </Link>
+                {/* Coming Soon Overlay */}
+                <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <span className="text-heartmail-pink font-bold text-lg">Coming Soon</span>
+                </div>
+              </div>
             )
           })}
         </div>

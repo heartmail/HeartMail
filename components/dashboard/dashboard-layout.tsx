@@ -13,7 +13,7 @@ const menuItems = [
   { href: '/dashboard/recipients', label: 'Recipients', icon: Users },
   { href: '/dashboard/templates', label: 'Templates', icon: Palette },
   { href: '/dashboard/schedule', label: 'Schedule', icon: Calendar },
-  { href: '/dashboard/photos', label: 'Photos', icon: Image },
+  { href: '/dashboard/photos', label: 'Photos (coming soon)', icon: Image, disabled: true },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ]
 
@@ -163,18 +163,22 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="sidebar-menu">
           {menuItems.map((item) => {
             const isActive = pathname === item.href
+            const isDisabled = item.disabled
             return (
               <button
                 key={item.href}
-                className={`menu-item ${isActive ? 'active' : ''}`}
+                className={`menu-item ${isActive ? 'active' : ''} ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                 onClick={() => {
-                  router.push(item.href)
-                  if (isMobile) {
-                    closeMobileSidebar()
+                  if (!isDisabled) {
+                    router.push(item.href)
+                    if (isMobile) {
+                      closeMobileSidebar()
+                    }
                   }
                 }}
                 type="button"
                 aria-label={`Navigate to ${item.label}`}
+                disabled={isDisabled}
               >
                 <item.icon className="h-5 w-5" />
                 <span>{item.label}</span>

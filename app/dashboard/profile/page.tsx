@@ -10,7 +10,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (user?.id) {
-      router.push(`/dashboard/profile/${user.id}`)
+      router.push('/dashboard/profile/me')
     }
   }, [user, router])
 
