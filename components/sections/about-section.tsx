@@ -34,10 +34,14 @@ export default function AboutSection() {
           </div>
           
           <div className="flex justify-center">
-            <div className="w-80 h-80 bg-gradient-to-br from-heartmail-pink to-pink-400 rounded-3xl flex items-center justify-center">
+            <div className="w-80 h-80 bg-gradient-to-br from-heartmail-pink to-pink-400 rounded-3xl flex items-center justify-center p-8">
               <div className="text-center text-white">
-                <div className="text-6xl mb-4">💖</div>
-                <div className="text-xl font-semibold">Family Connection</div>
+                <img 
+                  src="https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/logo.png" 
+                  alt="HeartMail Logo" 
+                  className="w-48 h-48 object-contain mx-auto mb-4"
+                />
+                <div className="text-xl font-semibold">HeartMail</div>
               </div>
             </div>
           </div>

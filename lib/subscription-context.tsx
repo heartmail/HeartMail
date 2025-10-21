@@ -12,6 +12,7 @@ export interface Subscription {
   stripe_customer_id: string;
   stripe_subscription_id: string;
   status: SubscriptionStatus;
+  plan: string; // Plan name: 'free', 'pro', 'premium'
   plan_id: string; // Stripe Price ID
   current_period_start: string;
   current_period_end: string;
