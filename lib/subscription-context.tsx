@@ -43,6 +43,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     setMounted(true)
     const getUser = async () => {
       try {
+        // Only run on client side
+        if (typeof window === 'undefined') return
+        
         const { data: { session } } = await supabase.auth.getSession()
         setUser(session?.user || null)
       } catch (error) {
