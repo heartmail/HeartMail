@@ -266,25 +266,35 @@ export default function BillingSettings() {
 
       {/* Stripe Customer Portal Modal */}
       <Dialog open={showPortalModal} onOpenChange={setShowPortalModal}>
-        <DialogContent className="max-w-4xl h-[80vh] p-0">
+        <DialogContent className="max-w-4xl h-[80vh] p-0 w-full mx-4 sm:mx-0">
           <DialogHeader className="p-6 pb-0">
             <DialogTitle className="flex items-center justify-between">
               <span className="text-xl font-semibold">Manage Billing</span>
               <button
                 onClick={() => setShowPortalModal(false)}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
+                aria-label="Close billing portal"
               >
                 <X className="h-5 w-5" />
               </button>
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 p-6 pt-4">
-            {portalUrl && (
+            {portalUrl ? (
               <iframe
                 src={portalUrl}
-                className="w-full h-full rounded-lg border border-gray-200"
-                title="Stripe Customer Portal"
+                className="w-full h-full rounded-lg border border-gray-200 min-h-[400px]"
+                title="Stripe Customer Portal - Manage your subscription and billing information"
+                loading="lazy"
+                sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
               />
+            ) : (
+              <div className="flex items-center justify-center h-full min-h-[400px]">
+                <div className="text-center">
+                  <div className="text-6xl mb-4">📄</div>
+                  <p className="text-gray-600">Loading billing portal...</p>
+                </div>
+              </div>
             )}
           </div>
         </DialogContent>

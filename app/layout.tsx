@@ -58,8 +58,7 @@ export default function RootLayout({
                 <link rel="shortcut icon" href="https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/logo.png" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <meta name="theme-color" content="#E63365" />
-                {/* Preload critical resources */}
-                <link rel="preload" href="/background-home.jpg" as="image" />
+                {/* Preload critical resources - removed problematic preload */}
                 <link rel="dns-prefetch" href="//fonts.googleapis.com" />
                 <link rel="dns-prefetch" href="//images.unsplash.com" />
                 {/* Critical CSS for above-the-fold content */}

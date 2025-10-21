@@ -77,6 +77,10 @@ export default function Home() {
               backgroundRepeat: 'no-repeat',
               backgroundColor: '#f3f4f6', // Fallback color
             }}
+            onError={(e) => {
+              // Fallback to gradient if image fails to load
+              e.currentTarget.style.backgroundImage = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            }}
           />
           
           {/* Content with overlay */}

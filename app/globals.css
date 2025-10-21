@@ -2095,6 +2095,13 @@
     gap: 2rem;
   }
 
+  @media (max-width: 768px) {
+    .settings-container {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+  }
+
   .settings-sidebar {
     background: white;
     border-radius: 12px;
@@ -2102,6 +2109,12 @@
     border: 1px solid #e2e8f0;
     padding: 1.5rem;
     height: fit-content;
+  }
+
+  @media (max-width: 768px) {
+    .settings-sidebar {
+      padding: 1rem;
+    }
   }
 
   .dark .settings-sidebar {
@@ -2152,6 +2165,12 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     border: 1px solid #e2e8f0;
     padding: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    .settings-main {
+      padding: 1rem;
+    }
   }
 
   .dark .settings-main {
@@ -2279,6 +2298,19 @@
     padding: 1.5rem;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
+  }
+
+  @media (max-width: 768px) {
+    .security-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1rem;
+    }
+    
+    .security-item button {
+      width: 100%;
+    }
   }
 
   .security-item button {
