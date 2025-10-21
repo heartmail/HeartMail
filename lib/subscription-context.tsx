@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import { useAuth } from '@/lib/auth-context'
+// Removed useAuth import to prevent context errors
 
 export type SubscriptionStatus = 'trialing' | 'active' | 'past_due' | 'canceled' | 'unpaid' | 'incomplete' | 'incomplete_expired' | 'paused' | null;
 
@@ -35,15 +35,16 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   
-  // Safely get user from auth context
-  let user = null
-  try {
-    const authContext = useAuth()
-    user = authContext?.user
-  } catch (error) {
-    // AuthProvider not available, continue without user
-    console.log('AuthProvider not available in SubscriptionProvider')
-  }
+  // Get user from Supabase session instead of context
+  const [user, setUser] = useState<any>(null)
+  
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setUser(session?.user || null)
+    }
+    getUser()
+  }, [])
 
   const fetchSubscription = useCallback(async () => {
     if (!user) {
