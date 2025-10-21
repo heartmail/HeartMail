@@ -1,9 +1,13 @@
+'use client'
+
 import dynamicImport from 'next/dynamic'
 import Navbar from '@/components/layout/navbar'
 import HeroSection from '@/components/sections/hero-section'
 import { useAuth } from '@/lib/auth-context'
 import { useAuthState } from '@/lib/use-auth-state'
 import AuthInitializer from '@/components/auth/auth-initializer'
+import { ErrorBoundary } from '@/components/error-boundary'
+import { Suspense } from 'react'
 
 // Force dynamic rendering to prevent AuthProvider issues during build
 export const dynamic = 'force-dynamic'
@@ -30,48 +34,73 @@ const CTASection = dynamicImport(() => import('@/components/sections/cta-section
 })
 
 export default function Home() {
-  // Use fast auth state check
-  const { user, isAuthenticated, loading } = useAuthState()
+  // Use fast auth state check with error handling
+  let user = null
+  let isAuthenticated = false
+  let loading = true
   
-  // Fallback to old auth context if needed
-  let fallbackUser = null
   try {
-    const authContext = useAuth()
-    fallbackUser = authContext?.user
+    const authState = useAuthState()
+    user = authState.user
+    isAuthenticated = authState.isAuthenticated
+    loading = authState.loading
   } catch (error) {
-    // AuthProvider not available, continue without user
-    console.log('AuthProvider not available in Home page')
+    console.error('Error with useAuthState:', error)
+    // Fallback to old auth context if needed
+    try {
+      const authContext = useAuth()
+      user = authContext?.user
+      isAuthenticated = !!user
+      loading = false
+    } catch (fallbackError) {
+      console.error('Error with useAuth fallback:', fallbackError)
+      user = null
+      isAuthenticated = false
+      loading = false
+    }
   }
   
   // Use the most reliable user data
-  const currentUser = user || fallbackUser
+  const currentUser = user
 
   return (
-    <AuthInitializer>
-      <main className="min-h-screen relative">
-        {/* Background Image - Optimized loading */}
-        <div 
-          className="fixed inset-0 z-0"
-          style={{
-            backgroundImage: 'url(/background-home.jpg)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            backgroundColor: '#f3f4f6', // Fallback color
-          }}
-        />
-        
-        {/* Content with overlay */}
-        <div className="relative z-10">
-          <Navbar />
-          <HeroSection />
-          <FeaturesSection />
-          <AboutSection />
-          <PricingSection />
-          <CTASection />
-          <Footer />
-        </div>
-      </main>
-    </AuthInitializer>
+    <ErrorBoundary>
+      <AuthInitializer>
+        <main className="min-h-screen relative">
+          {/* Background Image - Optimized loading */}
+          <div 
+            className="fixed inset-0 z-0"
+            style={{
+              backgroundImage: 'url(/background-home.jpg)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              backgroundColor: '#f3f4f6', // Fallback color
+            }}
+          />
+          
+          {/* Content with overlay */}
+          <div className="relative z-10">
+            <Navbar />
+            <HeroSection />
+            <Suspense fallback={<div className="h-96 bg-gray-50" />}>
+              <FeaturesSection />
+            </Suspense>
+            <Suspense fallback={<div className="h-96 bg-gray-50" />}>
+              <AboutSection />
+            </Suspense>
+            <Suspense fallback={<div className="h-96 bg-gray-50" />}>
+              <PricingSection />
+            </Suspense>
+            <Suspense fallback={<div className="h-64 bg-gray-50" />}>
+              <CTASection />
+            </Suspense>
+            <Suspense fallback={<div className="h-32 bg-gray-50" />}>
+              <Footer />
+            </Suspense>
+          </div>
+        </main>
+      </AuthInitializer>
+    </ErrorBoundary>
   )
 }

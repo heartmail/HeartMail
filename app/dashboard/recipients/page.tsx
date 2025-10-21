@@ -165,7 +165,14 @@ export default function RecipientsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Recipients</h1>
-          <p className="text-gray-600 mt-1">Manage your loved ones who will receive your heartfelt emails</p>
+          <p className="text-gray-600 mt-1">
+            Manage your loved ones who will receive your heartfelt emails
+            {recipients.length > 0 && (
+              <span className="ml-2 text-heartmail-pink font-semibold">
+                ({recipients.length} recipient{recipients.length !== 1 ? 's' : ''})
+              </span>
+            )}
+          </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
           <DialogTrigger asChild>
