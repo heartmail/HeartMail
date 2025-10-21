@@ -4,6 +4,7 @@ import './globals.css'
 import { AuthProvider } from '@/lib/auth-context'
 import { ThemeProvider } from '@/lib/theme-context'
 import { SubscriptionProvider } from '@/lib/subscription-context'
+import Favicon from '@/components/favicon'
 
 // Force dynamic rendering to prevent AuthProvider issues during build
 export const dynamic = 'force-dynamic'
@@ -75,6 +76,7 @@ export default function RootLayout({
                 }} />
               </head>
       <body className={inter.className}>
+        <Favicon />
         <AuthProvider>
           <ThemeProvider>
             <SubscriptionProvider>
