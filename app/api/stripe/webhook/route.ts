@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase'
 import { headers } from 'next/headers'
+import Stripe from 'stripe'
 
 export async function POST(request: NextRequest) {
   const body = await request.text()
@@ -38,9 +39,13 @@ export async function POST(request: NextRequest) {
         }
 
         // Get the subscription
-        const subscription = await stripe.subscriptions.retrieve(
+        const subscription: Stripe.Subscription = await stripe.subscriptions.retrieve(
           session.subscription as string
         )
+
+        // Determine plan type based on price
+        const priceAmount = subscription.items.data[0]?.price?.unit_amount || 0
+        const planType = priceAmount === 999 ? 'family' : 'extended'
 
         // Update user's subscription in database
         const { error } = await supabase
@@ -49,7 +54,7 @@ export async function POST(request: NextRequest) {
             user_id: userId,
             stripe_customer_id: session.customer as string,
             stripe_subscription_id: subscription.id,
-            plan: subscription.items.data[0].price.unit_amount === 999 ? 'family' : 'extended',
+            plan: planType,
             status: subscription.status,
             current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
             current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
@@ -64,7 +69,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'customer.subscription.updated': {
-        const subscription = event.data.object
+        const subscription: Stripe.Subscription = event.data.object
 
         // Find user by customer ID
         const { data: userData } = await supabase
@@ -92,7 +97,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'customer.subscription.deleted': {
-        const subscription = event.data.object
+        const subscription: Stripe.Subscription = event.data.object
 
         // Find user by customer ID
         const { data: userData } = await supabase
