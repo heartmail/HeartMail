@@ -218,22 +218,22 @@ export default function PricingSection({ user }: PricingSectionProps) {
   }
 
   return (
-    <section id="pricing" className="py-20 bg-white dark:bg-gray-900">
+    <section id="pricing" className="py-20" style={{ backgroundColor: '#363636' }}>
       <div className="container mx-auto px-4 text-center">
-        <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Simple & Transparent Pricing</h2>
-        <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
+        <h2 className="text-4xl font-bold text-white mb-4">Simple & Transparent Pricing</h2>
+        <p className="text-xl text-gray-300 mb-8">
           Choose the plan that's right for you and start sending heartfelt messages.
         </p>
         
         {/* Billing Period Toggle */}
         <div className="flex items-center justify-center mb-12">
-          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-1 flex">
+          <div className="bg-gray-700 rounded-lg p-1 flex">
             <button
               onClick={() => setBillingPeriod('monthly')}
               className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
                 billingPeriod === 'monthly'
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-300 hover:text-white'
               }`}
             >
               Monthly
@@ -242,8 +242,8 @@ export default function PricingSection({ user }: PricingSectionProps) {
               onClick={() => setBillingPeriod('yearly')}
               className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
                 billingPeriod === 'yearly'
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-300 hover:text-white'
               }`}
             >
               Yearly
