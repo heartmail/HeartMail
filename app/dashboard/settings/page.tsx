@@ -18,7 +18,7 @@ import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('profile')
+  const [activeTab, setActiveTab] = useState('security')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)

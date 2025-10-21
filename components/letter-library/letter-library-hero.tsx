@@ -33,15 +33,15 @@ export default function LetterLibraryHero() {
           <h1 className="hero-title">
             Letter <span className="text-pink-300 underline decoration-pink-300 decoration-4 underline-offset-4">Library</span>
           </h1>
-          <p className="hero-subtitle">
+          <p className="hero-subtitle text-center">
             Discover beautiful, heartfelt letter templates for every occasion. 
             From daily check-ins to special celebrations, find the perfect words to express your love.
           </p>
           
           {/* Coming Soon Badge */}
           <div className="mb-8">
-            <span className="inline-block bg-white/20 backdrop-blur-sm text-red-500 text-2xl font-bold px-8 py-4 rounded-full border border-white/30 shadow-lg">
-              Coming Soon
+            <span className="inline-block bg-white/90 backdrop-blur-sm text-heartmail-pink text-2xl font-bold px-8 py-4 rounded-full border-2 border-white shadow-xl">
+              COMING SOON
             </span>
           </div>
           

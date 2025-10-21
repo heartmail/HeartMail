@@ -113,52 +113,101 @@ export default function PricingSection({ user }: PricingSectionProps) {
 
   // Adjust button text and actions based on user and subscription status
   const getButtonProps = (planName: string, planPriceId: string | null | undefined) => {
+    // No user - show "Get Started" for all plans
     if (!user) {
       return {
         text: 'Get Started',
         action: () => router.push('/login'),
         disabled: false,
+        className: 'w-full py-3 text-lg font-semibold bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl'
       }
     }
 
-    // User is signed in
+    // User is signed in but subscription is loading
     if (isLoading) {
       return {
         text: 'Loading...',
         action: () => {},
         disabled: true,
+        className: 'w-full py-3 text-lg font-semibold bg-gray-200 text-gray-800 cursor-not-allowed'
       }
     }
 
+    // Free plan logic
     if (planName === 'Free') {
       if (isFree) {
-        return { text: 'Current Plan', action: () => {}, disabled: true }
+        return { 
+          text: 'Active', 
+          action: () => {}, 
+          disabled: true,
+          className: 'w-full py-3 text-lg font-semibold bg-green-100 text-green-800 cursor-not-allowed'
+        }
       } else {
-        // If user is Pro/Premium, they can't downgrade to Free via this button
-        return { text: 'Not Applicable', action: () => {}, disabled: true }
+        // Pro/Premium users can't downgrade to Free
+        return { 
+          text: 'Not Available', 
+          action: () => {}, 
+          disabled: true,
+          className: 'w-full py-3 text-lg font-semibold bg-gray-200 text-gray-500 cursor-not-allowed'
+        }
       }
     }
 
-    // For Pro/Premium plans
-    if (isPro && planName === 'Pro') {
-      return { text: 'Current Plan', action: () => {}, disabled: true }
-    }
-    if (isPremium && planName === 'Premium') {
-      return { text: 'Current Plan', action: () => {}, disabled: true }
+    // Pro plan logic
+    if (planName === 'Pro') {
+      if (isPro) {
+        return { 
+          text: 'Active', 
+          action: () => {}, 
+          disabled: true,
+          className: 'w-full py-3 text-lg font-semibold bg-green-100 text-green-800 cursor-not-allowed'
+        }
+      } else if (isPremium) {
+        // Premium users can manage their plan
+        return { 
+          text: 'Manage Plan', 
+          action: () => router.push('/dashboard/settings?tab=billing'), 
+          disabled: false,
+          className: 'w-full py-3 text-lg font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300'
+        }
+      } else {
+        // Free users can upgrade to Pro
+        return { 
+          text: 'Upgrade', 
+          action: () => handleCheckout(planPriceId!), 
+          disabled: false,
+          className: 'w-full py-3 text-lg font-semibold bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl'
+        }
+      }
     }
 
-    // If user is Free and wants to upgrade
-    if (isFree) {
-      return { text: 'Upgrade', action: () => handleCheckout(planPriceId!), disabled: false }
+    // Premium plan logic
+    if (planName === 'Premium') {
+      if (isPremium) {
+        return { 
+          text: 'Active', 
+          action: () => {}, 
+          disabled: true,
+          className: 'w-full py-3 text-lg font-semibold bg-green-100 text-green-800 cursor-not-allowed'
+        }
+      } else {
+        // Free or Pro users can upgrade to Premium
+        return { 
+          text: 'Upgrade', 
+          action: () => handleCheckout(planPriceId!), 
+          disabled: false,
+          className: 'w-full py-3 text-lg font-semibold bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl'
+        }
+      }
     }
 
-    // If user is Pro and wants to upgrade to Premium
-    if (isPro && planName === 'Premium') {
-      return { text: 'Upgrade', action: () => handleCheckout(planPriceId!), disabled: false }
+    // Default fallback
+    return { 
+      text: 'Get Started', 
+      action: () => router.push('/login'), 
+      disabled: false,
+      className: 'w-full py-3 text-lg font-semibold bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl'
     }
-
-    // Default for other cases (e.g., Pro user viewing Pro plan, Premium user viewing Pro plan)
-    return { text: 'Manage Plan', action: () => router.push('/dashboard/settings?tab=billing'), disabled: false }
   }
 
   return (
@@ -171,7 +220,7 @@ export default function PricingSection({ user }: PricingSectionProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {pricingPlans.map((plan, index) => {
-            const { text, action, disabled } = getButtonProps(plan.name, plan.priceId)
+            const { text, action, disabled, className } = getButtonProps(plan.name, plan.priceId)
             return (
               <div
                 key={index}
@@ -193,11 +242,7 @@ export default function PricingSection({ user }: PricingSectionProps) {
                   ))}
                 </ul>
                 <Button
-                  className={`w-full py-3 text-lg font-semibold ${
-                    plan.isPrimary
-                      ? 'bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl'
-                      : 'bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600'
-                  }`}
+                  className={className}
                   onClick={action}
                   disabled={disabled}
                 >

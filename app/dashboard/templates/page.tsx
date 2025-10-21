@@ -204,7 +204,14 @@ export default function TemplatesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Templates</h1>
-          <p className="text-gray-600 mt-1">Create and manage your email templates</p>
+          <p className="text-gray-600 mt-1">
+            Create and manage your email templates
+            {templates.length > 0 && (
+              <span className="ml-2 text-heartmail-pink font-semibold">
+                ({templates.length} template{templates.length !== 1 ? 's' : ''})
+              </span>
+            )}
+          </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
           <DialogTrigger asChild>
