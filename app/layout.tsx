@@ -20,9 +20,12 @@ export const metadata: Metadata = {
   title: 'HeartMail - Keeping hearts connected, one email at a time',
   description: 'Send heartfelt emails to your loved ones with HeartMail. Schedule, personalize, and stay connected with the people who matter most.',
   icons: {
-    icon: '/favicon.ico',
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/logo.png', type: 'image/png' },
+    ],
     shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
+    apple: '/logo.png',
   },
   // Performance optimizations
   viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
