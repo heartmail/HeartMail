@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/lib/auth-context'
 import { useRouter } from 'next/navigation'
 import { signInWithGoogle } from '@/lib/google-oauth'
+import { supabase } from '@/lib/supabase'
 
 export default function SignupForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -71,6 +72,37 @@ export default function SignupForm() {
       setError('Password is too weak. Please use a stronger password.')
       setIsLoading(false)
       return
+    }
+
+    // Validate username format
+    const usernameRegex = /^[a-zA-Z0-9._]+$/
+    if (!usernameRegex.test(formData.username)) {
+      setError('Username can only contain letters, numbers, dots, and underscores.')
+      setIsLoading(false)
+      return
+    }
+
+    if (formData.username.length < 3 || formData.username.length > 20) {
+      setError('Username must be between 3 and 20 characters.')
+      setIsLoading(false)
+      return
+    }
+
+    // Check for duplicate username
+    try {
+      const { data: existingUser } = await supabase
+        .from('user_profiles')
+        .select('username')
+        .eq('username', formData.username)
+        .single()
+
+      if (existingUser) {
+        setError('Username already exists. Please choose a different one.')
+        setIsLoading(false)
+        return
+      }
+    } catch (error) {
+      // Username doesn't exist, which is good
     }
 
     const { error } = await signUp(

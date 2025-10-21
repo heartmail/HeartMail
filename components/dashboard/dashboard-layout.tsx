@@ -187,7 +187,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           })}
         </div>
         <div className="sidebar-footer">
-          <Link href={`/dashboard/profile/${user?.id}`} className="user-profile block hover:bg-gray-50 rounded-lg p-2 transition-colors">
+          <div className="user-profile block hover:bg-gray-50 rounded-lg p-2 transition-colors">
             <div className="flex items-center space-x-3">
               <div className="user-avatar">
                 {user?.avatar_url ? (
@@ -205,7 +205,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <div className="user-plan">Free Plan</div>
               </div>
             </div>
-          </Link>
+          </div>
           <div className="mt-4">
             <button
               className="w-full btn-heartmail flex items-center justify-center space-x-2 py-3 px-4 rounded-lg text-sm font-medium"
