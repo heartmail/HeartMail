@@ -28,7 +28,15 @@ const CTASection = dynamicImport(() => import('@/components/sections/cta-section
 })
 
 export default function Home() {
-  const { user } = useAuth()
+  // Safely get user from auth context
+  let user = null
+  try {
+    const authContext = useAuth()
+    user = authContext?.user
+  } catch (error) {
+    // AuthProvider not available, continue without user
+    console.log('AuthProvider not available in Home page')
+  }
 
   return (
     <main className="min-h-screen relative">
