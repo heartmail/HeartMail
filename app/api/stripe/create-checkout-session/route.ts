@@ -25,21 +25,40 @@ export async function POST(request: NextRequest) {
 
     // Check if the user already has a Stripe customer ID
     let customerId: string | null = null
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
+    
+    // First check subscriptions table
+    const { data: subscription, error: subscriptionError } = await supabase
+      .from('subscriptions')
       .select('stripe_customer_id')
-      .eq('id', userId)
+      .eq('user_id', userId)
       .single()
 
-    if (profileError && profileError.code !== 'PGRST116') { // PGRST116 means no rows found
-      console.error('Error fetching profile for customer ID:', profileError.message)
-      throw profileError
+    if (subscriptionError && subscriptionError.code !== 'PGRST116') {
+      console.error('Error fetching subscription for customer ID:', subscriptionError.message)
     }
 
-    if (profile?.stripe_customer_id) {
-      customerId = profile.stripe_customer_id
+    if (subscription?.stripe_customer_id) {
+      customerId = subscription.stripe_customer_id
     } else {
+      // Check profiles table as fallback
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('stripe_customer_id')
+        .eq('id', userId)
+        .single()
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error('Error fetching profile for customer ID:', profileError.message)
+      }
+
+      if (profile?.stripe_customer_id) {
+        customerId = profile.stripe_customer_id
+      }
+    }
+
+    if (!customerId) {
       // Create a new Stripe customer if one doesn't exist
+      console.log('Creating new Stripe customer for user:', user.email)
       const customer = await stripe.customers.create({
         email: user.email,
         metadata: {
@@ -48,15 +67,29 @@ export async function POST(request: NextRequest) {
       })
       customerId = customer.id
 
-      // Save the new customer ID to the user's profile in Supabase
+      // Save the new customer ID to both tables
+      const { error: updateSubscriptionError } = await supabase
+        .from('subscriptions')
+        .upsert({ 
+          user_id: userId,
+          stripe_customer_id: customerId,
+          plan: 'free',
+          status: 'active'
+        })
+
+      if (updateSubscriptionError) {
+        console.error('Error updating subscription with Stripe customer ID:', updateSubscriptionError.message)
+      }
+
       const { error: updateProfileError } = await supabase
         .from('profiles')
-        .update({ stripe_customer_id: customerId })
-        .eq('id', userId)
+        .upsert({ 
+          id: userId,
+          stripe_customer_id: customerId 
+        })
 
       if (updateProfileError) {
-        console.error('Error updating user profile with Stripe customer ID:', updateProfileError.message)
-        throw updateProfileError
+        console.error('Error updating profile with Stripe customer ID:', updateProfileError.message)
       }
     }
 
