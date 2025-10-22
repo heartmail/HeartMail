@@ -29,11 +29,19 @@ export async function getRecipients(userId: string): Promise<Recipient[]> {
 
 // Create a new recipient
 export async function createRecipient(userId: string, recipientData: Omit<Recipient, 'id' | 'user_id' | 'created_at' | 'updated_at'>): Promise<Recipient> {
+  // Combine first_name and last_name into name field for database
+  const fullName = `${recipientData.first_name} ${recipientData.last_name || ''}`.trim()
+  
   const { data, error } = await supabase
     .from('recipients')
     .insert({
       user_id: userId,
-      ...recipientData
+      name: fullName,
+      email: recipientData.email,
+      relationship: recipientData.relationship,
+      birthday: recipientData.birthday,
+      notes: recipientData.notes,
+      is_active: recipientData.is_active
     })
     .select()
     .single()
@@ -42,7 +50,6 @@ export async function createRecipient(userId: string, recipientData: Omit<Recipi
 
   // Log activity
   try {
-    const fullName = `${recipientData.first_name} ${recipientData.last_name || ''}`.trim()
     await logRecipientActivity(
       userId,
       'recipient_added',
@@ -59,10 +66,26 @@ export async function createRecipient(userId: string, recipientData: Omit<Recipi
 
 // Update a recipient
 export async function updateRecipient(recipientId: string, updates: Partial<Omit<Recipient, 'id' | 'user_id' | 'created_at' | 'updated_at'>>): Promise<Recipient> {
+  // Handle name field if first_name or last_name are being updated
+  const updateData: any = { ...updates }
+  
+  if (updates.first_name !== undefined || updates.last_name !== undefined) {
+    // Get current recipient data to combine with updates
+    const { data: currentData } = await supabase
+      .from('recipients')
+      .select('first_name, last_name')
+      .eq('id', recipientId)
+      .single()
+    
+    const newFirstName = updates.first_name !== undefined ? updates.first_name : currentData?.first_name || ''
+    const newLastName = updates.last_name !== undefined ? updates.last_name : currentData?.last_name || ''
+    updateData.name = `${newFirstName} ${newLastName}`.trim()
+  }
+  
   const { data, error } = await supabase
     .from('recipients')
     .update({
-      ...updates,
+      ...updateData,
       updated_at: new Date().toISOString()
     })
     .eq('id', recipientId)
@@ -73,7 +96,7 @@ export async function updateRecipient(recipientId: string, updates: Partial<Omit
 
   // Log activity
   try {
-    const fullName = `${updates.first_name || ''} ${updates.last_name || ''}`.trim()
+    const fullName = updateData.name || `${updates.first_name || ''} ${updates.last_name || ''}`.trim()
     if (fullName && updates.email) {
       await logRecipientActivity(
         data.user_id,
