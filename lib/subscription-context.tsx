@@ -78,36 +78,59 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         .single()
 
       if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
-        throw error
-      }
-
-      if (!data) {
-        // No subscription found, create a default free subscription
-        console.log('SubscriptionContext - No subscription found, creating default free subscription')
-        const { data: newSubscription, error: createError } = await supabase
-          .from('subscriptions')
-          .insert({
-            user_id: user.id,
-            plan: 'free',
-            status: 'active'
-          })
-          .select()
-          .single()
-
-        if (createError) {
-          console.error('Error creating default subscription:', createError)
-          setSubscription(null)
-        } else {
-          console.log('SubscriptionContext - Created default subscription:', newSubscription)
-          setSubscription(newSubscription)
-        }
-      } else {
+        console.log('SubscriptionContext - No subscription found, using free plan')
+        // Don't create subscription, just use free plan
+        setSubscription({
+          id: 'free-plan',
+          user_id: user.id,
+          stripe_customer_id: '',
+          stripe_subscription_id: '',
+          status: 'active',
+          plan: 'free',
+          plan_id: '',
+          current_period_start: new Date().toISOString(),
+          current_period_end: new Date().toISOString(),
+          cancel_at_period_end: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+      } else if (data) {
         console.log('SubscriptionContext - Found subscription:', data)
         setSubscription(data)
+      } else {
+        // No subscription found, use free plan
+        setSubscription({
+          id: 'free-plan',
+          user_id: user.id,
+          stripe_customer_id: '',
+          stripe_subscription_id: '',
+          status: 'active',
+          plan: 'free',
+          plan_id: '',
+          current_period_start: new Date().toISOString(),
+          current_period_end: new Date().toISOString(),
+          cancel_at_period_end: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
       }
     } catch (error) {
-      console.error('Error fetching subscription:', error)
-      setSubscription(null)
+      console.log('SubscriptionContext - Error fetching subscription, using free plan:', error)
+      // Use free plan on error instead of null
+      setSubscription({
+        id: 'free-plan',
+        user_id: user.id,
+        stripe_customer_id: '',
+        stripe_subscription_id: '',
+        status: 'active',
+        plan: 'free',
+        plan_id: '',
+        current_period_start: new Date().toISOString(),
+        current_period_end: new Date().toISOString(),
+        cancel_at_period_end: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
     } finally {
       setIsLoading(false)
     }

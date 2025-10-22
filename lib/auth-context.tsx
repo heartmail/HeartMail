@@ -23,22 +23,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      // Add timeout to prevent hanging - increased to 10 seconds
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
-      )
-      
-      const profilePromise = supabase
+      // No timeout - let it fail fast if there are issues
+      const { data: profile, error } = await supabase
         .from('user_profiles')
         .select('avatar_url')
         .eq('user_id', userId)
         .single()
-      
-      const { data: profile } = await Promise.race([profilePromise, timeoutPromise]) as any
-      
+
+      if (error) {
+        console.log('Profile not found or error:', error.message)
+        return null
+      }
+
       return profile?.avatar_url
     } catch (error) {
-      console.error('Error fetching user profile:', error)
+      console.log('Profile fetch failed:', error)
       return null
     }
   }
@@ -50,8 +49,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data: { session } } = await supabase.auth.getSession()
         setSession(session)
         if (session?.user) {
-          const avatarUrl = await fetchUserProfile(session.user.id)
-          setUser({ ...session.user, avatar_url: avatarUrl })
+          // Set user immediately without waiting for profile
+          setUser({ ...session.user, avatar_url: null })
+          
+          // Fetch profile in background - don't await
+          fetchUserProfile(session.user.id).then(avatarUrl => {
+            setUser(prev => prev ? { ...prev, avatar_url: avatarUrl } : null)
+          }).catch(error => {
+            console.log('Background profile fetch failed:', error)
+          })
         } else {
           setUser(null)
         }
@@ -71,8 +77,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session)
       if (session?.user) {
-        const avatarUrl = await fetchUserProfile(session.user.id)
-        setUser({ ...session.user, avatar_url: avatarUrl })
+        // Set user immediately without waiting for profile
+        setUser({ ...session.user, avatar_url: null })
+        
+        // Fetch profile in background - don't await
+        fetchUserProfile(session.user.id).then(avatarUrl => {
+          setUser(prev => prev ? { ...prev, avatar_url: avatarUrl } : null)
+        }).catch(error => {
+          console.log('Background profile fetch failed:', error)
+        })
       } else {
         setUser(null)
       }
