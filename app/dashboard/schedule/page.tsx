@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input'
 import { useAuth } from '@/lib/auth-context'
 import { supabase } from '@/lib/supabase'
 import { getFullName } from '@/lib/recipients'
-import { deleteScheduledEmail } from '@/lib/database'
 // DashboardLayout is already applied through the main layout
 
 const currentDate = new Date()
@@ -419,10 +418,24 @@ export default function SchedulePage() {
     }
 
     try {
-      await deleteScheduledEmail(emailId)
-      alert('Scheduled email deleted successfully!')
-      // Refresh the data
-      fetchScheduledEmails()
+      const response = await fetch('/api/delete-scheduled-email', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ emailId })
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        alert('Scheduled email deleted successfully!')
+        // Refresh the data
+        fetchScheduledEmails()
+      } else {
+        const errorData = await response.json()
+        console.error('Failed to delete scheduled email:', errorData)
+        alert(`Failed to delete scheduled email: ${errorData.error || 'Unknown error'}`)
+      }
     } catch (error) {
       console.error('Error deleting scheduled email:', error)
       alert('Failed to delete scheduled email. Please try again.')
@@ -666,15 +679,19 @@ export default function SchedulePage() {
                       <button 
                         className="action-btn view-btn"
                         onClick={() => handleViewEmail(email.id)}
+                        title="View email details"
                       >
                         <Eye className="h-4 w-4" />
                       </button>
-                      <button 
-                        className="action-btn delete-btn"
-                        onClick={() => handleDeleteScheduledEmail(email.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      {email.status !== 'sent' && (
+                        <button 
+                          className="action-btn delete-btn"
+                          onClick={() => handleDeleteScheduledEmail(email.id)}
+                          title="Delete scheduled email"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -918,6 +935,24 @@ export default function SchedulePage() {
                             {email.type === 'one-time' ? 'One-time' : email.type}
                           </span>
                         </div>
+                      </div>
+                      <div className="email-actions">
+                        <button 
+                          className="action-btn view-btn"
+                          onClick={() => handleViewEmail(email.id)}
+                          title="View email details"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                        {email.status !== 'sent' && (
+                          <button 
+                            className="action-btn delete-btn"
+                            onClick={() => handleDeleteScheduledEmail(email.id)}
+                            title="Delete scheduled email"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}

@@ -122,3 +122,47 @@ export const scheduleEmail = inngest.createFunction(
   }
 )
 
+// Function to cancel scheduled emails
+export const cancelScheduledEmail = inngest.createFunction(
+  { id: 'cancel-scheduled-email' },
+  { event: 'email/cancel' },
+  async ({ event, step }) => {
+    const { scheduledEmailId, userId } = event.data
+
+    return await step.run('cancel-email', async () => {
+      const supabase = createAdminClient()
+      
+      // Check if the email still exists and is scheduled
+      const { data: scheduledEmail, error: fetchError } = await supabase
+        .from('scheduled_emails')
+        .select('id, status')
+        .eq('id', scheduledEmailId)
+        .eq('user_id', userId)
+        .single()
+
+      if (fetchError || !scheduledEmail) {
+        return { message: 'Scheduled email not found or already processed', cancelled: false }
+      }
+
+      if (scheduledEmail.status !== 'scheduled') {
+        return { message: 'Email already processed, cannot cancel', cancelled: false }
+      }
+
+      // Update status to cancelled
+      const { error: updateError } = await supabase
+        .from('scheduled_emails')
+        .update({ status: 'cancelled' })
+        .eq('id', scheduledEmailId)
+
+      if (updateError) {
+        throw new Error(`Failed to cancel email: ${updateError.message}`)
+      }
+
+      return { 
+        message: 'Email cancellation scheduled successfully', 
+        cancelled: true 
+      }
+    })
+  }
+)
+
