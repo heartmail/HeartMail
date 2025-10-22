@@ -387,7 +387,12 @@ export default function PhotosPage() {
 
         {/* Delete Confirmation Dialog */}
         <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-          <DialogContent>
+          <DialogContent
+            aria-describedby="delete-photo-description"
+          >
+            <div id="delete-photo-description" className="sr-only">
+              Confirm deletion of your photo. This action cannot be undone.
+            </div>
             <DialogHeader>
               <DialogTitle>Delete Photo</DialogTitle>
               <DialogDescription>

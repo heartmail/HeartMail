@@ -22,10 +22,10 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
-      { url: '/logo.png', type: 'image/png' },
+      { url: 'https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/logo.png', type: 'image/png' },
     ],
     shortcut: '/favicon.ico',
-    apple: '/logo.png',
+    apple: 'https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/logo.png',
   },
   // Performance optimizations
   viewport: 'width=device-width, initial-scale=1, maximum-scale=5',

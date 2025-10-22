@@ -54,7 +54,7 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "frame-ancestors 'self' https://billing.stripe.com https://js.stripe.com; frame-src 'self' https://billing.stripe.com https://js.stripe.com https://checkout.stripe.com;",
+            value: "frame-ancestors 'self' https://billing.stripe.com https://js.stripe.com https://checkout.stripe.com; frame-src 'self' https://billing.stripe.com https://js.stripe.com https://checkout.stripe.com; connect-src 'self' https://api.stripe.com https://billing.stripe.com;",
           },
         ],
       },
