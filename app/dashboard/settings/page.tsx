@@ -11,13 +11,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import BillingSettings from '@/components/billing/billing-settings'
 import { useAuth } from '@/lib/auth-context'
 import { useTheme } from '@/lib/theme-context'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { getUserProfile, upsertUserProfile, UserProfile } from '@/lib/profile'
 import { getUserSettings, upsertUserSettings, UserSettings } from '@/lib/settings'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 
 export default function SettingsPage() {
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState('security')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -57,6 +58,14 @@ export default function SettingsPage() {
   const { user, signOut } = useAuth()
   const { theme, setTheme } = useTheme()
   const router = useRouter()
+
+  // Read tab from URL parameters
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab && ['security', 'billing', 'preferences'].includes(tab)) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
 
   // Load user data on component mount
   useEffect(() => {
@@ -259,7 +268,10 @@ export default function SettingsPage() {
                 <button
                   key={tab.id}
                   className={`settings-nav-item ${activeTab === tab.id ? 'active' : ''}`}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    setActiveTab(tab.id)
+                    router.push(`/dashboard/settings?tab=${tab.id}`)
+                  }}
                 >
                   <tab.icon className="h-5 w-5" />
                   <span>{tab.label}</span>
@@ -352,8 +364,19 @@ export default function SettingsPage() {
 
             {activeTab === 'billing' && (
               <div className="settings-section">
-                <h2>Billing & Subscription</h2>
-                <p className="section-description">Manage your subscription and billing information.</p>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2>Billing & Subscription</h2>
+                    <p className="section-description">Manage your subscription and billing information.</p>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="border-heartmail-pink text-heartmail-pink hover:bg-heartmail-pink hover:text-white transition-all duration-200"
+                    onClick={() => window.open('/#pricing', '_blank')}
+                  >
+                    View Pricing
+                  </Button>
+                </div>
                 
                 <BillingSettings />
               </div>
