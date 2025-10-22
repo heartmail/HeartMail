@@ -25,14 +25,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-            // Validate sendAt is at least 5 minutes in the future
+            // Validate sendAt is at least 2 minutes in the future
             const sendDate = new Date(sendAt)
             const now = new Date()
-            const fiveMinutesFromNow = new Date(now.getTime() + 5 * 60 * 1000) // 5 minutes from now
+            const twoMinutesFromNow = new Date(now.getTime() + 2 * 60 * 1000) // 2 minutes from now
             
-            if (sendDate <= fiveMinutesFromNow) {
+            if (sendDate <= twoMinutesFromNow) {
               return NextResponse.json(
-                { error: 'Email must be scheduled for at least 5 minutes in the future' },
+                { error: 'Email must be scheduled for at least 2 minutes in the future' },
                 { status: 400 }
               )
             }

@@ -284,13 +284,13 @@ export default function SchedulePage() {
       return
     }
 
-    // Validate that the scheduled time is at least 5 minutes in the future
+    // Validate that the scheduled time is at least 2 minutes in the future
     const sendAt = new Date(`${date}T${time}`)
     const now = new Date()
-    const fiveMinutesFromNow = new Date(now.getTime() + 5 * 60 * 1000) // 5 minutes from now
+    const twoMinutesFromNow = new Date(now.getTime() + 2 * 60 * 1000) // 2 minutes from now
 
-    if (sendAt <= fiveMinutesFromNow) {
-      alert('Please schedule the email for at least 5 minutes in the future')
+    if (sendAt <= twoMinutesFromNow) {
+      alert('Please schedule the email for at least 2 minutes in the future')
       return
     }
 
