@@ -52,6 +52,20 @@ const nextConfig = {
             key: 'X-XSS-Protection',
             value: '1; mode=block',
           },
+          {
+            key: 'Content-Security-Policy',
+            value: "frame-ancestors 'self' https://js.stripe.com https://hooks.stripe.com; frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com;",
+          },
+        ],
+      },
+      // Allow Stripe portal iframe
+      {
+        source: '/dashboard/settings',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN',
+          },
         ],
       },
       {

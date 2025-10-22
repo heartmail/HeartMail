@@ -213,13 +213,19 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent 
+        className="max-w-2xl max-h-[90vh] overflow-y-auto"
+        aria-describedby="send-email-description"
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2 text-2xl">
             <Heart className="h-6 w-6 text-heartmail-pink" />
             <span>Send a Heartfelt Email</span>
           </DialogTitle>
         </DialogHeader>
+        <div id="send-email-description" className="sr-only">
+          Send a heartfelt email to your loved ones using templates and personal messages.
+        </div>
 
         {isSuccess ? (
           <div className="text-center py-8">
@@ -400,13 +406,19 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
 
       {/* Template Confirmation Popup */}
       <Dialog open={showTemplateConfirm} onOpenChange={setShowTemplateConfirm}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent 
+          className="sm:max-w-md"
+          aria-describedby="template-confirm-description"
+        >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Heart className="h-5 w-5 text-pink-500" />
               Overwrite Existing Message?
             </DialogTitle>
           </DialogHeader>
+          <div id="template-confirm-description" className="sr-only">
+            Confirm using the selected template for your email.
+          </div>
           <div className="space-y-4">
             <p className="text-gray-600">
               You have existing content in your message. Applying this template will overwrite your current work.
