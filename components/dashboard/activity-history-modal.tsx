@@ -146,7 +146,13 @@ export default function ActivityHistoryModal({ isOpen, onClose }: ActivityHistor
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
+      <DialogContent 
+        className="max-w-6xl max-h-[90vh] overflow-hidden"
+        aria-describedby="activity-history-description"
+      >
+        <div id="activity-history-description" className="sr-only">
+          View and filter your HeartMail activity history including sent emails, template usage, and account actions.
+        </div>
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2 text-2xl">
             <Clock className="h-6 w-6 text-heartmail-pink" />

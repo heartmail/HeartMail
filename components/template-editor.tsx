@@ -224,7 +224,13 @@ export default function TemplateEditor({ templateId, onSave }: TemplateEditorPro
 
       {/* Photo Library Modal */}
       <Dialog open={showPhotoLibrary} onOpenChange={setShowPhotoLibrary}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent 
+          className="max-w-4xl"
+          aria-describedby="photo-library-description"
+        >
+          <div id="photo-library-description" className="sr-only">
+            Select a photo from your library to add to your template.
+          </div>
           <DialogHeader>
             <DialogTitle>Add Photo to Template</DialogTitle>
           </DialogHeader>

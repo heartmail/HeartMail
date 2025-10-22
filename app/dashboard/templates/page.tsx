@@ -229,7 +229,13 @@ export default function TemplatesPage() {
               Create Template
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+          <DialogContent 
+            className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto"
+            aria-describedby="template-form-description"
+          >
+            <div id="template-form-description" className="sr-only">
+              Create a new email template with title, content, and category selection.
+            </div>
             <DialogHeader className="bg-gradient-to-r from-pink-500 to-purple-600 text-white p-6 -m-6 mb-6 rounded-t-lg">
               <div className="flex items-center gap-3">
                 <div className="bg-white/20 p-2 rounded-lg">

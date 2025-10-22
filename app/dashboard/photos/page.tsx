@@ -336,7 +336,13 @@ export default function PhotosPage() {
         {/* Photo Detail Modal */}
         {selectedPhoto && (
           <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
-            <DialogContent className="max-w-4xl">
+            <DialogContent 
+              className="max-w-4xl"
+              aria-describedby="photo-preview-description"
+            >
+              <div id="photo-preview-description" className="sr-only">
+                Preview and manage your photo: {selectedPhoto.original_name}
+              </div>
               <DialogHeader>
                 <DialogTitle>{selectedPhoto.original_name}</DialogTitle>
                 <DialogDescription>

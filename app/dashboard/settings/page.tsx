@@ -474,7 +474,13 @@ export default function SettingsPage() {
 
         {/* Email Change Modal */}
         <Dialog open={showEmailChangeModal} onOpenChange={setShowEmailChangeModal}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent 
+            className="sm:max-w-[425px]"
+            aria-describedby="email-change-description"
+          >
+            <div id="email-change-description" className="sr-only">
+              Update your email address for your HeartMail account.
+            </div>
             <DialogHeader>
               <DialogTitle className="flex items-center space-x-2">
                 <Mail className="h-5 w-5 text-heartmail-pink" />
@@ -530,7 +536,13 @@ export default function SettingsPage() {
 
         {/* Password Reset Modal */}
         <Dialog open={showPasswordResetModal} onOpenChange={setShowPasswordResetModal}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent 
+            className="sm:max-w-[425px]"
+            aria-describedby="password-reset-description"
+          >
+            <div id="password-reset-description" className="sr-only">
+              Reset your password by entering your current password and new password.
+            </div>
             <DialogHeader>
               <DialogTitle className="flex items-center space-x-2">
                 <Key className="h-5 w-5 text-heartmail-pink" />
