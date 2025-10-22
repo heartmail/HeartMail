@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session)
         if (session?.user) {
           // Set user immediately without waiting for profile
-          setUser({ ...session.user, avatar_url: null })
+          setUser({ ...session.user, avatar_url: undefined })
           
           // Fetch profile in background - don't await
           fetchUserProfile(session.user.id).then(avatarUrl => {
@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session)
       if (session?.user) {
         // Set user immediately without waiting for profile
-        setUser({ ...session.user, avatar_url: null })
+        setUser({ ...session.user, avatar_url: undefined })
         
         // Fetch profile in background - don't await
         fetchUserProfile(session.user.id).then(avatarUrl => {
