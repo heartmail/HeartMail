@@ -304,59 +304,42 @@ export default function SchedulePage() {
         return
       }
       
-      const { data, error } = await supabase
-        .from('scheduled_emails')
-        .insert({
-          user_id: user.id,
-          recipient_id: recipientId,
-          template_id: templateId,
-          title: subject || template?.title || 'Heartfelt Message',
-          content: template?.content || personalMessage,
-          scheduled_date: date,
-          scheduled_time: time,
-          frequency: frequency,
-          status: 'scheduled',
-          personal_message: personalMessage
+      // Use the proper API endpoint for scheduling emails
+      try {
+        const response = await fetch('/api/schedule-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: user.id,
+            recipientId: recipientId,
+            templateId: templateId,
+            toEmail: recipient.email,
+            toName: `${recipient.first_name} ${recipient.last_name || ''}`.trim(),
+            subject: subject || template?.title || 'Heartfelt Message',
+            bodyHtml: template?.content || personalMessage,
+            bodyText: personalMessage,
+            sendAt: sendAt.toISOString()
+          })
         })
-        .select()
-        .single()
 
-      if (error) {
+        if (response.ok) {
+          const result = await response.json()
+          alert('Email scheduled successfully!')
+          handleCloseModal()
+          // Refresh the data
+          fetchRecipients()
+          fetchTemplates()
+          fetchScheduledEmails()
+        } else {
+          const errorData = await response.json()
+          console.error('Failed to schedule email:', errorData)
+          alert(`Failed to schedule email: ${errorData.error || 'Unknown error'}`)
+        }
+      } catch (error) {
         console.error('Error scheduling email:', error)
         alert('Failed to schedule email. Please try again.')
-      } else {
-        // Trigger Inngest event to schedule the email
-        try {
-          const response = await fetch('/api/inngest', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              name: 'email/schedule',
-              data: {
-                scheduledEmailId: data.id,
-                userId: user.id,
-                sendAt: sendAt.toISOString()
-              }
-            })
-          })
-
-          if (response.ok) {
-            alert('Email scheduled successfully!')
-            handleCloseModal()
-            // Refresh the data
-            fetchRecipients()
-            fetchTemplates()
-            fetchScheduledEmails()
-          } else {
-            console.error('Failed to trigger Inngest event')
-            alert('Email saved but scheduling may not work. Please check your Inngest configuration.')
-          }
-        } catch (error) {
-          console.error('Error triggering Inngest event:', error)
-          alert('Email saved but scheduling may not work. Please check your Inngest configuration.')
-        }
       }
     } catch (error) {
       console.error('Error scheduling email:', error)
