@@ -105,7 +105,7 @@ export default function PricingSection({ user }: PricingSectionProps) {
       ],
       isPrimary: true,
       priceId: billingPeriod === 'yearly' 
-        ? process.env.NEXT_PUBLIC_STRIPE_FAMILY_YEARLY_PRICE_ID
+        ? process.env.NEXT_PUBLIC_STRIPE_FAMILY_YEARLY_PRICE_ID || 'price_1SKrdk8h6OhnnNXPSvBuaizn'
         : process.env.NEXT_PUBLIC_STRIPE_FAMILY_MONTHLY_PRICE_ID || 'price_1SJ3gL8h6OhnnNXPXyTiD9Yo',
     },
     {
@@ -122,7 +122,7 @@ export default function PricingSection({ user }: PricingSectionProps) {
       ],
       isPrimary: false,
       priceId: billingPeriod === 'yearly' 
-        ? process.env.NEXT_PUBLIC_STRIPE_EXTENDED_YEARLY_PRICE_ID
+        ? process.env.NEXT_PUBLIC_STRIPE_EXTENDED_YEARLY_PRICE_ID || 'price_1SKreZ8h6OhnnNXPoW8jQTF3'
         : process.env.NEXT_PUBLIC_STRIPE_EXTENDED_MONTHLY_PRICE_ID || 'price_1SJ3gO8h6OhnnNXPY430Z8DW',
     },
   ]
