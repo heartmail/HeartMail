@@ -271,15 +271,8 @@ export default function BillingSettings() {
           aria-describedby="stripe-portal-description"
         >
           <DialogHeader className="p-6 pb-0">
-            <DialogTitle className="flex items-center justify-between">
-              <span className="text-xl font-semibold">Manage Billing</span>
-              <button
-                onClick={() => setShowPortalModal(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-                aria-label="Close billing portal"
-              >
-                <X className="h-5 w-5" />
-              </button>
+            <DialogTitle className="text-xl font-semibold">
+              Manage Billing
             </DialogTitle>
           </DialogHeader>
           <div id="stripe-portal-description" className="sr-only">

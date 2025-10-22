@@ -46,11 +46,15 @@ const nextConfig = {
           },
           {
             key: 'X-Frame-Options',
-            value: 'DENY',
+            value: 'SAMEORIGIN',
           },
           {
             key: 'X-XSS-Protection',
             value: '1; mode=block',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: "frame-ancestors 'self' https://billing.stripe.com https://js.stripe.com; frame-src 'self' https://billing.stripe.com https://js.stripe.com https://checkout.stripe.com;",
           },
         ],
       },

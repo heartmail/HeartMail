@@ -190,7 +190,13 @@ export default function RecipientsPage() {
               Add Recipient
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+          <DialogContent 
+            className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto"
+            aria-describedby="recipient-form-description"
+          >
+            <div id="recipient-form-description" className="sr-only">
+              Add a new recipient to your HeartMail contact list.
+            </div>
             <DialogHeader className="bg-gradient-to-r from-pink-500 to-purple-600 text-white p-6 -m-6 mb-6 rounded-t-lg">
               <div className="flex items-center gap-3">
                 <div className="bg-white/20 p-2 rounded-lg">
