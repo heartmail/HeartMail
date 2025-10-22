@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { CreditCard, ExternalLink, Loader2, Calendar, Users, Mail, X } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { Subscription, SubscriptionUsage, PlanLimits } from '@/lib/subscription'
@@ -28,8 +27,6 @@ export default function BillingSettings() {
   const [limits, setLimits] = useState<PlanLimits | null>(null)
   const [loading, setLoading] = useState(true)
   const [portalLoading, setPortalLoading] = useState(false)
-  const [showPortalModal, setShowPortalModal] = useState(false)
-  const [portalUrl, setPortalUrl] = useState<string | null>(null)
   const { user } = useAuth()
 
   useEffect(() => {
@@ -75,8 +72,8 @@ export default function BillingSettings() {
       const data = await response.json()
       
       if (data.url) {
-        setPortalUrl(data.url)
-        setShowPortalModal(true)
+        // Open portal in new window instead of iframe to avoid CSP issues
+        window.open(data.url, '_blank', 'noopener,noreferrer')
       } else {
         throw new Error('No portal URL received')
       }
@@ -264,40 +261,6 @@ export default function BillingSettings() {
         </CardContent>
       </Card>
 
-      {/* Stripe Customer Portal Modal */}
-      <Dialog open={showPortalModal} onOpenChange={setShowPortalModal}>
-        <DialogContent 
-          className="max-w-4xl h-[80vh] p-0 w-full mx-4 sm:mx-0"
-          aria-describedby="stripe-portal-description"
-        >
-          <DialogHeader className="p-6 pb-0">
-            <DialogTitle className="text-xl font-semibold">
-              Manage Billing
-            </DialogTitle>
-          </DialogHeader>
-          <div id="stripe-portal-description" className="sr-only">
-            This dialog displays the Stripe customer portal for managing your subscription and billing information.
-          </div>
-          <div className="flex-1 p-6 pt-4">
-            {portalUrl ? (
-              <iframe
-                src={portalUrl}
-                className="w-full h-full rounded-lg border border-gray-200 min-h-[400px]"
-                title="Stripe Customer Portal - Manage your subscription and billing information"
-                loading="lazy"
-                sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full min-h-[400px]">
-                <div className="text-center">
-                  <div className="text-6xl mb-4">📄</div>
-                  <p className="text-gray-600">Loading billing portal...</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
