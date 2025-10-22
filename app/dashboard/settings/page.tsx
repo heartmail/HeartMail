@@ -372,8 +372,8 @@ export default function SettingsPage() {
                   <button 
                     className="flex items-center space-x-2 text-gray-700 hover:text-heartmail-pink transition-colors duration-200 text-left"
                     onClick={() => {
-                      // Navigate to the pricing section on the homepage in the same tab
-                      router.push('/#pricing')
+                      // Navigate to the homepage pricing section
+                      window.location.href = '/#pricing'
                     }}
                   >
                     <CreditCard className="h-5 w-5" />
