@@ -372,17 +372,8 @@ export default function SettingsPage() {
                   <button 
                     className="flex items-center space-x-2 text-gray-700 hover:text-heartmail-pink transition-colors duration-200 text-left"
                     onClick={() => {
-                      // Smooth scroll to pricing section
-                      const pricingSection = document.getElementById('pricing')
-                      if (pricingSection) {
-                        pricingSection.scrollIntoView({ 
-                          behavior: 'smooth',
-                          block: 'start'
-                        })
-                      } else {
-                        // Fallback to new window if pricing section not found
-                        window.open('/#pricing', '_blank')
-                      }
+                      // Navigate to the pricing section on the homepage in the same tab
+                      router.push('/#pricing')
                     }}
                   >
                     <CreditCard className="h-5 w-5" />
