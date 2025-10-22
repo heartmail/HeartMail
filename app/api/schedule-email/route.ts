@@ -14,7 +14,8 @@ export async function POST(request: NextRequest) {
       subject, 
       bodyHtml, 
       bodyText, 
-      sendAt 
+      sendAt,
+      frequency = 'one-time'
     } = await request.json()
 
     // Validate required fields
@@ -50,6 +51,7 @@ export async function POST(request: NextRequest) {
         content: bodyHtml,
         scheduled_date: new Date(sendAt).toISOString().split('T')[0],
         scheduled_time: new Date(sendAt).toTimeString().split(' ')[0],
+        frequency: frequency,
         status: 'scheduled'
       })
       .select()

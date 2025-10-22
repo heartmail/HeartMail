@@ -298,7 +298,7 @@ export default function RecipientsPage() {
               
               
               <div className="space-y-2">
-                <Label htmlFor="birthday">Birthday</Label>
+                <Label htmlFor="birthday">Birthday (Optional)</Label>
                 <Input
                   id="birthday"
                   type="date"
@@ -309,7 +309,7 @@ export default function RecipientsPage() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="notes">Notes</Label>
+                <Label htmlFor="notes">Notes (Optional)</Label>
                 <Textarea
                   id="notes"
                   value={formData.notes}

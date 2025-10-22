@@ -5,12 +5,69 @@ import { logEmailSent } from '@/lib/activity-history'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
+// Helper function to schedule the next occurrence of a recurring email
+async function scheduleNextRecurringEmail(supabase: any, scheduledEmail: any, frequency: string) {
+  const currentDate = new Date(scheduledEmail.scheduled_date)
+  const currentTime = scheduledEmail.scheduled_time
+  
+  let nextDate: Date
+  
+  switch (frequency) {
+    case 'daily':
+      nextDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000) // Add 1 day
+      break
+    case 'weekly':
+      nextDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000) // Add 7 days
+      break
+    case 'monthly':
+      nextDate = new Date(currentDate)
+      nextDate.setMonth(nextDate.getMonth() + 1) // Add 1 month
+      break
+    default:
+      return // Don't schedule for one-time emails
+  }
+  
+  // Create next scheduled email
+  const { data: nextEmail, error } = await supabase
+    .from('scheduled_emails')
+    .insert({
+      user_id: scheduledEmail.user_id,
+      recipient_id: scheduledEmail.recipient_id,
+      template_id: scheduledEmail.template_id,
+      title: scheduledEmail.title,
+      content: scheduledEmail.content,
+      scheduled_date: nextDate.toISOString().split('T')[0],
+      scheduled_time: currentTime,
+      frequency: frequency,
+      status: 'scheduled',
+      personal_message: scheduledEmail.personal_message
+    })
+    .select()
+    .single()
+    
+  if (error) {
+    throw new Error(`Failed to create next recurring email: ${error.message}`)
+  }
+  
+  // Schedule the next email with Inngest
+  const { inngest } = await import('@/lib/inngest')
+  await inngest.send({
+    name: 'email/schedule',
+    data: {
+      scheduledEmailId: nextEmail.id,
+      userId: scheduledEmail.user_id,
+      sendAt: new Date(`${nextDate.toISOString().split('T')[0]}T${currentTime}`).toISOString(),
+      frequency: frequency
+    }
+  })
+}
+
 // Function to send scheduled emails
 export const sendScheduledEmail = inngest.createFunction(
   { id: 'send-scheduled-email' },
   { event: 'email/send' },
   async ({ event, step }) => {
-    const { scheduledEmailId, userId } = event.data
+    const { scheduledEmailId, userId, frequency = 'one-time' } = event.data
 
     return await step.run('send-email', async () => {
       const supabase = createAdminClient()
@@ -82,6 +139,16 @@ export const sendScheduledEmail = inngest.createFunction(
           // Don't fail the email send if activity logging fails
         }
 
+        // Handle recurring emails
+        if (frequency !== 'one-time') {
+          try {
+            await scheduleNextRecurringEmail(supabase, scheduledEmail, frequency)
+          } catch (recurringError) {
+            console.error('Failed to schedule next recurring email:', recurringError)
+            // Don't fail the current email send if recurring scheduling fails
+          }
+        }
+
         return { 
           message: 'Email sent successfully', 
           messageId: data?.id,
@@ -109,14 +176,15 @@ export const scheduleEmail = inngest.createFunction(
   { id: 'schedule-email' },
   { event: 'email/schedule' },
   async ({ event, step }) => {
-    const { scheduledEmailId, userId, sendAt } = event.data
+    const { scheduledEmailId, userId, sendAt, frequency = 'one-time' } = event.data
 
     return await step.sleepUntil('wait-until-send-time', new Date(sendAt))
       .then(() => step.sendEvent('trigger-send', {
         name: 'email/send',
         data: {
           scheduledEmailId,
-          userId
+          userId,
+          frequency
         }
       }))
   }

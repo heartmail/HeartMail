@@ -122,13 +122,24 @@ export default function SchedulePage() {
       if (!searchQuery.trim()) {
         setFilteredScheduledEmails(scheduledEmails)
       } else {
-        const filtered = scheduledEmails.filter(email =>
-          email.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          email.content?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          email.recipients?.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          email.recipients?.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          email.recipients?.email?.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+        const filtered = scheduledEmails.filter(email => {
+          const searchLower = searchQuery.toLowerCase()
+          
+          // Search by text content
+          const textMatch = email.title?.toLowerCase().includes(searchLower) ||
+            email.content?.toLowerCase().includes(searchLower) ||
+            email.recipients?.first_name?.toLowerCase().includes(searchLower) ||
+            email.recipients?.last_name?.toLowerCase().includes(searchLower) ||
+            email.recipients?.email?.toLowerCase().includes(searchLower)
+          
+          // Search by status
+          const statusMatch = email.status?.toLowerCase().includes(searchLower)
+          
+          // Search by frequency
+          const frequencyMatch = email.frequency?.toLowerCase().includes(searchLower)
+          
+          return textMatch || statusMatch || frequencyMatch
+        })
         setFilteredScheduledEmails(filtered)
       }
     }
@@ -182,7 +193,10 @@ export default function SchedulePage() {
     try {
       const { data, error } = await supabase
         .from('scheduled_emails')
-        .select('*')
+        .select(`
+          *,
+          recipients!inner(first_name, last_name, email)
+        `)
         .eq('user_id', user.id)
         .order('scheduled_date')
 
@@ -206,19 +220,42 @@ export default function SchedulePage() {
   }
 
   const getEmailsForDate = (date: string) => {
-    // Return scheduled emails for the specific date
+    const targetDate = new Date(date)
     const emails = scheduledEmails.filter(email => {
-      return email.scheduled_date === date
-    }).map(email => {
-      // Determine email type based on title content for legend colors
-      let emailType = 'one-time' // default
+      const emailDate = new Date(email.scheduled_date)
       
+      // Direct date match
+      if (email.scheduled_date === date) {
+        return true
+      }
+      
+      // Handle recurring emails
+      if (email.frequency && email.frequency !== 'one-time') {
+        const originalDate = new Date(email.scheduled_date)
+        const timeDiff = targetDate.getTime() - originalDate.getTime()
+        const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24))
+        
+        switch (email.frequency) {
+          case 'daily':
+            return daysDiff >= 0 && daysDiff % 1 === 0
+          case 'weekly':
+            return daysDiff >= 0 && daysDiff % 7 === 0
+          case 'monthly':
+            return targetDate.getDate() === originalDate.getDate() && 
+                   targetDate >= originalDate
+          default:
+            return false
+        }
+      }
+      
+      return false
+    }).map(email => {
+      // Use frequency for email type instead of title parsing
+      let emailType = email.frequency || 'one-time'
+      
+      // Override for special occasions
       if (email.title?.toLowerCase().includes('birthday')) {
         emailType = 'special'
-      } else if (email.title?.toLowerCase().includes('weekly')) {
-        emailType = 'weekly'
-      } else if (email.title?.toLowerCase().includes('monthly')) {
-        emailType = 'monthly'
       } else if (email.title?.toLowerCase().includes('family') || email.title?.toLowerCase().includes('gang')) {
         emailType = 'special'
       }
@@ -230,7 +267,8 @@ export default function SchedulePage() {
         recipient: email.recipient_id,
         time: email.scheduled_time || '12:00',
         date: email.scheduled_date,
-        status: email.status
+        status: email.status,
+        frequency: email.frequency
       }
     })
     
@@ -319,7 +357,8 @@ export default function SchedulePage() {
             subject: subject || template?.title || 'Heartfelt Message',
             bodyHtml: template?.content || personalMessage,
             bodyText: personalMessage,
-            sendAt: sendAt.toISOString()
+            sendAt: sendAt.toISOString(),
+            frequency: frequency || 'one-time'
           })
         })
 
@@ -638,7 +677,7 @@ export default function SchedulePage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   type="text"
-                  placeholder="Search scheduled emails..."
+                  placeholder="Search by title, recipient, status (sent/scheduled), or frequency (daily/weekly/monthly)..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 pr-10"
