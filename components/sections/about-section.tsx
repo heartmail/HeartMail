@@ -21,7 +21,7 @@ export default function AboutSection() {
                 and loved ones who may not be as tech-savvy deserve to feel connected and loved.
               </p>
               <p>
-                Founded in 2024, HeartMail started as a personal project when our founder realized how 
+                Founded in 2025, HeartMail started as a personal project when our founder realized how 
                 difficult it was to maintain regular contact with aging grandparents. The solution? 
                 Automated, heartfelt emails that could be scheduled and personalized to keep those 
                 precious relationships strong.

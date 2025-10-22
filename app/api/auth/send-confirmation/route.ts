@@ -224,7 +224,7 @@ function getSignupTemplate(confirmationUrl: string) {
             <div class="footer-logo-fallback">💕</div>
           </div>
           <p class="footer-text">Sent with 💕 via HeartMail</p>
-          <p class="footer-text">© 2024 HeartMail. All rights reserved.</p>
+          <p class="footer-text">© 2025 HeartMail. All rights reserved.</p>
           <p class="footer-text">
             <a href="https://heartsmail.com/privacy" class="footer-link">Privacy Policy</a> | 
             <a href="https://heartsmail.com/terms" class="footer-link">Terms of Service</a>
@@ -410,7 +410,7 @@ function getEmailChangeTemplate(confirmationUrl: string, email: string) {
             <div class="footer-logo-fallback">💕</div>
           </div>
           <p class="footer-text">Sent with 💕 via HeartMail</p>
-          <p class="footer-text">© 2024 HeartMail. All rights reserved.</p>
+          <p class="footer-text">© 2025 HeartMail. All rights reserved.</p>
           <p class="footer-text">
             <a href="https://heartsmail.com/privacy" class="footer-link">Privacy Policy</a> | 
             <a href="https://heartsmail.com/terms" class="footer-link">Terms of Service</a>
@@ -596,7 +596,7 @@ function getPasswordResetTemplate(confirmationUrl: string) {
             <div class="footer-logo-fallback">💕</div>
           </div>
           <p class="footer-text">Sent with 💕 via HeartMail</p>
-          <p class="footer-text">© 2024 HeartMail. All rights reserved.</p>
+          <p class="footer-text">© 2025 HeartMail. All rights reserved.</p>
           <p class="footer-text">
             <a href="https://heartsmail.com/privacy" class="footer-link">Privacy Policy</a> | 
             <a href="https://heartsmail.com/terms" class="footer-link">Terms of Service</a>

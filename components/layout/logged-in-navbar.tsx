@@ -39,11 +39,6 @@ export default function LoggedInNavbar() {
               <BookOpen className="h-5 w-5" />
               <span>Letter Library</span>
             </Link>
-            <Link href="/#pricing">
-              <Button variant="outline" className="border-heartmail-pink text-heartmail-pink hover:bg-heartmail-pink hover:text-white transition-all duration-200">
-                View Pricing
-              </Button>
-            </Link>
           </div>
 
           {/* User Menu */}

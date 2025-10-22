@@ -369,13 +369,13 @@ export default function SettingsPage() {
                     <h2>Billing & Subscription</h2>
                     <p className="section-description">Manage your subscription and billing information.</p>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    className="border-heartmail-pink text-heartmail-pink hover:bg-heartmail-pink hover:text-white transition-all duration-200"
+                  <button 
+                    className="flex items-center space-x-2 text-gray-700 hover:text-heartmail-pink transition-colors duration-200 text-left"
                     onClick={() => window.open('/#pricing', '_blank')}
                   >
-                    View Pricing
-                  </Button>
+                    <CreditCard className="h-5 w-5" />
+                    <span>View Pricing</span>
+                  </button>
                 </div>
                 
                 <BillingSettings />
