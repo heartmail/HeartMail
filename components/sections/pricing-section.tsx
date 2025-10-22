@@ -43,6 +43,11 @@ export default function PricingSection({ user }: PricingSectionProps) {
       return
     }
 
+    if (!priceId) {
+      toast.error('Price ID not configured. Please contact support.')
+      return
+    }
+
     toast.loading('Redirecting to checkout...', { id: 'checkout-toast' })
     try {
       const response = await fetch('/api/stripe/create-checkout-session', {
@@ -96,7 +101,7 @@ export default function PricingSection({ user }: PricingSectionProps) {
       ],
       isPrimary: true,
       priceId: billingPeriod === 'yearly' 
-        ? process.env.NEXT_PUBLIC_STRIPE_FAMILY_YEARLY_PRICE_ID || 'price_1SKiu48h6OhnnNXPm2cjJqau'
+        ? process.env.NEXT_PUBLIC_STRIPE_FAMILY_YEARLY_PRICE_ID
         : process.env.NEXT_PUBLIC_STRIPE_FAMILY_MONTHLY_PRICE_ID || 'price_1SJ3gL8h6OhnnNXPXyTiD9Yo',
     },
     {
@@ -113,7 +118,7 @@ export default function PricingSection({ user }: PricingSectionProps) {
       ],
       isPrimary: false,
       priceId: billingPeriod === 'yearly' 
-        ? process.env.NEXT_PUBLIC_STRIPE_EXTENDED_YEARLY_PRICE_ID || 'price_1SKiuE8h6OhnnNXP9nj1PEfP'
+        ? process.env.NEXT_PUBLIC_STRIPE_EXTENDED_YEARLY_PRICE_ID
         : process.env.NEXT_PUBLIC_STRIPE_EXTENDED_MONTHLY_PRICE_ID || 'price_1SJ3gO8h6OhnnNXPY430Z8DW',
     },
   ]
