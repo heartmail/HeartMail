@@ -21,10 +21,10 @@ export const metadata: Metadata = {
   description: 'Send heartfelt emails to your loved ones with HeartMail. Schedule, personalize, and stay connected with the people who matter most.',
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: 'any' },
+      { url: 'https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/logo.png', sizes: 'any' },
       { url: 'https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/logo.png', type: 'image/png' },
     ],
-    shortcut: '/favicon.ico',
+    shortcut: 'https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/logo.png',
     apple: 'https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/logo.png',
   },
   // Performance optimizations

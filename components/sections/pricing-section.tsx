@@ -48,6 +48,7 @@ export default function PricingSection({ user }: PricingSectionProps) {
       return
     }
 
+    setLoadingPriceId(priceId)
     toast.loading('Redirecting to checkout...', { id: 'checkout-toast' })
     try {
       const response = await fetch('/api/stripe/create-checkout-session', {
@@ -68,10 +69,13 @@ export default function PricingSection({ user }: PricingSectionProps) {
     } catch (error: any) {
       console.error('Checkout error:', error)
       toast.error(`Failed to initiate checkout: ${error.message || 'Please try again.'}`, { id: 'checkout-toast' })
+    } finally {
+      setLoadingPriceId(null)
     }
   }
 
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly')
+  const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null)
 
   const pricingPlans = [
     {
@@ -184,11 +188,14 @@ export default function PricingSection({ user }: PricingSectionProps) {
         }
       } else {
         // Free users can upgrade to Family
+        const isLoading = loadingPriceId === planPriceId
         return { 
-          text: 'Upgrade', 
+          text: isLoading ? 'Loading...' : 'Upgrade', 
           action: () => handleCheckout(planPriceId!), 
-          disabled: false,
-          className: 'w-full py-3 text-lg font-semibold bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl'
+          disabled: isLoading,
+          className: isLoading 
+            ? 'w-full py-3 text-lg font-semibold bg-gray-200 text-gray-800 cursor-not-allowed'
+            : 'w-full py-3 text-lg font-semibold bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl'
         }
       }
     }
@@ -204,11 +211,14 @@ export default function PricingSection({ user }: PricingSectionProps) {
         }
       } else {
         // Free or Family users can upgrade to Extended
+        const isLoading = loadingPriceId === planPriceId
         return { 
-          text: 'Upgrade', 
+          text: isLoading ? 'Loading...' : 'Upgrade', 
           action: () => handleCheckout(planPriceId!), 
-          disabled: false,
-          className: 'w-full py-3 text-lg font-semibold bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl'
+          disabled: isLoading,
+          className: isLoading 
+            ? 'w-full py-3 text-lg font-semibold bg-gray-200 text-gray-800 cursor-not-allowed'
+            : 'w-full py-3 text-lg font-semibold bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl'
         }
       }
     }

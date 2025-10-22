@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
       ],
       mode: 'subscription',
       success_url: `${request.headers.get('origin')}/dashboard/settings?tab=billing&success=true`,
-      cancel_url: `${request.headers.get('origin')}/dashboard/settings?tab=billing&cancelled=true`,
+      cancel_url: `${request.headers.get('origin')}/dashboard/settings?tab=billing`,
       metadata: {
         userId: userId,
         priceId: priceId,
