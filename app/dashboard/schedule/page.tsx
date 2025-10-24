@@ -342,7 +342,22 @@ export default function SchedulePage() {
       return
     }
 
-    const formData = new FormData(e.currentTarget)
+    // Safely get form data
+    let formData: FormData
+    try {
+      if (e.currentTarget && e.currentTarget instanceof HTMLFormElement) {
+        formData = new FormData(e.currentTarget)
+      } else {
+        console.error('Form element not found or invalid')
+        alert('Form submission error. Please try again.')
+        return
+      }
+    } catch (error) {
+      console.error('Error creating FormData:', error)
+      alert('Form submission error. Please try again.')
+      return
+    }
+
     const recipientId = formData.get('recipient') as string
     const templateId = formData.get('template') as string
     const subject = formData.get('subject') as string
@@ -517,7 +532,15 @@ export default function SchedulePage() {
     
     // Proceed with scheduling the email
     try {
-      const formData = new FormData(document.querySelector('form') as HTMLFormElement)
+      // Find the form element more reliably
+      const formElement = document.querySelector('form[data-schedule-form]') as HTMLFormElement
+      if (!formElement) {
+        console.error('Schedule form not found')
+        alert('Form not found. Please try again.')
+        return
+      }
+      
+      const formData = new FormData(formElement)
       const recipientId = formData.get('recipient') as string
       const templateId = formData.get('template') as string
       const subject = formData.get('subject') as string
@@ -925,7 +948,7 @@ export default function SchedulePage() {
               </div>
 
               {/* Form */}
-              <form onSubmit={handleScheduleEmail} className="p-6 space-y-6">
+              <form onSubmit={handleScheduleEmail} className="p-6 space-y-6" data-schedule-form>
                 {/* Template Card */}
                 <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-4 border border-purple-100">
                   <div className="flex items-center space-x-2 mb-3">
