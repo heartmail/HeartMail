@@ -1,9 +1,13 @@
 import { supabase } from './supabase'
 
 export interface CustomVariable {
+  id: string
+  user_id: string
   name: string
   label: string
   description?: string
+  created_at: string
+  updated_at: string
 }
 
 // Get all custom variable names used across all recipients for a user
@@ -91,4 +95,78 @@ export function getUnreplacedVariables(template: string): string[] {
   }
   
   return variables
+}
+
+// Get all custom variables for a user
+export async function getCustomVariables(userId: string): Promise<CustomVariable[]> {
+  const { data, error } = await supabase
+    .from('custom_variables')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching custom variables:', error)
+    return []
+  }
+
+  return data || []
+}
+
+// Create a new custom variable
+export async function createCustomVariable(
+  userId: string,
+  variable: Omit<CustomVariable, 'id' | 'created_at' | 'updated_at'>
+): Promise<void> {
+  const { error } = await supabase
+    .from('custom_variables')
+    .insert({
+      user_id: userId,
+      name: variable.name,
+      label: variable.label,
+      description: variable.description
+    })
+
+  if (error) {
+    console.error('Error creating custom variable:', error)
+    throw error
+  }
+}
+
+// Update a custom variable
+export async function updateCustomVariable(
+  variableId: string,
+  updates: Partial<CustomVariable>
+): Promise<void> {
+  const { error } = await supabase
+    .from('custom_variables')
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', variableId)
+
+  if (error) {
+    console.error('Error updating custom variable:', error)
+    throw error
+  }
+}
+
+// Delete a custom variable
+export async function deleteCustomVariable(variableId: string): Promise<void> {
+  const { error } = await supabase
+    .from('custom_variables')
+    .delete()
+    .eq('id', variableId)
+
+  if (error) {
+    console.error('Error deleting custom variable:', error)
+    throw error
+  }
+}
+
+// Validate custom variable value
+export function validateCustomVariableValue(value: string): boolean {
+  // Basic validation - can be extended as needed
+  return value.trim().length > 0
 }

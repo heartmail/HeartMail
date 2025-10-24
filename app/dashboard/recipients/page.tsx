@@ -123,7 +123,7 @@ export default function RecipientsPage() {
         ])
         
         setCurrentUsage(usage?.recipients_count || 0)
-        setCurrentLimit(limits.recipients_limit)
+        setCurrentLimit(limits.recipients_limit || 0)
         setUpgradeModalType('recipients')
         setShowUpgradeModal(true)
         return
