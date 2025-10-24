@@ -116,7 +116,7 @@ export async function getCustomVariables(userId: string): Promise<CustomVariable
 // Create a new custom variable
 export async function createCustomVariable(
   userId: string,
-  variable: Omit<CustomVariable, 'id' | 'created_at' | 'updated_at'>
+  variable: Omit<CustomVariable, 'id' | 'user_id' | 'created_at' | 'updated_at'>
 ): Promise<void> {
   const { error } = await supabase
     .from('custom_variables')
