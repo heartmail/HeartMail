@@ -17,10 +17,22 @@ const quickActions = [
 ]
 
 export default function DashboardContent() {
-  const { data, loading, error } = useDashboardData()
+  const { data, loading, error, refetch } = useDashboardData() as {
+    data: any
+    loading: boolean
+    error: string | null
+    refetch: () => void
+  }
   const router = useRouter()
   const [showEmailModal, setShowEmailModal] = useState(false)
   const [showActivityHistory, setShowActivityHistory] = useState(false)
+
+  const handleEmailSent = () => {
+    // Refresh dashboard data after email is sent
+    if (refetch) {
+      refetch()
+    }
+  }
 
   if (loading) {
     return (
@@ -152,7 +164,7 @@ export default function DashboardContent() {
               </div>
               <div className="activity-list">
                 {data.recentActivity.length > 0 ? (
-                  data.recentActivity.map((activity, index) => (
+                  data.recentActivity.map((activity: any, index: number) => (
                     <div key={index} className="activity-item">
                       <div className={`activity-icon ${activity.type}`}>
                         {activity.icon === 'Check' ? <Check className="h-4 w-4" /> : <Calendar className="h-4 w-4" />}
@@ -179,7 +191,7 @@ export default function DashboardContent() {
           </div>
           <div className="recipients-list">
             {data.recipients.length > 0 ? (
-              data.recipients.map((recipient, index) => (
+              data.recipients.map((recipient: any, index: number) => (
                 <div key={recipient.id} className="recipient-item">
                   <div className="recipient-avatar">
                     <Users className="h-4 w-4" />
@@ -219,7 +231,7 @@ export default function DashboardContent() {
           </div>
           <div className="schedule-list">
             {data.upcomingEmails.length > 0 ? (
-              data.upcomingEmails.map((email, index) => (
+              data.upcomingEmails.map((email: any, index: number) => (
                 <div key={email.id} className="schedule-item">
                   <div className="schedule-time">
                     <div className="schedule-date">{email.date}</div>
@@ -254,7 +266,8 @@ export default function DashboardContent() {
       {/* Email Modal */}
       <SendEmailModal 
         isOpen={showEmailModal} 
-        onClose={() => setShowEmailModal(false)} 
+        onClose={() => setShowEmailModal(false)}
+        onEmailSent={handleEmailSent}
       />
 
       {/* Activity History Modal */}

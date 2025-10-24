@@ -18,6 +18,7 @@ import UpgradeModal from '@/components/billing/upgrade-modal'
 interface SendEmailModalProps {
   isOpen: boolean
   onClose: () => void
+  onEmailSent?: () => void // Callback to refresh dashboard
 }
 
 interface Recipient {
@@ -39,7 +40,7 @@ interface Template {
   content: string
 }
 
-export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps) {
+export default function SendEmailModal({ isOpen, onClose, onEmailSent }: SendEmailModalProps) {
   const [formData, setFormData] = useState({
     to: '',
     subject: '',
@@ -265,6 +266,12 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
         setFormData({ to: '', subject: '', message: '' })
         setSelectedRecipientId('')
         setSelectedTemplateId('')
+        
+        // Trigger dashboard refresh
+        if (onEmailSent) {
+          onEmailSent()
+        }
+        
         setTimeout(() => {
           setIsSuccess(false)
           onClose()

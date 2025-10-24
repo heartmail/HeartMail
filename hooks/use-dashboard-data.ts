@@ -30,7 +30,17 @@ interface UpcomingEmail {
   status: string
 }
 
-export function useDashboardData() {
+export function useDashboardData(): {
+  data: {
+    stats: any
+    recentActivity: Activity[]
+    recipients: Recipient[]
+    upcomingEmails: UpcomingEmail[]
+  }
+  loading: boolean
+  error: string | null
+  refetch: () => void
+} {
   const { user } = useAuth()
   const [data, setData] = useState<{
     stats: any
@@ -46,55 +56,59 @@ export function useDashboardData() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
+  const fetchData = async () => {
     if (!user) {
       setLoading(false)
       return
     }
 
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        
-        // Add timeout to prevent hanging
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Dashboard data fetch timeout')), 15000)
-        )
-        
-        const dataPromise = Promise.all([
-          getDashboardStats(user.id),
-          getRecentActivity(user.id),
-          getRecipients(user.id),
-          getUpcomingEmails(user.id)
-        ])
-        
-        const [stats, recentActivity, recipients, upcomingEmails] = await Promise.race([
-          dataPromise,
-          timeoutPromise
-        ]) as any
+    try {
+      setLoading(true)
+      
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Dashboard data fetch timeout')), 15000)
+      )
+      
+      const dataPromise = Promise.all([
+        getDashboardStats(user.id),
+        getRecentActivity(user.id),
+        getRecipients(user.id),
+        getUpcomingEmails(user.id)
+      ])
+      
+      const [stats, recentActivity, recipients, upcomingEmails] = await Promise.race([
+        dataPromise,
+        timeoutPromise
+      ]) as any
 
-        setData({
-          stats,
-          recentActivity: recentActivity.map((activity: any) => ({
-            ...activity,
-            type: activity.type as 'info' | 'success'
-          })),
-          recipients: recipients.map((recipient: any) => ({
-            ...recipient,
-            status: recipient.status as 'active' | 'inactive'
-          })),
-          upcomingEmails
-        })
-      } catch (err: any) {
-        setError(err.message)
-        console.error('Error fetching dashboard data:', err)
-      } finally {
-        setLoading(false)
-      }
+      setData({
+        stats,
+        recentActivity: recentActivity.map((activity: any) => ({
+          ...activity,
+          type: activity.type as 'info' | 'success'
+        })),
+        recipients: recipients.map((recipient: any) => ({
+          ...recipient,
+          status: recipient.status as 'active' | 'inactive'
+        })),
+        upcomingEmails
+      })
+    } catch (err: any) {
+      setError(err.message)
+      console.error('Error fetching dashboard data:', err)
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchData()
   }, [user])
 
-  return { data, loading, error }
+  const refetch = () => {
+    fetchData()
+  }
+
+  return { data, loading, error, refetch }
 }

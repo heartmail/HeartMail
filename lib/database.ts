@@ -3,15 +3,17 @@ import { logScheduledEmailDeleted } from './activity-history'
 
 // Dashboard Stats
 export async function getDashboardStats(userId: string) {
-  const [recipientsResult, scheduledEmailsResult, emailLogsResult] = await Promise.all([
+  const currentMonth = new Date().toISOString().slice(0, 7) // YYYY-MM format
+  
+  const [recipientsResult, scheduledEmailsResult, usageResult] = await Promise.all([
     supabase.from('recipients').select('id').eq('user_id', userId).eq('is_active', true),
     supabase.from('scheduled_emails').select('id, status').eq('user_id', userId),
-    supabase.from('email_logs').select('id, sent_at').gte('sent_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
+    supabase.from('subscription_usage').select('emails_sent_this_month').eq('user_id', userId).eq('month_year', currentMonth).single()
   ])
 
   const activeRecipients = recipientsResult.data?.length || 0
   const scheduledEmails = scheduledEmailsResult.data?.length || 0
-  const sentThisMonth = emailLogsResult.data?.length || 0
+  const sentThisMonth = usageResult.data?.emails_sent_this_month || 0
   
   return {
     activeRecipients,

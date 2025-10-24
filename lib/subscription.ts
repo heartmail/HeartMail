@@ -363,16 +363,41 @@ export async function canSendEmail(userId: string): Promise<boolean> {
  * Increment email count for user
  */
 export async function incrementEmailCount(userId: string): Promise<void> {
-  const { error } = await supabase
-    .from('subscription_usage')
-    .update({
-      emails_sent_this_month: (supabase as any).raw('emails_sent_this_month + 1'),
-      updated_at: new Date().toISOString()
-    })
-    .eq('user_id', userId)
+  try {
+    // First, get the current usage record
+    const { data: currentUsage, error: fetchError } = await supabase
+      .from('subscription_usage')
+      .select('emails_sent_this_month')
+      .eq('user_id', userId)
+      .eq('month_year', new Date().toISOString().slice(0, 7)) // YYYY-MM format
+      .single()
 
-  if (error) {
-    console.error('Error incrementing email count:', error)
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error('Error fetching current usage:', fetchError)
+      throw fetchError
+    }
+
+    const currentCount = currentUsage?.emails_sent_this_month || 0
+
+    // Update or insert the usage record
+    const { error: upsertError } = await supabase
+      .from('subscription_usage')
+      .upsert({
+        user_id: userId,
+        month_year: new Date().toISOString().slice(0, 7), // YYYY-MM format
+        emails_sent_this_month: currentCount + 1,
+        recipients_created: currentUsage?.recipients_created || 0,
+        updated_at: new Date().toISOString()
+      })
+
+    if (upsertError) {
+      console.error('Error incrementing email count:', upsertError)
+      throw upsertError
+    }
+
+    console.log('✅ Email count incremented successfully for user:', userId)
+  } catch (error) {
+    console.error('Error in incrementEmailCount:', error)
     throw error
   }
 }
