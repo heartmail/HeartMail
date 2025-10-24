@@ -189,7 +189,7 @@ export default function SchedulePage() {
       const { data, error } = await supabase
         .from('templates')
         .select('id, title, content, is_premium')
-        .or(`user_id.eq.${user.id},user_id.is.null`)
+        .eq('user_id', user.id)
         .order('title')
 
       if (error) {
