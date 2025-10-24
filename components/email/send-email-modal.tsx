@@ -227,7 +227,7 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
       ])
       
       setCurrentUsage(usage?.emails_sent_this_month || 0)
-      setCurrentLimit(limits.emails_per_month)
+      setCurrentLimit(limits.emails_per_month || 0)
       setUpgradeModalType('emails')
       setShowUpgradeModal(true)
       return
