@@ -6,6 +6,13 @@ export interface CustomVariable {
   name: string
   label: string
   description?: string
+  type: 'text' | 'number' | 'email' | 'date' | 'phone'
+  is_required: boolean
+  validation_rules: {
+    minLength?: number
+    maxLength?: number
+    pattern?: string
+  }
   created_at: string
   updated_at: string
 }
@@ -124,7 +131,10 @@ export async function createCustomVariable(
       user_id: userId,
       name: variable.name,
       label: variable.label,
-      description: variable.description
+      description: variable.description,
+      type: variable.type,
+      is_required: variable.is_required,
+      validation_rules: variable.validation_rules
     })
 
   if (error) {
