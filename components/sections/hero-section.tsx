@@ -7,12 +7,6 @@ export default function HeroSection() {
   return (
     <section 
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
-      style={{
-        backgroundImage: 'url(https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/heartmail_optimized/no_wm_background_desktop_1920x1080.jpeg)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
     >
       {/* Semi-transparent overlay for better text readability */}
       <div className="absolute inset-0 bg-black/50"></div>

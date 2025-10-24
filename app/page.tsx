@@ -67,14 +67,15 @@ export default function Home() {
     <ErrorBoundary>
       <AuthInitializer>
         <main className="min-h-screen relative">
-          {/* Background Image - Responsive and optimized loading */}
+          {/* Background Image - Full width coverage */}
           <div 
-            className="fixed inset-0 z-0"
+            className="full-width-bg"
             style={{
               backgroundImage: 'url(https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/heartmail_optimized/no_wm_background_desktop_1920x1080.jpeg)',
               backgroundSize: 'cover',
-              backgroundPosition: 'center',
+              backgroundPosition: 'center center',
               backgroundRepeat: 'no-repeat',
+              backgroundAttachment: 'fixed',
               backgroundColor: '#f3f4f6', // Fallback color
             }}
             onError={(e) => {
