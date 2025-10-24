@@ -14,26 +14,26 @@ interface PricingSectionProps {
 export default function PricingSection({ user }: PricingSectionProps) {
   const router = useRouter()
   // Safely get subscription context
-  let subscription, isLoading, isPro, isPremium, isFree
+  let subscription, isLoading, isFamily, isExtended, isFree
   try {
     const subscriptionContext = useSubscription()
     subscription = subscriptionContext.subscription
     isLoading = subscriptionContext.isLoading
-    isPro = subscriptionContext.isPro
-    isPremium = subscriptionContext.isPremium
+    isFamily = subscriptionContext.isFamily
+    isExtended = subscriptionContext.isExtended
     isFree = subscriptionContext.isFree
     
     // Debug logging
     console.log('PricingSection - User:', user?.email)
     console.log('PricingSection - Subscription:', subscription)
-    console.log('PricingSection - isPro:', isPro, 'isPremium:', isPremium, 'isFree:', isFree)
+    console.log('PricingSection - isFamily:', isFamily, 'isExtended:', isExtended, 'isFree:', isFree)
   } catch (error) {
     // SubscriptionProvider not available, use default values
     console.log('SubscriptionProvider not available in PricingSection')
     subscription = null
     isLoading = false
-    isPro = false
-    isPremium = false
+    isFamily = false
+    isExtended = false
     isFree = true
   }
 
@@ -171,14 +171,14 @@ export default function PricingSection({ user }: PricingSectionProps) {
 
     // Family plan logic
     if (planName === 'Family') {
-      if (isPro) {
+      if (isFamily) {
         return { 
           text: 'Active', 
           action: () => {}, 
           disabled: true,
           className: 'w-full py-3 text-lg font-semibold bg-green-100 text-green-800 cursor-not-allowed'
         }
-      } else if (isPremium) {
+      } else if (isExtended) {
         // Extended users can manage their plan
         return { 
           text: 'Manage Plan', 
@@ -202,7 +202,7 @@ export default function PricingSection({ user }: PricingSectionProps) {
 
     // Extended plan logic
     if (planName === 'Extended') {
-      if (isPremium) {
+      if (isExtended) {
         return { 
           text: 'Active', 
           action: () => {}, 

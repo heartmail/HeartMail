@@ -25,8 +25,8 @@ interface SubscriptionContextType {
   subscription: Subscription | null;
   isLoading: boolean;
   fetchSubscription: () => Promise<void>;
-  isPro: boolean;
-  isPremium: boolean;
+  isFamily: boolean;
+  isExtended: boolean;
   isFree: boolean;
 }
 
@@ -141,8 +141,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
   }, [user, fetchSubscription, mounted])
 
-  const isPro = subscription?.plan === 'pro' && subscription?.status === 'active'
-  const isPremium = subscription?.plan === 'premium' && subscription?.status === 'active'
+  const isFamily = subscription?.plan === 'family' && subscription?.status === 'active'
+  const isExtended = subscription?.plan === 'extended' && subscription?.status === 'active'
   const isFree = !subscription || subscription?.plan === 'free' || subscription?.status === 'canceled' || subscription?.status === 'unpaid' || subscription?.status === 'incomplete' || subscription?.status === 'incomplete_expired' || subscription?.status === 'paused'
 
   // Prevent hydration mismatch
@@ -151,7 +151,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <SubscriptionContext.Provider value={{ subscription, isLoading, fetchSubscription, isPro, isPremium, isFree }}>
+    <SubscriptionContext.Provider value={{ subscription, isLoading, fetchSubscription, isFamily, isExtended, isFree }}>
       {children}
     </SubscriptionContext.Provider>
   )
