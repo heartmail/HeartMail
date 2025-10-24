@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createEmailTemplate } from '@/lib/email-template'
 import { logEmailSent } from '@/lib/activity-history'
+import { incrementEmailCount } from '@/lib/subscription'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -69,6 +70,17 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ Email sent successfully:', data?.id);
+    
+    // Increment email count for user
+    if (userId) {
+      try {
+        await incrementEmailCount(userId)
+        console.log('✅ Email count incremented for user:', userId)
+      } catch (countError) {
+        console.error('Failed to increment email count:', countError)
+        // Don't fail the request if count increment fails
+      }
+    }
     
     // Log activity (extract recipient name from email if possible)
     if (userId) {

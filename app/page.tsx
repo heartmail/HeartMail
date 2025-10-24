@@ -71,7 +71,7 @@ export default function Home() {
           <div 
             className="fixed inset-0 z-0"
             style={{
-              backgroundImage: 'url(/background-home.jpg)',
+              backgroundImage: 'url(https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/you-ve-got-mail-2005076.jpg)',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',

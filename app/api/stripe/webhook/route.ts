@@ -79,10 +79,15 @@ export async function POST(request: NextRequest) {
           .single()
 
         if (userData) {
-          // Update subscription status
+          // Determine plan type based on price
+          const priceAmount = subscription.items.data[0]?.price?.unit_amount || 0
+          const planType = priceAmount === 999 ? 'family' : 'extended'
+
+          // Update subscription status and plan
           const { error } = await supabase
             .from('subscriptions')
             .update({
+              plan: planType,
               status: subscription.status,
               current_period_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
               current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
@@ -91,6 +96,8 @@ export async function POST(request: NextRequest) {
 
           if (error) {
             console.error('Error updating subscription status:', error)
+          } else {
+            console.log('Subscription updated successfully for user:', userData.user_id, 'Plan:', planType)
           }
         }
         break

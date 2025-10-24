@@ -72,14 +72,13 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         .from('subscriptions')
         .select('*')
         .eq('user_id', user.id)
-        .in('status', ['trialing', 'active', 'past_due']) // Consider these as active for feature access
-        .order('current_period_end', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(1)
         .single()
 
       if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
         console.log('SubscriptionContext - No subscription found, using free plan')
-        // Don't create subscription, just use free plan
+        // Use free plan without creating database record
         setSubscription({
           id: 'free-plan',
           user_id: user.id,

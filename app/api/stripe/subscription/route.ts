@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { getUserLimits } from '@/lib/subscription'
 
 // Force dynamic rendering to prevent static generation issues
 export const dynamic = 'force-dynamic'
@@ -40,63 +41,38 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // If no subscription found, create a default free subscription
+    // If no subscription found, return free plan without creating database record
     if (!subscription) {
-      console.log('No subscription found, creating default free subscription for user:', userId)
-      const { data: newSubscription, error: createError } = await supabase
-        .from('subscriptions')
-        .insert({
-          user_id: userId,
-          plan: 'free',
-          status: 'active'
-        })
-        .select()
-        .single()
-
-      if (createError) {
-        console.error('Error creating default subscription:', createError)
-        return NextResponse.json({
-          subscription: {
-            status: 'active',
-            plan: 'Free',
-            price_id: null,
-            current_period_start: null,
-            current_period_end: null,
-            cancel_at_period_end: false,
-            usage: {
-              recipients_count: 0,
-              templates_used: 0,
-              emails_sent_this_month: 0
-            }
-          }
-        })
-      }
-
+      console.log('No subscription found, returning free plan for user:', userId)
+      const limits = await getUserLimits(userId)
       return NextResponse.json({
         subscription: {
-          id: newSubscription.id,
-          status: newSubscription.status,
+          status: 'active',
           plan: 'Free',
-          price_id: newSubscription.plan_id,
-          current_period_start: newSubscription.current_period_start,
-          current_period_end: newSubscription.current_period_end,
-          cancel_at_period_end: newSubscription.cancel_at_period_end,
+          price_id: null,
+          current_period_start: null,
+          current_period_end: null,
+          cancel_at_period_end: false,
           usage: {
             recipients_count: 0,
             templates_used: 0,
             emails_sent_this_month: 0
           }
-        }
+        },
+        limits
       })
     }
 
     // Determine plan name from plan field
     let planName = 'Free'
-    if (subscription.plan === 'pro') {
-      planName = 'Pro'
-    } else if (subscription.plan === 'premium') {
-      planName = 'Premium'
+    if (subscription.plan === 'family') {
+      planName = 'Family'
+    } else if (subscription.plan === 'extended') {
+      planName = 'Extended'
     }
+
+    // Get user limits based on their subscription
+    const limits = await getUserLimits(userId)
 
     return NextResponse.json({
       subscription: {
@@ -112,7 +88,8 @@ export async function GET(request: NextRequest) {
           templates_used: 0,
           emails_sent_this_month: 0
         }
-      }
+      },
+      limits
     })
   } catch (error: any) {
     console.error('Subscription fetch failed:', error)

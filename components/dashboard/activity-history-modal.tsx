@@ -147,24 +147,26 @@ export default function ActivityHistoryModal({ isOpen, onClose }: ActivityHistor
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className="max-w-6xl max-h-[90vh] overflow-hidden"
+        className="max-w-[95vw] max-h-[95vh] w-full h-[95vh] flex flex-col p-0"
         aria-describedby="activity-history-description"
       >
         <div id="activity-history-description" className="sr-only">
           View and filter your HeartMail activity history including sent emails, template usage, and account actions.
         </div>
-        <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2 text-2xl">
-            <Clock className="h-6 w-6 text-heartmail-pink" />
-            <span>Activity History</span>
-          </DialogTitle>
-          <DialogDescription>
-            View and search through all your HeartMail activity
-          </DialogDescription>
-        </DialogHeader>
+        
+        <div className="flex flex-col h-full p-6">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="flex items-center space-x-2 text-2xl">
+              <Clock className="h-6 w-6 text-heartmail-pink" />
+              <span>Activity History</span>
+            </DialogTitle>
+            <DialogDescription>
+              View and search through all your HeartMail activity
+            </DialogDescription>
+          </DialogHeader>
 
-        {/* Search and Filter Controls */}
-        <div className="space-y-4 border-b pb-4">
+          {/* Search and Filter Controls */}
+          <div className="flex-shrink-0 space-y-4 border-b pb-4">
           <div className="flex flex-col sm:flex-row gap-4">
             {/* Search */}
             <div className="flex-1">
@@ -221,8 +223,8 @@ export default function ActivityHistoryModal({ isOpen, onClose }: ActivityHistor
           </div>
         </div>
 
-        {/* Activity List */}
-        <div className="flex-1 overflow-y-auto">
+          {/* Activity List */}
+          <div className="flex-1 overflow-y-auto min-h-0">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-heartmail-pink"></div>
@@ -284,41 +286,42 @@ export default function ActivityHistoryModal({ isOpen, onClose }: ActivityHistor
           )}
         </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t pt-4">
-            <div className="text-sm text-gray-600">
-              Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount} activities
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex-shrink-0 flex items-center justify-between pt-4 border-t">
+              <div className="text-sm text-gray-500">
+                Page {currentPage} of {totalPages} ({totalCount} total activities)
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
-            <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        )}
+          )}
 
-        {/* Close Button */}
-        <div className="flex justify-end pt-4 border-t">
-          <Button
-            onClick={onClose}
-            className="px-6 py-2.5 bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
-          >
-            Close
-          </Button>
+          {/* Close Button */}
+          <div className="flex-shrink-0 flex justify-end pt-4 border-t">
+            <Button
+              onClick={onClose}
+              className="px-6 py-2.5 bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+            >
+              Close
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/lib/auth-context'
 import { getTemplates, createTemplate, updateTemplate, deleteTemplate, Template } from '@/lib/templates'
+import { TEMPLATE_VARIABLES, getAllAvailableVariables } from '@/lib/template-variables'
+import { getCustomVariableNames } from '@/lib/custom-variables'
 import { toast } from 'sonner'
 
 export default function TemplatesPage() {
@@ -27,11 +29,59 @@ export default function TemplatesPage() {
     is_public: false,
     tags: [] as string[]
   })
+  const [availableVariables, setAvailableVariables] = useState(TEMPLATE_VARIABLES)
+  const [customVariableNames, setCustomVariableNames] = useState<string[]>([])
+  const [newCustomVarName, setNewCustomVarName] = useState('')
+  const [showCustomVarDialog, setShowCustomVarDialog] = useState(false)
   const [tagInput, setTagInput] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [filteredTemplates, setFilteredTemplates] = useState<Template[]>([])
 
   const { user } = useAuth()
+
+  const insertVariable = (variable: string) => {
+    const textarea = document.getElementById('content') as HTMLTextAreaElement
+    if (textarea) {
+      const start = textarea.selectionStart
+      const end = textarea.selectionEnd
+      const text = formData.content
+      const before = text.substring(0, start)
+      const after = text.substring(end, text.length)
+      const newContent = before + variable + after
+      
+      setFormData({ ...formData, content: newContent })
+      
+      // Set cursor position after the inserted variable
+      setTimeout(() => {
+        textarea.focus()
+        textarea.setSelectionRange(start + variable.length, start + variable.length)
+      }, 0)
+    }
+  }
+
+  const createCustomVariable = () => {
+    if (newCustomVarName.trim()) {
+      const varName = newCustomVarName.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_')
+      const variable = `{{${varName}}}`
+      
+      // Add to available variables
+      const newVar = {
+        key: variable,
+        label: varName.charAt(0).toUpperCase() + varName.slice(1).replace(/_/g, ' '),
+        description: `Custom variable: ${varName}`
+      }
+      
+      setAvailableVariables(prev => [...prev, newVar])
+      setCustomVariableNames(prev => [...prev, varName])
+      
+      // Insert into content
+      insertVariable(variable)
+      
+      setNewCustomVarName('')
+      setShowCustomVarDialog(false)
+      toast.success(`Custom variable ${variable} created and inserted`)
+    }
+  }
 
   const categories = [
     { value: 'love', label: 'Love & Affection' },
@@ -45,8 +95,29 @@ export default function TemplatesPage() {
   useEffect(() => {
     if (user) {
       fetchTemplates()
+      loadCustomVariables()
     }
   }, [user])
+
+  const loadCustomVariables = async () => {
+    if (!user) return
+    
+    try {
+      const customVars = await getCustomVariableNames(user.id)
+      setCustomVariableNames(customVars)
+      
+      // Create template variables from custom variable names
+      const customTemplateVars = customVars.map(name => ({
+        key: `{{${name}}}`,
+        label: name.charAt(0).toUpperCase() + name.slice(1).replace(/_/g, ' '),
+        description: `Custom variable: ${name}`
+      }))
+      
+      setAvailableVariables([...TEMPLATE_VARIABLES, ...customTemplateVars])
+    } catch (error) {
+      console.error('Error loading custom variables:', error)
+    }
+  }
 
   // Filter templates based on search query
   useEffect(() => {
@@ -314,16 +385,53 @@ export default function TemplatesPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
+                  {/* Variable Insertion Buttons */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="text-sm font-medium text-gray-700">
+                        Insert Variables
+                      </Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowCustomVarDialog(true)}
+                        className="text-xs"
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Create Custom
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {availableVariables.map((variable) => (
+                        <Button
+                          key={variable.key}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => insertVariable(variable.key)}
+                          className="text-xs"
+                          title={variable.description}
+                        >
+                          {variable.label}
+                        </Button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Click any button above to insert variables that will be replaced with recipient information
+                    </p>
+                  </div>
+                  
                   <Textarea
                     id="content"
                     value={formData.content}
                     onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                    placeholder="Dear [Name],&#10;&#10;I just wanted to take a moment to tell you how much you mean to me..."
+                    placeholder="Hi {'{{first_name}}'}!&#10;&#10;I just wanted to take a moment to tell you how much you mean to me..."
                     rows={8}
                     required
                   />
                   <p className="text-sm text-gray-500 mt-2">
-                    Use placeholders like {'{name}'} for personalization
+                    Use variables like {'{{first_name}}'}, {'{{last_name}}'}, {'{{full_name}}'}, {'{{email}}'}, {'{{relationship}}'}
                   </p>
                 </CardContent>
               </Card>
@@ -535,6 +643,57 @@ export default function TemplatesPage() {
           ))}
         </div>
       )}
+
+      {/* Custom Variable Creation Dialog */}
+      <Dialog open={showCustomVarDialog} onOpenChange={setShowCustomVarDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5" />
+              Create Custom Variable
+            </DialogTitle>
+            <DialogDescription>
+              Create a new custom variable that can be used in your templates.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="customVarName">Variable Name</Label>
+              <Input
+                id="customVarName"
+                value={newCustomVarName}
+                onChange={(e) => setNewCustomVarName(e.target.value)}
+                placeholder="e.g., nickname, favorite_color, anniversary"
+                className="font-mono"
+              />
+              <p className="text-xs text-gray-500">
+                Will be used as {'{{' + (newCustomVarName || 'variable_name') + '}}'} in templates
+              </p>
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowCustomVarDialog(false)
+                  setNewCustomVarName('')
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={createCustomVariable}
+                disabled={!newCustomVarName.trim()}
+                className="btn-heartmail"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create & Insert
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

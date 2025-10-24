@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { CreditCard, ExternalLink, Loader2, Calendar, Users, Mail, X } from 'lucide-react'
+import { CreditCard, ExternalLink, Loader2, Calendar, Users, Mail, X, RefreshCw } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { Subscription, SubscriptionUsage, PlanLimits } from '@/lib/subscription'
 
@@ -33,6 +33,18 @@ export default function BillingSettings() {
     if (user) {
       fetchSubscription()
     }
+  }, [user])
+
+  // Refresh data when page becomes visible (e.g., returning from Stripe portal)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user) {
+        fetchSubscription()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
   }, [user])
 
   const fetchSubscription = async () => {
@@ -106,9 +118,9 @@ export default function BillingSettings() {
 
   const getPlanPrice = (plan: string) => {
     switch (plan) {
-      case 'Pro':
+      case 'Family':
         return '$9'
-      case 'Premium':
+      case 'Extended':
         return '$29'
       case 'Free':
         return '$0'
@@ -134,13 +146,26 @@ export default function BillingSettings() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <CreditCard className="h-5 w-5" />
-            <span>Subscription & Billing</span>
-          </CardTitle>
-          <CardDescription>
-            Manage your subscription, payment methods, and billing information.
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center space-x-2">
+                <CreditCard className="h-5 w-5" />
+                <span>Subscription & Billing</span>
+              </CardTitle>
+              <CardDescription>
+                Manage your subscription, payment methods, and billing information.
+              </CardDescription>
+            </div>
+            <Button
+              onClick={fetchSubscription}
+              variant="outline"
+              size="sm"
+              className="flex items-center space-x-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              <span>Refresh</span>
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {subscription ? (
@@ -181,7 +206,7 @@ export default function BillingSettings() {
                       <span className="text-sm text-gray-600">Recipients</span>
                     </div>
                     <span className="text-sm font-medium">
-                      {subscription.usage.recipients_count} / {limits?.recipients_limit === -1 ? '∞' : limits?.recipients_limit || 1}
+                      {subscription.usage.recipients_count} / {limits?.recipients_limit === null ? '∞' : (limits?.recipients_limit ?? 2)}
                     </span>
                   </div>
                   
@@ -191,7 +216,7 @@ export default function BillingSettings() {
                       <span className="text-sm text-gray-600">Emails Sent</span>
                     </div>
                     <span className="text-sm font-medium">
-                      {subscription.usage.emails_sent_this_month} / {limits?.emails_per_month === -1 ? '∞' : limits?.emails_per_month || 10}
+                      {subscription.usage.emails_sent_this_month} / {limits?.emails_per_month === null ? '∞' : (limits?.emails_per_month ?? 3)}
                     </span>
                   </div>
                 </div>
@@ -199,23 +224,13 @@ export default function BillingSettings() {
 
               {subscription?.plan === 'Free' || !subscription ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-600 mb-4">No active subscription</p>
+                  <p className="text-gray-600 mb-4">Upgrade to unlock more features</p>
                   <Button 
-                    onClick={openCustomerPortal}
-                    disabled={portalLoading}
+                    onClick={() => window.location.href = '/pricing'}
                     className="btn-heartmail"
                   >
-                    {portalLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Opening Portal...
-                      </>
-                    ) : (
-                      <>
-                        <CreditCard className="mr-2 h-5 w-5" />
-                        Manage Plans
-                      </>
-                    )}
+                    <CreditCard className="mr-2 h-5 w-5" />
+                    View Pricing Plans
                   </Button>
                 </div>
               ) : (
@@ -240,23 +255,13 @@ export default function BillingSettings() {
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-600 mb-4">No active subscription</p>
+              <p className="text-gray-600 mb-4">Upgrade to unlock more features</p>
               <Button 
-                onClick={openCustomerPortal}
-                disabled={portalLoading}
+                onClick={() => window.location.href = '/pricing'}
                 className="btn-heartmail"
               >
-                {portalLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Opening Portal...
-                  </>
-                ) : (
-                  <>
-                    <CreditCard className="mr-2 h-5 w-5" />
-                    Manage Plans
-                  </>
-                )}
+                <CreditCard className="mr-2 h-5 w-5" />
+                View Pricing Plans
               </Button>
             </div>
           )}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 import { inngest } from '@/lib/inngest'
 import { logEmailScheduled } from '@/lib/activity-history'
+import { canScheduleEmails } from '@/lib/subscription'
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,6 +24,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
+      )
+    }
+
+    // Check if user can schedule emails
+    const canSchedule = await canScheduleEmails(userId)
+    if (!canSchedule) {
+      return NextResponse.json(
+        { error: 'Email scheduling is only available with Family and Extended plans. Please upgrade to schedule emails.' },
+        { status: 403 }
       )
     }
 

@@ -59,11 +59,13 @@ export async function POST(request: NextRequest) {
     // Add coupon if provided
     if (couponCode) {
       try {
-        const coupon = await stripe.coupons.retrieve(couponCode)
+        // Make coupon code case-insensitive by converting to uppercase
+        const normalizedCouponCode = couponCode.toUpperCase()
+        const coupon = await stripe.coupons.retrieve(normalizedCouponCode)
         if (coupon.valid) {
           sessionParams.discounts = [
             {
-              coupon: couponCode,
+              coupon: normalizedCouponCode,
             },
           ]
         }

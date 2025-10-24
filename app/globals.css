@@ -107,12 +107,13 @@
   
   .hero-title {
     @apply text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.6), 0 2px 4px rgba(0, 0, 0, 0.4);
     line-height: 1.1;
   }
   
   .hero-subtitle {
-    @apply text-lg md:text-xl text-white/90 mb-8 max-w-2xl;
+    @apply text-lg md:text-xl text-white mb-8 max-w-2xl;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     line-height: 1.6;
   }
   
@@ -1741,16 +1742,17 @@
   .calendar-day.today {
     background: #fef5f5;
     border-color: #E63365;
+    border-width: 2px;
   }
 
   .calendar-day.has-events {
-    background: #fef5f5;
-    border-color: #E63365;
+    background: #f7fafc;
+    border-color: #e2e8f0;
     cursor: pointer;
   }
 
   .calendar-day.has-events:hover {
-    background: #fce7f3;
+    background: #edf2f7;
     transform: scale(1.02);
   }
 
@@ -2931,11 +2933,11 @@
   }
 
   .dark .calendar-day.today {
-    @apply bg-pink-500 text-white border-pink-300;
+    @apply bg-pink-500 text-white border-pink-300 border-2;
   }
 
-  .dark .calendar-day.has-emails {
-    @apply bg-pink-900 text-pink-300 border-pink-400;
+  .dark .calendar-day.has-events {
+    @apply bg-gray-800 text-gray-300 border-gray-600;
   }
 
   /* Schedule Dark Mode */

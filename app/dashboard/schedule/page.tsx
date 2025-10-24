@@ -8,6 +8,9 @@ import { Input } from '@/components/ui/input'
 import { useAuth } from '@/lib/auth-context'
 import { supabase } from '@/lib/supabase'
 import { getFullName } from '@/lib/recipients'
+import { replaceTemplateVariables, hasTemplateVariables, RecipientData, hasUnreplacedVariables, getUnreplacedVariables } from '@/lib/template-variables'
+import { hasPremiumTemplateAccess, canScheduleEmails } from '@/lib/subscription'
+import VariableValidationModal from '@/components/email/variable-validation-modal'
 // DashboardLayout is already applied through the main layout
 
 const currentDate = new Date()
@@ -66,6 +69,8 @@ interface Recipient {
   last_name?: string
   name?: string // Keep for backward compatibility
   email: string
+  relationship?: string
+  custom_variables?: Record<string, string>
   is_active: boolean
   created_at: string
   updated_at: string
@@ -100,11 +105,23 @@ export default function SchedulePage() {
   const [showTemplatePreview, setShowTemplatePreview] = useState(false)
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null)
   const [showTemplateConfirm, setShowTemplateConfirm] = useState(false)
-  const [pendingTemplateId, setPendingTemplateId] = useState<string>('')
   const [showViewModal, setShowViewModal] = useState(false)
   const [viewingEmail, setViewingEmail] = useState<any>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [filteredScheduledEmails, setFilteredScheduledEmails] = useState<any[]>([])
+  
+  // Template variable replacement states
+  const [showVariableReplacementModal, setShowVariableReplacementModal] = useState(false)
+  const [showTemplateSwitchModal, setShowTemplateSwitchModal] = useState(false)
+  const [pendingTemplateId, setPendingTemplateId] = useState<string>('')
+  const [pendingRecipientId, setPendingRecipientId] = useState<string>('')
+  const [emailPreview, setEmailPreview] = useState<string>('')
+  
+  // Variable validation states
+  const [showVariableValidation, setShowVariableValidation] = useState(false)
+  const [unreplacedVariables, setUnreplacedVariables] = useState<string[]>([])
+  const [pendingEmailContent, setPendingEmailContent] = useState<string>('')
+  
   const { user } = useAuth()
 
   // Fetch recipients and templates from database
@@ -151,7 +168,7 @@ export default function SchedulePage() {
     try {
       const { data, error } = await supabase
         .from('recipients')
-        .select('id, first_name, last_name, name, email, is_active, created_at, updated_at')
+        .select('id, first_name, last_name, name, email, relationship, custom_variables, is_active, created_at, updated_at')
         .eq('user_id', user.id)
         .order('first_name')
 
@@ -171,14 +188,25 @@ export default function SchedulePage() {
     try {
       const { data, error } = await supabase
         .from('templates')
-        .select('id, title, content')
-        .eq('user_id', user.id)
+        .select('id, title, content, is_premium')
+        .or(`user_id.eq.${user.id},user_id.is.null`)
         .order('title')
 
       if (error) {
         console.error('Error fetching templates:', error)
       } else {
-        setTemplates(data || [])
+        // Check if user has premium template access
+        const hasPremiumAccess = await hasPremiumTemplateAccess(user.id)
+        
+        // Filter out premium templates if user doesn't have access
+        const filteredTemplates = (data || []).filter(template => {
+          if (template.is_premium && !hasPremiumAccess) {
+            return false // Hide premium templates for free users
+          }
+          return true
+        })
+        
+        setTemplates(filteredTemplates)
       }
     } catch (error) {
       console.error('Error fetching templates:', error)
@@ -307,6 +335,13 @@ export default function SchedulePage() {
     e.preventDefault()
     if (!user) return
 
+    // Check if user can schedule emails
+    const canSchedule = await canScheduleEmails(user.id)
+    if (!canSchedule) {
+      alert('Email scheduling is only available with Family and Extended plans. Please upgrade to schedule emails.')
+      return
+    }
+
     const formData = new FormData(e.currentTarget)
     const recipientId = formData.get('recipient') as string
     const templateId = formData.get('template') as string
@@ -328,6 +363,17 @@ export default function SchedulePage() {
 
     if (sendAt <= twoMinutesFromNow) {
       alert('Please schedule the email for at least 2 minutes in the future')
+      return
+    }
+
+    // Check for unreplaced variables in the email content
+    const template = templates.find(t => t.id === templateId)
+    const emailContent = template?.content || personalMessage
+    if (hasUnreplacedVariables(emailContent)) {
+      const unreplacedVars = getUnreplacedVariables(emailContent)
+      setUnreplacedVariables(unreplacedVars)
+      setPendingEmailContent(emailContent)
+      setShowVariableValidation(true)
       return
     }
 
@@ -386,15 +432,39 @@ export default function SchedulePage() {
   }
 
   const handleTemplateSelect = (templateId: string) => {
+    // Handle "Start from scratch" option
+    if (templateId === '') {
+      setSelectedTemplateId('')
+      setFormData(prev => ({
+        ...prev,
+        subject: '',
+        personalMessage: ''
+      }))
+      return
+    }
+    
     // Check if there's existing content in the message or subject fields
     if (formData.personalMessage.trim() !== '' || formData.subject.trim() !== '') {
       setPendingTemplateId(templateId)
-      setShowTemplateConfirm(true)
+      setShowTemplateSwitchModal(true)
       return
     }
     
     // If no existing content, apply template directly
     applyTemplate(templateId)
+  }
+
+  const handleRecipientSelect = (recipientId: string) => {
+    setSelectedRecipientId(recipientId)
+    
+    // If a template is already selected, show variable replacement modal
+    if (selectedTemplateId && recipientId) {
+      const template = templates.find(t => t.id === selectedTemplateId)
+      if (template && hasTemplateVariables(template.content)) {
+        setPendingRecipientId(recipientId)
+        setShowVariableReplacementModal(true)
+      }
+    }
   }
 
   const applyTemplate = (templateId: string) => {
@@ -409,6 +479,98 @@ export default function SchedulePage() {
     }
     setShowTemplateConfirm(false)
     setPendingTemplateId('')
+  }
+
+  const applyTemplateWithVariables = (templateId: string, recipientId: string) => {
+    setSelectedTemplateId(templateId)
+    setSelectedRecipientId(recipientId)
+    
+    const template = templates.find(t => t.id === templateId)
+    const recipient = recipients.find(r => r.id === recipientId)
+    
+    if (template && recipient) {
+      // Replace variables in template content
+      const recipientData: RecipientData = {
+        first_name: recipient.first_name,
+        last_name: recipient.last_name || '',
+        email: recipient.email,
+        relationship: recipient.relationship,
+        custom_variables: recipient.custom_variables
+      }
+      
+      const processedContent = replaceTemplateVariables(template.content, recipientData)
+      const processedTitle = replaceTemplateVariables(template.title, recipientData)
+      
+      setFormData(prev => ({
+        ...prev,
+        subject: processedTitle,
+        personalMessage: processedContent
+      }))
+      
+      // Set preview for user to see
+      setEmailPreview(processedContent)
+    }
+  }
+
+  const handleVariableValidationConfirm = async () => {
+    setShowVariableValidation(false)
+    
+    // Proceed with scheduling the email
+    try {
+      const formData = new FormData(document.querySelector('form') as HTMLFormElement)
+      const recipientId = formData.get('recipient') as string
+      const templateId = formData.get('template') as string
+      const subject = formData.get('subject') as string
+      const date = formData.get('date') as string
+      const time = formData.get('time') as string
+      const frequency = formData.get('frequency') as string
+      const personalMessage = formData.get('personalMessage') as string
+
+      const recipient = recipients.find(r => r.id === recipientId)
+      const template = templates.find(t => t.id === templateId)
+
+      if (!recipient) {
+        alert('Please select a valid recipient')
+        return
+      }
+      
+      // Use the proper API endpoint for scheduling emails
+      const response = await fetch('/api/schedule-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user?.id,
+          recipientId: recipientId,
+          templateId: templateId,
+          toEmail: recipient.email,
+          toName: `${recipient.first_name} ${recipient.last_name || ''}`.trim(),
+          subject: subject || template?.title || 'Heartfelt Message',
+          bodyHtml: template?.content || personalMessage,
+          bodyText: personalMessage,
+          sendAt: new Date(`${date}T${time}`).toISOString(),
+          frequency: frequency || 'one-time'
+        })
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        alert('Email scheduled successfully!')
+        handleCloseModal()
+        // Refresh the data
+        fetchRecipients()
+        fetchTemplates()
+        fetchScheduledEmails()
+      } else {
+        const errorData = await response.json()
+        console.error('Failed to schedule email:', errorData)
+        alert(`Failed to schedule email: ${errorData.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Error scheduling email:', error)
+      alert('Failed to schedule email. Please try again.')
+    }
   }
 
   const cancelTemplateSelection = () => {
@@ -426,9 +588,6 @@ export default function SchedulePage() {
     }
   }
 
-  const handleRecipientSelect = (recipientId: string) => {
-    setSelectedRecipientId(recipientId)
-  }
 
   const handleFormChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -767,34 +926,6 @@ export default function SchedulePage() {
 
               {/* Form */}
               <form onSubmit={handleScheduleEmail} className="p-6 space-y-6">
-                {/* Recipient Card */}
-                <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-4 border border-pink-100">
-                  <div className="flex items-center space-x-2 mb-3">
-                    <Users className="h-5 w-5 text-heartmail-pink" />
-                    <label className="text-lg font-semibold text-gray-800">Recipient</label>
-                  </div>
-                  <select 
-                    name="recipient" 
-                    value={selectedRecipientId}
-                    onChange={(e) => handleRecipientSelect(e.target.value)}
-                    className="w-full p-3 border border-pink-200 rounded-lg focus:ring-2 focus:ring-heartmail-pink focus:border-transparent" 
-                    required
-                  >
-                    <option value="">Choose a loved one...</option>
-                    {loading ? (
-                      <option disabled>Loading recipients...</option>
-                    ) : recipients.length === 0 ? (
-                      <option disabled>No recipients found. Add some in the Recipients tab!</option>
-                    ) : (
-                      recipients.map((recipient) => (
-                        <option key={recipient.id} value={recipient.id}>
-                          {getFullName(recipient)} ({recipient.email})
-                        </option>
-                      ))
-                    )}
-                  </select>
-                </div>
-
                 {/* Template Card */}
                 <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-4 border border-purple-100">
                   <div className="flex items-center space-x-2 mb-3">
@@ -833,6 +964,34 @@ export default function SchedulePage() {
                       </Button>
                     )}
                   </div>
+                </div>
+
+                {/* Recipient Card */}
+                <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-4 border border-pink-100">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Users className="h-5 w-5 text-heartmail-pink" />
+                    <label className="text-lg font-semibold text-gray-800">Recipient</label>
+                  </div>
+                  <select 
+                    name="recipient" 
+                    value={selectedRecipientId}
+                    onChange={(e) => handleRecipientSelect(e.target.value)}
+                    className="w-full p-3 border border-pink-200 rounded-lg focus:ring-2 focus:ring-heartmail-pink focus:border-transparent" 
+                    required
+                  >
+                    <option value="">Choose a loved one...</option>
+                    {loading ? (
+                      <option disabled>Loading recipients...</option>
+                    ) : recipients.length === 0 ? (
+                      <option disabled>No recipients found. Add some in the Recipients tab!</option>
+                    ) : (
+                      recipients.map((recipient) => (
+                        <option key={recipient.id} value={recipient.id}>
+                          {getFullName(recipient)} ({recipient.email})
+                        </option>
+                      ))
+                    )}
+                  </select>
                 </div>
 
                 {/* Subject Card */}
@@ -1136,6 +1295,138 @@ export default function SchedulePage() {
         </div>
       )}
 
+      {/* Template Variable Replacement Modal */}
+      {showVariableReplacementModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowVariableReplacementModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="bg-gradient-to-r from-green-500 to-blue-500 text-white p-6 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <Mail className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold">Template Variables</h3>
+                    <p className="text-green-100">Variables will be replaced with recipient information</p>
+                  </div>
+                </div>
+                <button
+                  className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-colors"
+                  onClick={() => setShowVariableReplacementModal(false)}
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <div className="space-y-4">
+                <p className="text-gray-600">
+                  The selected template contains variables like {'{{first_name}}'}, {'{{last_name}}'}, etc. 
+                  These will be automatically replaced with the recipient's information.
+                </p>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-700">
+                    <strong>Example:</strong> "Hi {'{{first_name}}'}!" becomes "Hi John!" when sent to John Smith.
+                  </p>
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex space-x-4 pt-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowVariableReplacementModal(false)}
+                  className="flex-1 py-3 text-lg font-semibold border-2 border-gray-300 hover:border-gray-400 transition-colors"
+                >
+                  <X className="h-5 w-5 mr-2" />
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    applyTemplateWithVariables(pendingTemplateId, pendingRecipientId)
+                    setShowVariableReplacementModal(false)
+                  }}
+                  className="flex-1 py-3 text-lg font-semibold bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  <Mail className="h-5 w-5 mr-2" />
+                  Apply Template
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Template Switch Confirmation Modal */}
+      {showTemplateSwitchModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowTemplateSwitchModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <Heart className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold">Switch Template?</h3>
+                    <p className="text-orange-100">This will overwrite your current content</p>
+                  </div>
+                </div>
+                <button
+                  className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-colors"
+                  onClick={() => setShowTemplateSwitchModal(false)}
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <div className="space-y-4">
+                <p className="text-gray-600">
+                  You have existing content in your message or subject fields. 
+                  Switching to a new template will replace your current work.
+                </p>
+                <p className="text-sm text-gray-500">
+                  Do you want to continue and replace your content with the new template?
+                </p>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex space-x-4 pt-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowTemplateSwitchModal(false)}
+                  className="flex-1 py-3 text-lg font-semibold border-2 border-gray-300 hover:border-gray-400 transition-colors"
+                >
+                  <X className="h-5 w-5 mr-2" />
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    applyTemplate(pendingTemplateId)
+                    setShowTemplateSwitchModal(false)
+                  }}
+                  className="flex-1 py-3 text-lg font-semibold bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  <Mail className="h-5 w-5 mr-2" />
+                  Apply Template
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* View Email Modal */}
       {showViewModal && viewingEmail && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowViewModal(false)}>
@@ -1261,6 +1552,15 @@ export default function SchedulePage() {
           </div>
         </div>
       )}
+
+      {/* Variable Validation Modal */}
+      <VariableValidationModal
+        isOpen={showVariableValidation}
+        onClose={() => setShowVariableValidation(false)}
+        onConfirm={handleVariableValidationConfirm}
+        unreplacedVariables={unreplacedVariables}
+        emailContent={pendingEmailContent}
+      />
     </div>
   )
 }

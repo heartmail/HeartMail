@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { createAdminClient } from './supabase'
 
 export interface Subscription {
   id: string
@@ -41,9 +42,30 @@ export interface BillingHistory {
 
 export interface PlanLimits {
   plan_name: string
-  recipients_limit: number
-  templates_limit: number
-  emails_per_month: number
+  recipients_limit: number | null
+  templates_limit: number | null
+  emails_per_month: number | null
+}
+
+export interface Plan {
+  id: string
+  name: string
+  display_name: string
+  price_monthly: number
+  price_yearly?: number
+  email_limit: number | null
+  recipients_limit: number | null
+  templates_limit: number | null
+  stripe_price_id?: string
+  stripe_product_id?: string
+  features: {
+    scheduling: boolean
+    premiumTemplates: boolean
+    prioritySupport: boolean
+    customBranding: boolean
+  }
+  is_active: boolean
+  sort_order: number
 }
 
 /**
@@ -68,7 +90,8 @@ export async function getUserSubscription(userId: string): Promise<Subscription 
  * Get user's subscription usage
  */
 export async function getUserUsage(userId: string): Promise<SubscriptionUsage | null> {
-  const { data, error } = await supabase
+  const adminSupabase = createAdminClient()
+  const { data, error } = await adminSupabase
     .from('subscription_usage')
     .select('*')
     .eq('user_id', userId)
@@ -83,28 +106,167 @@ export async function getUserUsage(userId: string): Promise<SubscriptionUsage | 
 }
 
 /**
+ * Get all available plans from database
+ */
+export async function getAllPlans(): Promise<Plan[]> {
+  try {
+    const adminSupabase = createAdminClient()
+    
+    const { data: plans, error } = await adminSupabase
+      .from('plans')
+      .select('*')
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true })
+
+    if (error) {
+      console.error('Error fetching plans:', error)
+      return getDefaultPlans()
+    }
+
+    return plans || getDefaultPlans()
+  } catch (error) {
+    console.error('Error in getAllPlans:', error)
+    return getDefaultPlans()
+  }
+}
+
+/**
+ * Get default plans (fallback when database is not available)
+ */
+function getDefaultPlans(): Plan[] {
+  return [
+    {
+      id: 'free',
+      name: 'free',
+      display_name: 'Free',
+      price_monthly: 0,
+      email_limit: 3,
+      recipients_limit: 2,
+      templates_limit: 3,
+      features: {
+        scheduling: false,
+        premiumTemplates: false,
+        prioritySupport: false,
+        customBranding: false
+      },
+      is_active: true,
+      sort_order: 1
+    },
+    {
+      id: 'family',
+      name: 'family',
+      display_name: 'Family',
+      price_monthly: 9,
+      email_limit: 300,
+      recipients_limit: null,
+      templates_limit: null,
+      features: {
+        scheduling: true,
+        premiumTemplates: true,
+        prioritySupport: true,
+        customBranding: false
+      },
+      is_active: true,
+      sort_order: 2
+    },
+    {
+      id: 'extended',
+      name: 'extended',
+      display_name: 'Extended',
+      price_monthly: 29,
+      email_limit: null,
+      recipients_limit: null,
+      templates_limit: null,
+      features: {
+        scheduling: true,
+        premiumTemplates: true,
+        prioritySupport: true,
+        customBranding: true
+      },
+      is_active: true,
+      sort_order: 3
+    }
+  ]
+}
+
+/**
  * Get user's plan limits based on their subscription
  */
 export async function getUserLimits(userId: string): Promise<PlanLimits> {
-  const { data, error } = await supabase
-    .rpc('get_user_limits', { user_uuid: userId })
+  try {
+    // Use admin client to bypass RLS
+    const adminSupabase = createAdminClient()
+    
+    // Get user's subscription
+    const { data: subscription, error: subError } = await adminSupabase
+      .from('subscriptions')
+      .select('plan, status')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
 
-  if (error) {
-    console.error('Error fetching user limits:', error)
+    if (subError && subError.code !== 'PGRST116') {
+      console.error('Error fetching subscription:', subError)
+    }
+
+    const planName = subscription?.plan || 'free'
+    const status = subscription?.status || 'active'
+
+    // Try to get plan from database first
+    try {
+      const { data: plan, error: planError } = await adminSupabase
+        .from('plans')
+        .select('*')
+        .eq('name', planName)
+        .eq('is_active', true)
+        .single()
+
+      if (!planError && plan) {
+        return {
+          plan_name: plan.display_name,
+          recipients_limit: plan.recipients_limit,
+          templates_limit: plan.templates_limit,
+          emails_per_month: plan.email_limit
+        }
+      }
+    } catch (dbError) {
+      console.log('Database plans table not available, using fallback')
+    }
+
+    // Fallback to hardcoded limits
+    switch (planName) {
+      case 'family':
+        return {
+          plan_name: 'Family',
+          recipients_limit: null, // Unlimited
+          templates_limit: null, // Unlimited
+          emails_per_month: 300
+        }
+      case 'extended':
+        return {
+          plan_name: 'Extended',
+          recipients_limit: null, // Unlimited
+          templates_limit: null, // Unlimited
+          emails_per_month: null // Unlimited
+        }
+      default: // free
+        return {
+          plan_name: 'Free',
+          recipients_limit: 2,
+          templates_limit: 3,
+          emails_per_month: 3
+        }
+    }
+  } catch (error) {
+    console.error('Error in getUserLimits:', error)
     // Return free plan limits as fallback
     return {
       plan_name: 'Free',
-      recipients_limit: 1,
+      recipients_limit: 2,
       templates_limit: 3,
-      emails_per_month: 10
+      emails_per_month: 3
     }
-  }
-
-  return data?.[0] || {
-    plan_name: 'Free',
-    recipients_limit: 1,
-    templates_limit: 3,
-    emails_per_month: 10
   }
 }
 
@@ -155,56 +317,46 @@ export async function updateUserUsage(
  * Check if user can add more recipients
  */
 export async function canAddRecipient(userId: string): Promise<boolean> {
-  const [subscription, usage, limits] = await Promise.all([
-    getUserSubscription(userId),
-    getUserUsage(userId),
-    getUserLimits(userId)
-  ])
+  try {
+    const [usage, limits] = await Promise.all([
+      getUserUsage(userId),
+      getUserLimits(userId)
+    ])
 
-  // If no subscription, check free plan limits
-  if (!subscription || subscription.status === 'free') {
+    // Check if user has unlimited recipients
+    if (limits.recipients_limit === null) {
+      return true // Unlimited
+    }
+
+    // Check current usage against limit
     return (usage?.recipients_count || 0) < limits.recipients_limit
-  }
-
-  // For paid plans, check if they're active
-  if (subscription.status !== 'active' && subscription.status !== 'trialing') {
+  } catch (error) {
+    console.error('Error in canAddRecipient:', error)
     return false
   }
-
-  // Check usage limits
-  if (limits.recipients_limit === -1) {
-    return true // Unlimited
-  }
-
-  return (usage?.recipients_count || 0) < limits.recipients_limit
 }
 
 /**
  * Check if user can send more emails this month
  */
 export async function canSendEmail(userId: string): Promise<boolean> {
-  const [subscription, usage, limits] = await Promise.all([
-    getUserSubscription(userId),
-    getUserUsage(userId),
-    getUserLimits(userId)
-  ])
+  try {
+    const [usage, limits] = await Promise.all([
+      getUserUsage(userId),
+      getUserLimits(userId)
+    ])
 
-  // If no subscription, check free plan limits
-  if (!subscription || subscription.status === 'free') {
+    // Check if user has unlimited emails
+    if (limits.emails_per_month === null) {
+      return true // Unlimited
+    }
+
+    // Check current usage against limit
     return (usage?.emails_sent_this_month || 0) < limits.emails_per_month
-  }
-
-  // For paid plans, check if they're active
-  if (subscription.status !== 'active' && subscription.status !== 'trialing') {
+  } catch (error) {
+    console.error('Error in canSendEmail:', error)
     return false
   }
-
-  // Check usage limits
-  if (limits.emails_per_month === -1) {
-    return true // Unlimited
-  }
-
-  return (usage?.emails_sent_this_month || 0) < limits.emails_per_month
 }
 
 /**
@@ -222,6 +374,131 @@ export async function incrementEmailCount(userId: string): Promise<void> {
   if (error) {
     console.error('Error incrementing email count:', error)
     throw error
+  }
+}
+
+/**
+ * Check if user has access to premium templates
+ */
+export async function hasPremiumTemplateAccess(userId: string): Promise<boolean> {
+  try {
+    const adminSupabase = createAdminClient()
+    
+    // Get user's subscription
+    const { data: subscription, error: subError } = await adminSupabase
+      .from('subscriptions')
+      .select('plan, status')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (subError && subError.code !== 'PGRST116') {
+      console.error('Error fetching subscription:', subError)
+    }
+
+    const planName = subscription?.plan || 'free'
+    const status = subscription?.status || 'active'
+
+    // Try to get plan from database first
+    try {
+      const { data: plan, error: planError } = await adminSupabase
+        .from('plans')
+        .select('features')
+        .eq('name', planName)
+        .eq('is_active', true)
+        .single()
+
+      if (!planError && plan) {
+        return plan.features?.premiumTemplates === true
+      }
+    } catch (dbError) {
+      console.log('Database plans table not available, using fallback')
+    }
+
+    // Fallback to hardcoded logic
+    return (planName === 'family' || planName === 'extended') && status === 'active'
+  } catch (error) {
+    console.error('Error in hasPremiumTemplateAccess:', error)
+    return false
+  }
+}
+
+/**
+ * Check if user can schedule emails
+ */
+export async function canScheduleEmails(userId: string): Promise<boolean> {
+  try {
+    const adminSupabase = createAdminClient()
+    
+    // Get user's subscription
+    const { data: subscription, error: subError } = await adminSupabase
+      .from('subscriptions')
+      .select('plan, status')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (subError && subError.code !== 'PGRST116') {
+      console.error('Error fetching subscription:', subError)
+    }
+
+    const planName = subscription?.plan || 'free'
+    const status = subscription?.status || 'active'
+
+    // Try to get plan from database first
+    try {
+      const { data: plan, error: planError } = await adminSupabase
+        .from('plans')
+        .select('features')
+        .eq('name', planName)
+        .eq('is_active', true)
+        .single()
+
+      if (!planError && plan) {
+        return plan.features?.scheduling === true
+      }
+    } catch (dbError) {
+      console.log('Database plans table not available, using fallback')
+    }
+
+    // Fallback to hardcoded logic
+    return (planName === 'family' || planName === 'extended') && status === 'active'
+  } catch (error) {
+    console.error('Error in canScheduleEmails:', error)
+    return false
+  }
+}
+
+/**
+ * Get user's plan information for display
+ */
+export async function getUserPlanInfo(userId: string): Promise<{
+  planName: string
+  canSendEmails: boolean
+  canAddRecipients: boolean
+  canAccessPremiumTemplates: boolean
+  canScheduleEmails: boolean
+  emailLimit: number
+  recipientLimit: number
+}> {
+  const [limits, canSend, canAdd, hasPremium, canSchedule] = await Promise.all([
+    getUserLimits(userId),
+    canSendEmail(userId),
+    canAddRecipient(userId),
+    hasPremiumTemplateAccess(userId),
+    canScheduleEmails(userId)
+  ])
+
+  return {
+    planName: limits.plan_name,
+    canSendEmails: canSend,
+    canAddRecipients: canAdd,
+    canAccessPremiumTemplates: hasPremium,
+    canScheduleEmails: canSchedule,
+    emailLimit: limits.emails_per_month,
+    recipientLimit: limits.recipients_limit
   }
 }
 

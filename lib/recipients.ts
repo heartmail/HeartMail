@@ -11,6 +11,7 @@ export interface Recipient {
   birthday?: string
   notes?: string
   is_active: boolean
+  custom_variables?: Record<string, string>
   created_at: string
   updated_at: string
 }

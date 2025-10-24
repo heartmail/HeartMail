@@ -11,6 +11,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAuth } from '@/lib/auth-context'
 import { getRecipients, createRecipient, updateRecipient, deleteRecipient, Recipient, getFullName } from '@/lib/recipients'
+import { canAddRecipient, getUserUsage, getUserLimits } from '@/lib/subscription'
+import UpgradeModal from '@/components/billing/upgrade-modal'
 import { toast } from 'sonner'
 
 export default function RecipientsPage() {
@@ -29,6 +31,13 @@ export default function RecipientsPage() {
     notes: '',
     is_active: true
   })
+  const [customVariables, setCustomVariables] = useState<Record<string, string>>({})
+  const [newCustomVarName, setNewCustomVarName] = useState('')
+  const [newCustomVarValue, setNewCustomVarValue] = useState('')
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [upgradeModalType, setUpgradeModalType] = useState<'emails' | 'recipients' | 'templates' | 'scheduling'>('recipients')
+  const [currentUsage, setCurrentUsage] = useState(0)
+  const [currentLimit, setCurrentLimit] = useState(0)
 
   const { user } = useAuth()
 
@@ -37,6 +46,33 @@ export default function RecipientsPage() {
       fetchRecipients()
     }
   }, [user])
+
+  // Custom variable functions
+  const addCustomVariable = () => {
+    if (newCustomVarName.trim() && newCustomVarValue.trim()) {
+      setCustomVariables(prev => ({
+        ...prev,
+        [newCustomVarName.trim()]: newCustomVarValue.trim()
+      }))
+      setNewCustomVarName('')
+      setNewCustomVarValue('')
+    }
+  }
+
+  const removeCustomVariable = (key: string) => {
+    setCustomVariables(prev => {
+      const newVars = { ...prev }
+      delete newVars[key]
+      return newVars
+    })
+  }
+
+  const updateCustomVariable = (key: string, value: string) => {
+    setCustomVariables(prev => ({
+      ...prev,
+      [key]: value
+    }))
+  }
 
   // Filter recipients based on search query
   useEffect(() => {
@@ -76,17 +112,40 @@ export default function RecipientsPage() {
       return
     }
 
+    // Check if user can add recipients (only for new recipients, not updates)
+    if (!editingRecipient) {
+      const canAdd = await canAddRecipient(user.id)
+      if (!canAdd) {
+        // Get current usage and limits
+        const [usage, limits] = await Promise.all([
+          getUserUsage(user.id),
+          getUserLimits(user.id)
+        ])
+        
+        setCurrentUsage(usage?.recipients_count || 0)
+        setCurrentLimit(limits.recipients_limit)
+        setUpgradeModalType('recipients')
+        setShowUpgradeModal(true)
+        return
+      }
+    }
+
     console.log('Submitting recipient:', formData)
     console.log('User ID:', user.id)
 
     try {
+      const recipientData = {
+        ...formData,
+        custom_variables: customVariables
+      }
+      
       if (editingRecipient) {
         console.log('Updating recipient:', editingRecipient.id)
-        await updateRecipient(editingRecipient.id, formData)
+        await updateRecipient(editingRecipient.id, recipientData)
         toast.success('Recipient updated successfully')
       } else {
         console.log('Creating new recipient')
-        await createRecipient(user.id, formData)
+        await createRecipient(user.id, recipientData)
         toast.success('Recipient added successfully')
       }
       
@@ -110,6 +169,7 @@ export default function RecipientsPage() {
       notes: recipient.notes || '',
       is_active: recipient.is_active
     })
+    setCustomVariables(recipient.custom_variables || {})
     setIsDialogOpen(true)
   }
 
@@ -136,6 +196,9 @@ export default function RecipientsPage() {
       notes: '',
       is_active: true
     })
+    setCustomVariables({})
+    setNewCustomVarName('')
+    setNewCustomVarValue('')
     setEditingRecipient(null)
   }
 
@@ -318,6 +381,68 @@ export default function RecipientsPage() {
                   rows={3}
                 />
               </div>
+
+              {/* Custom Variables Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Label className="text-lg font-semibold">Custom Variables</Label>
+                  <span className="text-sm text-gray-500">(Optional)</span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Add custom fields that can be used in email templates with variables like {'{{nickname}}'}, {'{{favorite_color}}'}, etc.
+                </p>
+                
+                {/* Add new custom variable */}
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Variable name (e.g., nickname)"
+                    value={newCustomVarName}
+                    onChange={(e) => setNewCustomVarName(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Input
+                    placeholder="Value"
+                    value={newCustomVarValue}
+                    onChange={(e) => setNewCustomVarValue(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    onClick={addCustomVariable}
+                    disabled={!newCustomVarName.trim() || !newCustomVarValue.trim()}
+                    size="sm"
+                  >
+                    Add
+                  </Button>
+                </div>
+
+                {/* Display existing custom variables */}
+                {Object.entries(customVariables).length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Current Variables:</Label>
+                    {Object.entries(customVariables).map(([key, value]) => (
+                      <div key={key} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                        <span className="font-mono text-sm">{'{{' + key + '}}'}</span>
+                        <span className="text-gray-500">=</span>
+                        <Input
+                          value={value}
+                          onChange={(e) => updateCustomVariable(key, e.target.value)}
+                          className="flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeCustomVariable(key)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               
               <div className="flex items-center space-x-2">
                 <input
@@ -457,6 +582,15 @@ export default function RecipientsPage() {
           ))}
         </div>
       )}
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        limitType={upgradeModalType}
+        currentUsage={currentUsage}
+        currentLimit={currentLimit}
+      />
     </div>
   )
 }

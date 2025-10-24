@@ -11,6 +11,9 @@ import { Mail, Heart, Send, Loader2, X, User, MessageSquare } from 'lucide-react
 import { useAuth } from '@/lib/auth-context'
 import { supabase } from '@/lib/supabase'
 import { getFullName } from '@/lib/recipients'
+import { replaceTemplateVariables, RecipientData } from '@/lib/template-variables'
+import { canSendEmail, getUserUsage, getUserLimits, hasPremiumTemplateAccess } from '@/lib/subscription'
+import UpgradeModal from '@/components/billing/upgrade-modal'
 
 interface SendEmailModalProps {
   isOpen: boolean
@@ -23,6 +26,8 @@ interface Recipient {
   last_name?: string
   name?: string // Keep for backward compatibility
   email: string
+  relationship?: string
+  custom_variables?: Record<string, string>
   is_active: boolean
   created_at: string
   updated_at: string
@@ -50,6 +55,10 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
   const [templatesLoading, setTemplatesLoading] = useState(false)
   const [showTemplateConfirm, setShowTemplateConfirm] = useState(false)
   const [pendingTemplateId, setPendingTemplateId] = useState<string>('')
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [upgradeModalType, setUpgradeModalType] = useState<'emails' | 'recipients' | 'templates' | 'scheduling'>('emails')
+  const [currentUsage, setCurrentUsage] = useState(0)
+  const [currentLimit, setCurrentLimit] = useState(0)
   const { user } = useAuth()
 
   // Fetch recipients and templates when modal opens
@@ -67,7 +76,7 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
     try {
       const { data, error } = await supabase
         .from('recipients')
-        .select('id, first_name, last_name, name, email, is_active, created_at, updated_at')
+        .select('id, first_name, last_name, name, email, relationship, custom_variables, is_active, created_at, updated_at')
         .eq('user_id', user.id)
         .order('first_name')
 
@@ -90,14 +99,25 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
     try {
       const { data, error } = await supabase
         .from('templates')
-        .select('id, title, content')
-        .eq('user_id', user.id)
+        .select('id, title, content, is_premium')
+        .or(`user_id.eq.${user.id},user_id.is.null`)
         .order('title')
 
       if (error) {
         console.error('Error fetching templates:', error)
       } else {
-        setTemplates(data || [])
+        // Check if user has premium template access
+        const hasPremiumAccess = await hasPremiumTemplateAccess(user.id)
+        
+        // Filter out premium templates if user doesn't have access
+        const filteredTemplates = (data || []).filter(template => {
+          if (template.is_premium && !hasPremiumAccess) {
+            return false // Hide premium templates for free users
+          }
+          return true
+        })
+        
+        setTemplates(filteredTemplates)
       }
     } catch (error) {
       console.error('Error fetching templates:', error)
@@ -111,6 +131,29 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
     const recipient = recipients.find(r => r.id === recipientId)
     if (recipient) {
       setFormData(prev => ({ ...prev, to: recipient.email }))
+      
+      // If a template is already selected, apply variable replacement
+      if (selectedTemplateId) {
+        const template = templates.find(t => t.id === selectedTemplateId)
+        if (template) {
+          const recipientData: RecipientData = {
+            first_name: recipient.first_name,
+            last_name: recipient.last_name || '',
+            email: recipient.email,
+            relationship: recipient.relationship,
+            custom_variables: recipient.custom_variables
+          }
+          
+          const processedContent = replaceTemplateVariables(template.content, recipientData)
+          const processedTitle = replaceTemplateVariables(template.title, recipientData)
+          
+          setFormData(prev => ({ 
+            ...prev, 
+            subject: processedTitle,
+            message: processedContent
+          }))
+        }
+      }
     }
   }
 
@@ -129,11 +172,30 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
   const applyTemplate = (templateId: string) => {
     setSelectedTemplateId(templateId)
     const template = templates.find(t => t.id === templateId)
+    const recipient = recipients.find(r => r.id === selectedRecipientId)
+    
     if (template) {
+      let processedContent = template.content
+      let processedTitle = template.title
+      
+      // If a recipient is selected, replace variables
+      if (recipient) {
+        const recipientData: RecipientData = {
+          first_name: recipient.first_name,
+          last_name: recipient.last_name || '',
+          email: recipient.email,
+          relationship: recipient.relationship,
+          custom_variables: recipient.custom_variables
+        }
+        
+        processedContent = replaceTemplateVariables(template.content, recipientData)
+        processedTitle = replaceTemplateVariables(template.title, recipientData)
+      }
+      
       setFormData(prev => ({ 
         ...prev, 
-        subject: `From HeartMail: ${template.title}`, // Use template title as subject
-        message: template.content
+        subject: processedTitle,
+        message: processedContent
       }))
     }
     setShowTemplateConfirm(false)
@@ -149,6 +211,28 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!user) {
+      alert('You must be logged in to send emails')
+      return
+    }
+
+    // Check if user can send emails
+    const canSend = await canSendEmail(user.id)
+    if (!canSend) {
+      // Get current usage and limits
+      const [usage, limits] = await Promise.all([
+        getUserUsage(user.id),
+        getUserLimits(user.id)
+      ])
+      
+      setCurrentUsage(usage?.emails_sent_this_month || 0)
+      setCurrentLimit(limits.emails_per_month)
+      setUpgradeModalType('emails')
+      setShowUpgradeModal(true)
+      return
+    }
+
     setIsLoading(true)
 
     console.log('📧 Frontend: Starting email send...', {
@@ -444,6 +528,15 @@ export default function SendEmailModal({ isOpen, onClose }: SendEmailModalProps)
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        limitType={upgradeModalType}
+        currentUsage={currentUsage}
+        currentLimit={currentLimit}
+      />
     </Dialog>
   )
 }

@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { addActivity } from './activity-history'
+import { hasPremiumTemplateAccess } from './subscription'
 
 export interface Template {
   id: string
@@ -22,7 +23,19 @@ export async function getTemplates(userId: string): Promise<Template[]> {
     .order('created_at', { ascending: false })
 
   if (error) throw error
-  return data || []
+  
+  // Check if user has premium template access
+  const hasPremiumAccess = await hasPremiumTemplateAccess(userId)
+  
+  // Filter out premium templates if user doesn't have access
+  const filteredTemplates = (data || []).filter(template => {
+    if (template.is_premium && !hasPremiumAccess) {
+      return false // Hide premium templates for free users
+    }
+    return true
+  })
+  
+  return filteredTemplates
 }
 
 // Get public templates (for template library)

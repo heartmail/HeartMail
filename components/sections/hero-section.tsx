@@ -15,7 +15,10 @@ export default function HeroSection() {
       }}
     >
       {/* Semi-transparent overlay for better text readability */}
-      <div className="absolute inset-0 bg-black/40"></div>
+      <div className="absolute inset-0 bg-black/50"></div>
+      
+      {/* Additional gradient overlay for better text contrast */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40"></div>
       
       {/* Floating hearts */}
       <div className="absolute inset-0">
@@ -53,16 +56,16 @@ export default function HeroSection() {
             </div>
             <div className="flex flex-col sm:flex-row gap-8 justify-center lg:justify-start text-white">
               <div className="text-center">
-                <div className="text-3xl font-bold text-pink-300">10,000+</div>
-                <div className="text-sm opacity-90">Emails Sent</div>
+                <div className="text-3xl font-bold text-pink-300" style={{textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)'}}>10,000+</div>
+                <div className="text-sm text-white" style={{textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)'}}>Emails Sent</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-pink-300">500+</div>
-                <div className="text-sm opacity-90">Happy Families</div>
+                <div className="text-3xl font-bold text-pink-300" style={{textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)'}}>500+</div>
+                <div className="text-sm text-white" style={{textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)'}}>Happy Families</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-pink-300">99%</div>
-                <div className="text-sm opacity-90">Deliverability</div>
+                <div className="text-3xl font-bold text-pink-300" style={{textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)'}}>99%</div>
+                <div className="text-sm text-white" style={{textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)'}}>Deliverability</div>
               </div>
             </div>
           </div>
