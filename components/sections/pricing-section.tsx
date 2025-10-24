@@ -37,7 +37,7 @@ export default function PricingSection({ user }: PricingSectionProps) {
     isFree = true
   }
 
-  const handleCheckout = async (priceId: string) => {
+  const handleCheckout = async (priceId: string, isUpgrade: boolean = false) => {
     if (!user) {
       router.push('/login')
       return
@@ -49,14 +49,21 @@ export default function PricingSection({ user }: PricingSectionProps) {
     }
 
     setLoadingPriceId(priceId)
-    toast.loading('Redirecting to checkout...', { id: 'checkout-toast' })
+    const loadingMessage = isUpgrade ? 'Processing upgrade...' : 'Redirecting to checkout...'
+    toast.loading(loadingMessage, { id: 'checkout-toast' })
+    
     try {
-      const response = await fetch('/api/stripe/create-checkout-session', {
+      const endpoint = isUpgrade ? '/api/stripe/upgrade' : '/api/stripe/create-checkout-session'
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ priceId, userId: user.id }),
+        body: JSON.stringify({ 
+          priceId, 
+          userId: user.id,
+          customerEmail: user.email 
+        }),
       })
 
       const data = await response.json()
@@ -189,9 +196,10 @@ export default function PricingSection({ user }: PricingSectionProps) {
       } else {
         // Free users can upgrade to Family
         const isLoading = loadingPriceId === planPriceId
+        const isUpgrade = !isFree // This is an upgrade if user is not on free plan
         return { 
           text: isLoading ? 'Loading...' : 'Upgrade', 
-          action: () => handleCheckout(planPriceId!), 
+          action: () => handleCheckout(planPriceId!, isUpgrade), 
           disabled: isLoading,
           className: isLoading 
             ? 'w-full py-3 text-lg font-semibold bg-gray-200 text-gray-800 cursor-not-allowed'
@@ -212,9 +220,10 @@ export default function PricingSection({ user }: PricingSectionProps) {
       } else {
         // Free or Family users can upgrade to Extended
         const isLoading = loadingPriceId === planPriceId
+        const isUpgrade = !isFree // This is an upgrade if user is not on free plan
         return { 
           text: isLoading ? 'Loading...' : 'Upgrade', 
-          action: () => handleCheckout(planPriceId!), 
+          action: () => handleCheckout(planPriceId!, isUpgrade), 
           disabled: isLoading,
           className: isLoading 
             ? 'w-full py-3 text-lg font-semibold bg-gray-200 text-gray-800 cursor-not-allowed'
