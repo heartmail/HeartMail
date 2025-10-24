@@ -480,8 +480,8 @@ export async function getUserPlanInfo(userId: string): Promise<{
   canAddRecipients: boolean
   canAccessPremiumTemplates: boolean
   canScheduleEmails: boolean
-  emailLimit: number
-  recipientLimit: number
+  emailLimit: number | null
+  recipientLimit: number | null
 }> {
   const [limits, canSend, canAdd, hasPremium, canSchedule] = await Promise.all([
     getUserLimits(userId),
