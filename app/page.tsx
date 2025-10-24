@@ -67,11 +67,20 @@ export default function Home() {
     <ErrorBoundary>
       <AuthInitializer>
         <main className="min-h-screen relative">
-          {/* Background Image - Optimized loading */}
+          {/* Background Image - Responsive and optimized loading */}
           <div 
             className="fixed inset-0 z-0"
             style={{
-              backgroundImage: 'url(https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/you-ve-got-mail-2005076.jpg)',
+              backgroundImage: `
+                /* WebP format for modern browsers */
+                image-set(
+                  url('https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/heartmail_optimized/no_wm_background_desktop_1920x1080.webp') 1x,
+                  url('https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/heartmail_optimized/no_wm_background_large_2560x1440.webp') 2x,
+                  url('https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/heartmail_optimized/no_wm_background_desktop_1920x1080.webp') 3x
+                ),
+                /* JPEG fallback for older browsers */
+                url('https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/heartmail_optimized/no_wm_background_desktop_1920x1080.jpeg')
+              `,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
