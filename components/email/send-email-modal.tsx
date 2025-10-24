@@ -12,7 +12,7 @@ import { useAuth } from '@/lib/auth-context'
 import { supabase } from '@/lib/supabase'
 import { getFullName } from '@/lib/recipients'
 import { replaceTemplateVariables, RecipientData } from '@/lib/template-variables'
-import { canSendEmail, getUserUsage, getUserLimits, hasPremiumTemplateAccess } from '@/lib/subscription'
+import { canSendEmail, getUserUsage, getUserLimits, hasPremiumTemplateAccess } from '@/lib/subscription-client'
 import UpgradeModal from '@/components/billing/upgrade-modal'
 
 interface SendEmailModalProps {

@@ -4,11 +4,14 @@ import { createAdminClient } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, newPriceId, customerEmail } = await request.json()
+    const { userId, priceId, newPriceId, customerEmail } = await request.json()
 
-    if (!userId || !newPriceId || !customerEmail) {
+    // Use priceId if newPriceId is not provided (for backward compatibility)
+    const targetPriceId = newPriceId || priceId
+
+    if (!userId || !targetPriceId || !customerEmail) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields: userId, priceId, customerEmail' },
         { status: 400 }
       )
     }
@@ -46,7 +49,7 @@ export async function POST(request: NextRequest) {
       payment_method_types: ['card'],
       line_items: [
         {
-          price: newPriceId,
+          price: targetPriceId,
           quantity: 1,
         },
       ],

@@ -9,7 +9,7 @@ import { useAuth } from '@/lib/auth-context'
 import { supabase } from '@/lib/supabase'
 import { getFullName } from '@/lib/recipients'
 import { replaceTemplateVariables, hasTemplateVariables, RecipientData, hasUnreplacedVariables, getUnreplacedVariables } from '@/lib/template-variables'
-import { hasPremiumTemplateAccess, canScheduleEmails } from '@/lib/subscription'
+import { hasPremiumTemplateAccess, canScheduleEmails } from '@/lib/subscription-client'
 import VariableValidationModal from '@/components/email/variable-validation-modal'
 // DashboardLayout is already applied through the main layout
 

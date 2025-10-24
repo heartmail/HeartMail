@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAuth } from '@/lib/auth-context'
 import { getRecipients, createRecipient, updateRecipient, deleteRecipient, Recipient, getFullName } from '@/lib/recipients'
-import { canAddRecipient, getUserUsage, getUserLimits } from '@/lib/subscription'
+import { canAddRecipient, getUserUsage, getUserLimits } from '@/lib/subscription-client'
 import UpgradeModal from '@/components/billing/upgrade-modal'
 import { toast } from 'sonner'
 
@@ -122,7 +122,7 @@ export default function RecipientsPage() {
           getUserLimits(user.id)
         ])
         
-        setCurrentUsage(usage?.recipients_count || 0)
+        setCurrentUsage(usage?.recipients_created || 0)
         setCurrentLimit(limits.recipients_limit || 0)
         setUpgradeModalType('recipients')
         setShowUpgradeModal(true)

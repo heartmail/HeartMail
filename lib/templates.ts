@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import { addActivity } from './activity-history'
-import { hasPremiumTemplateAccess } from './subscription'
+import { hasPremiumTemplateAccess } from './subscription-client'
 
 export interface Template {
   id: string
