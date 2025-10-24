@@ -386,7 +386,6 @@ export async function incrementEmailCount(userId: string): Promise<void> {
         user_id: userId,
         month_year: new Date().toISOString().slice(0, 7), // YYYY-MM format
         emails_sent_this_month: currentCount + 1,
-        recipients_created: currentUsage?.recipients_created || 0,
         updated_at: new Date().toISOString()
       })
 
