@@ -538,3 +538,51 @@ export function getSubscriptionStatus(subscription: Subscription | null): {
     canUpgrade
   }
 }
+
+/**
+ * Cancel all active subscriptions for a user except the specified one
+ */
+export async function cancelDuplicateSubscriptions(userId: string, keepSubscriptionId?: string): Promise<void> {
+  const supabase = createAdminClient()
+  
+  try {
+    // Get all active subscriptions for this user
+    const { data: activeSubscriptions, error } = await supabase
+      .from('subscriptions')
+      .select('stripe_subscription_id')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+
+    if (error) {
+      console.error('Error fetching active subscriptions:', error)
+      return
+    }
+
+    if (!activeSubscriptions || activeSubscriptions.length <= 1) {
+      return // No duplicates to cancel
+    }
+
+    // Cancel all except the one we want to keep
+    for (const subscription of activeSubscriptions) {
+      if (subscription.stripe_subscription_id !== keepSubscriptionId) {
+        try {
+          // Import stripe here to avoid circular dependencies
+          const { stripe } = await import('@/lib/stripe')
+          await stripe.subscriptions.cancel(subscription.stripe_subscription_id)
+          
+          // Update database
+          await supabase
+            .from('subscriptions')
+            .update({ status: 'cancelled' })
+            .eq('stripe_subscription_id', subscription.stripe_subscription_id)
+          
+          console.log('Cancelled duplicate subscription:', subscription.stripe_subscription_id)
+        } catch (error) {
+          console.error('Error cancelling subscription:', subscription.stripe_subscription_id, error)
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error in cancelDuplicateSubscriptions:', error)
+  }
+}

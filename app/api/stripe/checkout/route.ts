@@ -21,12 +21,38 @@ export async function POST(request: NextRequest) {
     // Check if user already has a Stripe customer ID
     const { data: existingSubscription } = await supabase
       .from('subscriptions')
-      .select('stripe_customer_id')
+      .select('stripe_customer_id, stripe_subscription_id')
       .eq('user_id', userId)
       .single()
 
     if (existingSubscription?.stripe_customer_id) {
       customerId = existingSubscription.stripe_customer_id
+      
+      // Cancel existing active subscription if it exists
+      if (existingSubscription.stripe_subscription_id) {
+        try {
+          const existingStripeSubscription = await stripe.subscriptions.retrieve(
+            existingSubscription.stripe_subscription_id
+          )
+          
+          if (existingStripeSubscription.status === 'active') {
+            console.log('Cancelling existing subscription:', existingSubscription.stripe_subscription_id)
+            await stripe.subscriptions.update(existingSubscription.stripe_subscription_id, {
+              cancel_at_period_end: false, // Cancel immediately
+            })
+            await stripe.subscriptions.cancel(existingSubscription.stripe_subscription_id)
+            
+            // Update database to reflect cancellation
+            await supabase
+              .from('subscriptions')
+              .update({ status: 'cancelled' })
+              .eq('user_id', userId)
+          }
+        } catch (error) {
+          console.error('Error cancelling existing subscription:', error)
+          // Continue with new subscription creation
+        }
+      }
     } else {
       // Create new Stripe customer
       const customer = await stripe.customers.create({

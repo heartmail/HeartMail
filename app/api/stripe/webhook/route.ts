@@ -47,6 +47,32 @@ export async function POST(request: NextRequest) {
         const priceAmount = subscription.items.data[0]?.price?.unit_amount || 0
         const planType = priceAmount === 999 ? 'family' : 'extended'
 
+        // First, cancel any existing active subscriptions for this user
+        const { data: existingSubscriptions } = await supabase
+          .from('subscriptions')
+          .select('stripe_subscription_id')
+          .eq('user_id', userId)
+          .eq('status', 'active')
+
+        if (existingSubscriptions && existingSubscriptions.length > 0) {
+          for (const existingSub of existingSubscriptions) {
+            if (existingSub.stripe_subscription_id !== subscription.id) {
+              try {
+                console.log('Cancelling duplicate subscription:', existingSub.stripe_subscription_id)
+                await stripe.subscriptions.cancel(existingSub.stripe_subscription_id)
+                
+                // Update database to reflect cancellation
+                await supabase
+                  .from('subscriptions')
+                  .update({ status: 'cancelled' })
+                  .eq('stripe_subscription_id', existingSub.stripe_subscription_id)
+              } catch (error) {
+                console.error('Error cancelling duplicate subscription:', error)
+              }
+            }
+          }
+        }
+
         // Update user's subscription in database
         const { error } = await supabase
           .from('subscriptions')
