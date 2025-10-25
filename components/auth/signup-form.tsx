@@ -230,6 +230,33 @@ export default function SignupForm() {
   }
 
   const renderStepContent = () => {
+    // Show dedicated success screen when account is created
+    if (success) {
+      return (
+        <div className="text-center py-12">
+          <div className="w-20 h-20 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
+            <Heart className="h-10 w-10 text-green-600" />
+          </div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Account Created</h2>
+          <p className="text-lg text-gray-600 mb-8">
+            Please check your email to confirm your account.
+          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <p className="text-sm text-blue-800">
+              <strong>Next steps:</strong> Check your email inbox (and spam folder) for a confirmation link. 
+              Click the link to activate your account and start using HeartMail.
+            </p>
+          </div>
+          <Button 
+            onClick={() => router.push('/login')}
+            className="btn-heartmail"
+          >
+            Go to Sign In
+          </Button>
+        </div>
+      )
+    }
+
     const currentStepData = steps[currentStep - 1]
     const Icon = currentStepData.icon
 
@@ -243,12 +270,6 @@ export default function SignupForm() {
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
             {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="mb-6 bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-md text-sm">
-            Account created! Please check your email to confirm your account.
           </div>
         )}
 
@@ -470,7 +491,8 @@ export default function SignupForm() {
         <form onSubmit={handleSubmit}>
           {renderStepContent()}
           
-          <div className="flex items-center justify-between mt-8">
+          {!success && (
+            <div className="flex items-center justify-between mt-8">
             <Button
               type="button"
               variant="outline"
@@ -505,6 +527,7 @@ export default function SignupForm() {
               )}
             </Button>
           </div>
+          )}
         </form>
 
         {/* Google Sign In - Only show on first step */}

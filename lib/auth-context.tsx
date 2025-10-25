@@ -91,25 +91,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       setLoading(false)
       
-      // Initialize user data if this is a new signup
-      if (event === 'SIGNED_UP' as any && session?.user) {
-        try {
-          const response = await fetch('/api/auth/webhook', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              type: 'INSERT',
-              record: { id: session.user.id, email: session.user.email }
-            })
-          })
-          
-          if (!response.ok) {
-            console.error('Failed to initialize user data')
-          }
-        } catch (error) {
-          console.error('Error initializing user:', error)
-        }
-      }
+      // User initialization is handled by database trigger
+      // No need to manually call webhook
     })
 
     return () => subscription.unsubscribe()
@@ -130,33 +113,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     })
     
-    // Create profile and username after successful signup
+    // Send custom confirmation email if signup was successful
     if (data.user && !error) {
       try {
-        // Create user profile
-        await supabase.from('user_profiles').insert({
-          user_id: data.user.id,
-          email: data.user.email,
-          first_name: firstName,
-          last_name: lastName,
-          bio: ''
+        // Use the emailRedirectTo URL as the confirmation URL
+        const confirmationUrl = `${window.location.origin}/auth/callback`
+        
+        // Send our custom branded confirmation email
+        const response = await fetch('/api/auth/send-confirmation', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: email,
+            type: 'signup',
+            confirmationUrl: confirmationUrl
+          })
         })
 
-        // Add username to usernames table if provided
-        if (username) {
-          const { error: usernameError } = await supabase
-            .rpc('add_username', { 
-              user_uuid: data.user.id, 
-              username_text: username 
-            })
-          
-          if (usernameError) {
-            console.error('Error adding username:', usernameError)
-          }
+        if (!response.ok) {
+          console.error('Failed to send custom confirmation email')
+        } else {
+          console.log('✅ Custom confirmation email sent successfully')
         }
-      } catch (profileError) {
-        console.error('Error creating profile:', profileError)
-        // Don't fail signup if profile creation fails
+      } catch (emailError) {
+        console.error('Error sending custom confirmation email:', emailError)
+        // Don't fail signup if email sending fails
       }
     }
     
