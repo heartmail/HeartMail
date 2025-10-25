@@ -43,14 +43,23 @@ export async function getUserLimits(userId: string): Promise<PlanLimits> {
  */
 export async function getUserUsage(userId: string): Promise<SubscriptionUsage | null> {
   try {
-    const currentMonth = new Date().toISOString().slice(0, 7) // YYYY-MM format
+    // Use a more robust date calculation to handle system clock issues
+    const now = new Date()
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
     
-    const { data: usage } = await supabase
+    console.log('getUserUsage - Current month:', currentMonth)
+    
+    const { data: usage, error } = await supabase
       .from('subscription_usage')
       .select('*')
       .eq('user_id', userId)
       .eq('month_year', currentMonth)
       .single()
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error fetching usage:', error)
+      return null
+    }
 
     return usage
   } catch (error) {

@@ -366,12 +366,18 @@ export async function incrementEmailCount(userId: string): Promise<void> {
   try {
     const adminSupabase = createAdminClient()
     
+    // Use a more robust date calculation to handle system clock issues
+    const now = new Date()
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    
+    console.log('incrementEmailCount - Current month:', currentMonth)
+    
     // First, get the current usage record
     const { data: currentUsage, error: fetchError } = await adminSupabase
       .from('subscription_usage')
       .select('emails_sent_this_month, recipients_created')
       .eq('user_id', userId)
-      .eq('month_year', new Date().toISOString().slice(0, 7)) // YYYY-MM format
+      .eq('month_year', currentMonth)
       .single()
 
     if (fetchError && fetchError.code !== 'PGRST116') {
@@ -387,7 +393,7 @@ export async function incrementEmailCount(userId: string): Promise<void> {
       .from('subscription_usage')
       .upsert({
         user_id: userId,
-        month_year: new Date().toISOString().slice(0, 7), // YYYY-MM format
+        month_year: currentMonth,
         emails_sent_this_month: currentEmailCount + 1,
         recipients_created: currentRecipientCount, // Keep existing recipient count
         updated_at: new Date().toISOString()
@@ -412,12 +418,18 @@ export async function incrementRecipientCount(userId: string): Promise<void> {
   try {
     const adminSupabase = createAdminClient()
     
+    // Use a more robust date calculation to handle system clock issues
+    const now = new Date()
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    
+    console.log('incrementRecipientCount - Current month:', currentMonth)
+    
     // First, get the current usage record
     const { data: currentUsage, error: fetchError } = await adminSupabase
       .from('subscription_usage')
       .select('emails_sent_this_month, recipients_created')
       .eq('user_id', userId)
-      .eq('month_year', new Date().toISOString().slice(0, 7)) // YYYY-MM format
+      .eq('month_year', currentMonth)
       .single()
 
     if (fetchError && fetchError.code !== 'PGRST116') {
@@ -433,7 +445,7 @@ export async function incrementRecipientCount(userId: string): Promise<void> {
       .from('subscription_usage')
       .upsert({
         user_id: userId,
-        month_year: new Date().toISOString().slice(0, 7), // YYYY-MM format
+        month_year: currentMonth,
         emails_sent_this_month: currentEmailCount, // Keep existing email count
         recipients_created: currentRecipientCount + 1,
         updated_at: new Date().toISOString()
@@ -458,12 +470,18 @@ export async function decrementRecipientCount(userId: string): Promise<void> {
   try {
     const adminSupabase = createAdminClient()
     
+    // Use a more robust date calculation to handle system clock issues
+    const now = new Date()
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    
+    console.log('decrementRecipientCount - Current month:', currentMonth)
+    
     // First, get the current usage record
     const { data: currentUsage, error: fetchError } = await adminSupabase
       .from('subscription_usage')
       .select('emails_sent_this_month, recipients_created')
       .eq('user_id', userId)
-      .eq('month_year', new Date().toISOString().slice(0, 7)) // YYYY-MM format
+      .eq('month_year', currentMonth)
       .single()
 
     if (fetchError && fetchError.code !== 'PGRST116') {
@@ -482,7 +500,7 @@ export async function decrementRecipientCount(userId: string): Promise<void> {
       .from('subscription_usage')
       .upsert({
         user_id: userId,
-        month_year: new Date().toISOString().slice(0, 7), // YYYY-MM format
+        month_year: currentMonth,
         emails_sent_this_month: currentEmailCount, // Keep existing email count
         recipients_created: newRecipientCount,
         updated_at: new Date().toISOString()
