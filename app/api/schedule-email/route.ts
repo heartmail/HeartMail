@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase'
 import { inngest } from '@/lib/inngest'
 import { logEmailScheduled } from '@/lib/activity-history'
 import { canScheduleEmails } from '@/lib/subscription'
+import { convertToUTC, getUserTimezone } from '@/lib/timezone'
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,7 +17,8 @@ export async function POST(request: NextRequest) {
       bodyHtml, 
       bodyText, 
       sendAt,
-      frequency = 'one-time'
+      frequency = 'one-time',
+      userTimezone = 'UTC'
     } = await request.json()
 
     // Validate required fields
@@ -36,12 +38,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-            // Validate sendAt is at least 2 minutes in the future
-            const sendDate = new Date(sendAt)
+            // Convert user's local time to UTC for storage
+            const userLocalDate = new Date(sendAt)
+            const utcSendDate = convertToUTC(userLocalDate, userTimezone)
+            
+            // Validate sendAt is at least 2 minutes in the future (in UTC)
             const now = new Date()
             const twoMinutesFromNow = new Date(now.getTime() + 2 * 60 * 1000) // 2 minutes from now
             
-            if (sendDate <= twoMinutesFromNow) {
+            if (utcSendDate <= twoMinutesFromNow) {
               return NextResponse.json(
                 { error: 'Email must be scheduled for at least 2 minutes in the future' },
                 { status: 400 }
@@ -50,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     const supabase = createAdminClient()
 
-    // Insert scheduled email into database
+    // Insert scheduled email into database with UTC time
     const { data: scheduledEmail, error: insertError } = await supabase
       .from('scheduled_emails')
       .insert({
@@ -59,10 +64,11 @@ export async function POST(request: NextRequest) {
         template_id: templateId,
         title: subject,
         content: bodyHtml,
-        scheduled_date: new Date(sendAt).toISOString().split('T')[0],
-        scheduled_time: new Date(sendAt).toTimeString().split(' ')[0],
+        scheduled_date: utcSendDate.toISOString().split('T')[0],
+        scheduled_time: utcSendDate.toTimeString().split(' ')[0],
         frequency: frequency,
-        status: 'scheduled'
+        status: 'scheduled',
+        user_timezone: userTimezone
       })
       .select()
       .single()
@@ -93,14 +99,15 @@ export async function POST(request: NextRequest) {
       // Don't fail the request if activity logging fails
     }
 
-    // Schedule the email with Inngest
+    // Schedule the email with Inngest using UTC time
     try {
       await inngest.send({
         name: 'email/schedule',
         data: {
           scheduledEmailId: scheduledEmail.id,
           userId: userId,
-          sendAt: sendAt
+          sendAt: utcSendDate.toISOString(),
+          userTimezone: userTimezone
         }
       })
 

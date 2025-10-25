@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase'
 import { getFullName } from '@/lib/recipients'
 import { replaceTemplateVariables, hasTemplateVariables, RecipientData, hasUnreplacedVariables, getUnreplacedVariables } from '@/lib/template-variables'
 import { hasPremiumTemplateAccess, canScheduleEmails } from '@/lib/subscription-client'
+import { getUserTimezone } from '@/lib/timezone'
 import VariableValidationModal from '@/components/email/variable-validation-modal'
 // DashboardLayout is already applied through the main layout
 
@@ -432,7 +433,8 @@ export default function SchedulePage() {
             bodyHtml: template?.content || personalMessage,
             bodyText: personalMessage,
             sendAt: sendAt.toISOString(),
-            frequency: frequency || 'one-time'
+            frequency: frequency || 'one-time',
+            userTimezone: getUserTimezone()
           })
         })
 
@@ -598,7 +600,8 @@ export default function SchedulePage() {
           bodyHtml: template?.content || personalMessage,
           bodyText: personalMessage,
           sendAt: new Date(`${date}T${time}`).toISOString(),
-          frequency: frequency || 'one-time'
+          frequency: frequency || 'one-time',
+          userTimezone: getUserTimezone()
         })
       })
 

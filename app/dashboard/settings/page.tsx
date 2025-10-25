@@ -15,6 +15,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { getUserProfile, upsertUserProfile, UserProfile } from '@/lib/profile'
 import { getUserSettings, upsertUserSettings, UserSettings } from '@/lib/settings'
 import { supabase } from '@/lib/supabase'
+import { TIMEZONES, getUserTimezone } from '@/lib/timezone'
 import { toast } from 'sonner'
 
 export default function SettingsPage() {
@@ -42,7 +43,8 @@ export default function SettingsPage() {
   const [profileForm, setProfileForm] = useState({
     first_name: '',
     last_name: '',
-    email: ''
+    email: '',
+    timezone: 'UTC'
   })
   
   // Settings state
@@ -87,14 +89,16 @@ export default function SettingsPage() {
         setProfileForm({
           first_name: profileData.first_name || '',
           last_name: profileData.last_name || '',
-          email: profileData.email || user!.email || ''
+          email: profileData.email || user!.email || '',
+          timezone: profileData.timezone || getUserTimezone()
         })
       } else {
         // Initialize with user email if no profile exists
         setProfileForm({
           first_name: '',
           last_name: '',
-          email: user!.email || ''
+          email: user!.email || '',
+          timezone: getUserTimezone()
         })
       }
       
@@ -484,12 +488,20 @@ export default function SettingsPage() {
                     
                     <div className="preference-item">
                       <label>Time Zone</label>
-                      <select className="form-select">
-                        <option value="EST" selected>Eastern Time (EST)</option>
-                        <option value="PST">Pacific Time (PST)</option>
-                        <option value="CST">Central Time (CST)</option>
-                        <option value="MST">Mountain Time (MST)</option>
+                      <select 
+                        className="form-select"
+                        value={profileForm.timezone}
+                        onChange={(e) => setProfileForm({ ...profileForm, timezone: e.target.value })}
+                      >
+                        {TIMEZONES.map((tz) => (
+                          <option key={tz.value} value={tz.value}>
+                            {tz.label} ({tz.offset})
+                          </option>
+                        ))}
                       </select>
+                      <p className="text-sm text-gray-500 mt-1">
+                        This affects when your scheduled emails are sent.
+                      </p>
                     </div>
                   </div>
                 </div>

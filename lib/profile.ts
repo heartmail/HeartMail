@@ -9,6 +9,7 @@ export interface UserProfile {
   username?: string
   display_name?: string
   avatar_url?: string
+  timezone?: string
   created_at: string
   updated_at: string
 }
