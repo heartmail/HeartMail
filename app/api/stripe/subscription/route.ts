@@ -19,19 +19,24 @@ export async function GET(request: NextRequest) {
 
     const supabase = createAdminClient()
 
-    // Get user's subscription
+    // Get user's subscription and actual recipient count
     const { data: subscription, error } = await supabase
       .from('subscriptions')
       .select(`
         *,
         subscription_usage (
-          recipients_count,
-          templates_used,
           emails_sent_this_month
         )
       `)
       .eq('user_id', userId)
       .single()
+
+    // Get actual recipient count from recipients table
+    const { count: recipientCount } = await supabase
+      .from('recipients')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('is_active', true)
 
     if (error && error.code !== 'PGRST116') {
       console.error('Error fetching subscription:', error)
@@ -44,6 +49,14 @@ export async function GET(request: NextRequest) {
     // If no subscription found, return free plan without creating database record
     if (!subscription) {
       console.log('No subscription found, returning free plan for user:', userId)
+      
+      // Get actual recipient count for free plan users too
+      const { count: freeRecipientCount } = await supabase
+        .from('recipients')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('is_active', true)
+      
       const limits = await getUserLimits(userId)
       return NextResponse.json({
         subscription: {
@@ -54,8 +67,7 @@ export async function GET(request: NextRequest) {
           current_period_end: null,
           cancel_at_period_end: false,
           usage: {
-            recipients_count: 0,
-            templates_used: 0,
+            recipients_created: freeRecipientCount || 0,
             emails_sent_this_month: 0
           }
         },
@@ -83,10 +95,9 @@ export async function GET(request: NextRequest) {
         current_period_start: subscription.current_period_start,
         current_period_end: subscription.current_period_end,
         cancel_at_period_end: subscription.cancel_at_period_end,
-        usage: subscription.subscription_usage?.[0] || {
-          recipients_count: 0,
-          templates_used: 0,
-          emails_sent_this_month: 0
+        usage: {
+          recipients_created: recipientCount || 0,
+          emails_sent_this_month: subscription.subscription_usage?.[0]?.emails_sent_this_month || 0
         }
       },
       limits

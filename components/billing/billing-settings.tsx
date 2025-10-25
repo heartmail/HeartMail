@@ -16,8 +16,7 @@ interface SubscriptionData {
   current_period_end: string | null
   cancel_at_period_end: boolean
   usage: {
-    recipients_count: number
-    templates_used: number
+    recipients_created: number
     emails_sent_this_month: number
   }
 }
@@ -220,7 +219,7 @@ export default function BillingSettings() {
                       <span className="text-sm text-gray-600">Recipients</span>
                     </div>
                     <span className="text-sm font-medium">
-                      {subscription.usage.recipients_count} / {limits?.recipients_limit === null ? '∞' : (limits?.recipients_limit ?? 2)}
+                      {subscription.usage.recipients_created} / {limits?.recipients_limit === null ? '∞' : (limits?.recipients_limit ?? 2)}
                     </span>
                   </div>
                   
