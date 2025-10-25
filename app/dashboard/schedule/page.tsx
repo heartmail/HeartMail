@@ -345,8 +345,21 @@ export default function SchedulePage() {
     // Safely get form data
     let formData: FormData
     try {
-      if (e.currentTarget && e.currentTarget instanceof HTMLFormElement) {
-        formData = new FormData(e.currentTarget)
+      // Try to get form element from event target
+      let formElement = e.currentTarget
+      
+      // If currentTarget is not a form, try to find the form element
+      if (!formElement || !(formElement instanceof HTMLFormElement)) {
+        formElement = e.currentTarget?.closest('form') as HTMLFormElement
+      }
+      
+      // If still not found, try to find by data attribute
+      if (!formElement || !(formElement instanceof HTMLFormElement)) {
+        formElement = document.querySelector('form[data-schedule-form]') as HTMLFormElement
+      }
+      
+      if (formElement && formElement instanceof HTMLFormElement) {
+        formData = new FormData(formElement)
       } else {
         console.error('Form element not found or invalid:', e.currentTarget)
         alert('Form submission error. Please refresh the page and try again.')
@@ -533,19 +546,22 @@ export default function SchedulePage() {
     // Proceed with scheduling the email
     try {
       // Find the form element more reliably
-      console.log('Looking for form with data-schedule-form attribute')
-      const formElement = document.querySelector('form[data-schedule-form]') as HTMLFormElement
-      console.log('Found form element:', formElement)
+      let formElement = document.querySelector('form[data-schedule-form]') as HTMLFormElement
       
+      // If not found by data attribute, try to find any form in the modal
       if (!formElement) {
-        console.error('Schedule form not found - checking all forms:', document.querySelectorAll('form'))
-        alert('Form not found. Please refresh the page and try again.')
-        return
+        formElement = document.querySelector('.fixed.inset-0 form') as HTMLFormElement
       }
       
-      if (!(formElement instanceof HTMLFormElement)) {
-        console.error('Found element is not an HTMLFormElement:', formElement)
-        alert('Invalid form element. Please refresh the page and try again.')
+      // If still not found, try to find the most recent form
+      if (!formElement) {
+        const forms = document.querySelectorAll('form')
+        formElement = forms[forms.length - 1] as HTMLFormElement
+      }
+      
+      if (!formElement || !(formElement instanceof HTMLFormElement)) {
+        console.error('Schedule form not found - checking all forms:', document.querySelectorAll('form'))
+        alert('Form not found. Please refresh the page and try again.')
         return
       }
       

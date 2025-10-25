@@ -272,6 +272,9 @@ export default function SendEmailModal({ isOpen, onClose, onEmailSent }: SendEma
           onEmailSent()
         }
         
+        // Trigger global email sent event for billing refresh
+        window.dispatchEvent(new CustomEvent('emailSent'))
+        
         setTimeout(() => {
           setIsSuccess(false)
           onClose()

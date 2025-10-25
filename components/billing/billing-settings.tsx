@@ -29,6 +29,18 @@ export default function BillingSettings() {
   const [portalLoading, setPortalLoading] = useState(false)
   const { user } = useAuth()
 
+  // Listen for email sent events to refresh billing data
+  useEffect(() => {
+    const handleEmailSent = () => {
+      if (user) {
+        fetchSubscription()
+      }
+    }
+
+    window.addEventListener('emailSent', handleEmailSent)
+    return () => window.removeEventListener('emailSent', handleEmailSent)
+  }, [user])
+
   useEffect(() => {
     if (user) {
       fetchSubscription()

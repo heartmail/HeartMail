@@ -408,13 +408,13 @@ export default function TemplatesPage() {
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {availableVariables.map((variable) => (
-                        <div key={variable.key} className="flex items-center gap-1">
+                        <div key={variable.key} className="flex items-center">
                           <Button
                             type="button"
                             variant="outline"
                             size="sm"
                             onClick={() => insertVariable(variable.key)}
-                            className="text-xs"
+                            className="text-xs rounded-r-none border-r-0"
                             title={variable.description}
                           >
                             {variable.label}
@@ -424,7 +424,7 @@ export default function TemplatesPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => removeVariable(variable.key)}
-                            className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200"
+                            className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200 rounded-l-none px-2"
                             title="Remove variable"
                           >
                             <X className="h-3 w-3" />
