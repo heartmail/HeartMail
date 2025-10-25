@@ -113,32 +113,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     })
     
-    // Send custom confirmation email if signup was successful
+    // Send custom confirmation email via Resend if signup was successful
     if (data.user && !error) {
+      console.log('✅ User signup successful, sending custom confirmation email via Resend')
+      console.log('User ID:', data.user.id)
+      console.log('Email:', data.user.email)
+      
       try {
-        // Use the emailRedirectTo URL as the confirmation URL
-        const confirmationUrl = `${window.location.origin}/auth/callback`
-        
-        // Send our custom branded confirmation email
-        const response = await fetch('/api/auth/send-confirmation', {
+        // Send our custom branded confirmation email via Resend
+        const response = await fetch('/api/auth/send-signup-confirmation', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             email: email,
-            type: 'signup',
-            confirmationUrl: confirmationUrl
+            userId: data.user.id
           })
         })
 
         if (!response.ok) {
-          console.error('Failed to send custom confirmation email')
+          console.error('Failed to send custom confirmation email via Resend')
+          const errorData = await response.json()
+          console.error('Error details:', errorData)
         } else {
-          console.log('✅ Custom confirmation email sent successfully')
+          console.log('✅ Custom confirmation email sent successfully via Resend')
         }
       } catch (emailError) {
-        console.error('Error sending custom confirmation email:', emailError)
+        console.error('Error sending custom confirmation email via Resend:', emailError)
         // Don't fail signup if email sending fails
       }
     }
@@ -160,10 +162,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const resetPassword = async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    })
-    return { error }
+    try {
+      // Send custom password reset email via Resend
+      const response = await fetch('/api/auth/send-password-reset', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email
+        })
+      })
+
+      if (!response.ok) {
+        console.error('Failed to send password reset email via Resend')
+        const errorData = await response.json()
+        console.error('Error details:', errorData)
+        return { error: { message: 'Failed to send password reset email' } }
+      } else {
+        console.log('✅ Password reset email sent successfully via Resend')
+        return { error: null }
+      }
+    } catch (emailError) {
+      console.error('Error sending password reset email via Resend:', emailError)
+      return { error: { message: 'Failed to send password reset email' } }
+    }
   }
 
   const value = {
