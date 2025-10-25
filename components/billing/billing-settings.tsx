@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { CreditCard, ExternalLink, Loader2, Calendar, Users, Mail, X, RefreshCw } from 'lucide-react'
+import { CreditCard, ExternalLink, Loader2, Calendar, Users, Mail, X } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { Subscription, SubscriptionUsage, PlanLimits } from '@/lib/subscription'
 
@@ -179,15 +179,6 @@ export default function BillingSettings() {
                 Manage your subscription, payment methods, and billing information.
               </CardDescription>
             </div>
-            <Button
-              onClick={fetchSubscription}
-              variant="outline"
-              size="sm"
-              className="flex items-center space-x-2"
-            >
-              <RefreshCw className="h-4 w-4" />
-              <span>Refresh</span>
-            </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
