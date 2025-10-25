@@ -2,6 +2,7 @@ import { inngest } from '@/lib/inngest'
 import { createAdminClient } from '@/lib/supabase'
 import { Resend } from 'resend'
 import { logEmailSent } from '@/lib/activity-history'
+import { incrementEmailCount } from '@/lib/subscription'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -126,6 +127,15 @@ export const sendScheduledEmail = inngest.createFunction(
           })
           .eq('id', scheduledEmailId)
 
+        // Increment email count for user
+        try {
+          await incrementEmailCount(userId)
+          console.log('✅ Email count incremented for scheduled email:', userId)
+        } catch (countError) {
+          console.error('Failed to increment email count for scheduled email:', countError)
+          // Don't fail the email send if count increment fails
+        }
+
         // Log activity for email sent
         try {
           await logEmailSent(
@@ -138,6 +148,11 @@ export const sendScheduledEmail = inngest.createFunction(
           console.error('Failed to log email sent activity:', activityError)
           // Don't fail the email send if activity logging fails
         }
+
+        // Trigger global email sent event for frontend refresh
+        // Note: This is handled server-side, so we can't dispatch browser events
+        // The frontend will refresh when the user next visits the dashboard
+        console.log('✅ Scheduled email sent successfully, frontend will refresh on next visit')
 
         // Handle recurring emails
         if (frequency !== 'one-time') {

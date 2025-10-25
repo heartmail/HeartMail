@@ -41,6 +41,17 @@ export default function BillingSettings() {
     return () => window.removeEventListener('emailSent', handleEmailSent)
   }, [user])
 
+  // Periodic refresh to catch scheduled emails
+  useEffect(() => {
+    if (!user) return
+
+    const interval = setInterval(() => {
+      fetchSubscription()
+    }, 30000) // Refresh every 30 seconds
+
+    return () => clearInterval(interval)
+  }, [user])
+
   useEffect(() => {
     if (user) {
       fetchSubscription()

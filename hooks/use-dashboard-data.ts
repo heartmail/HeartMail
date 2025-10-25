@@ -106,6 +106,17 @@ export function useDashboardData(): {
     fetchData()
   }, [user])
 
+  // Periodic refresh to catch scheduled emails
+  useEffect(() => {
+    if (!user) return
+
+    const interval = setInterval(() => {
+      fetchData()
+    }, 30000) // Refresh every 30 seconds
+
+    return () => clearInterval(interval)
+  }, [user])
+
   const refetch = () => {
     fetchData()
   }
