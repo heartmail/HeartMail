@@ -275,10 +275,11 @@ export default function SendEmailModal({ isOpen, onClose, onEmailSent }: SendEma
         // Trigger global email sent event for billing refresh
         window.dispatchEvent(new CustomEvent('emailSent'))
         
-        setTimeout(() => {
-          setIsSuccess(false)
-          onClose()
-        }, 2000)
+        // Don't auto-close the success modal - let user close it manually
+        // setTimeout(() => {
+        //   setIsSuccess(false)
+        //   onClose()
+        // }, 2000)
       } else {
         const errorData = await response.json()
         
@@ -330,9 +331,13 @@ export default function SendEmailModal({ isOpen, onClose, onEmailSent }: SendEma
             <p className="text-gray-600 mb-6">Your heartfelt message has been delivered to your loved one.</p>
             <div className="flex justify-center">
               <Button 
-                onClick={onClose}
+                onClick={() => {
+                  setIsSuccess(false)
+                  onClose()
+                }}
                 className="px-6 py-2.5 bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
               >
+                <Heart className="h-4 w-4 mr-2" />
                 Close
               </Button>
             </div>

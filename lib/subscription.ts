@@ -364,10 +364,12 @@ export async function canSendEmail(userId: string): Promise<boolean> {
  */
 export async function incrementEmailCount(userId: string): Promise<void> {
   try {
+    const adminSupabase = createAdminClient()
+    
     // First, get the current usage record
-    const { data: currentUsage, error: fetchError } = await supabase
+    const { data: currentUsage, error: fetchError } = await adminSupabase
       .from('subscription_usage')
-      .select('emails_sent_this_month')
+      .select('emails_sent_this_month, recipients_created')
       .eq('user_id', userId)
       .eq('month_year', new Date().toISOString().slice(0, 7)) // YYYY-MM format
       .single()
@@ -377,15 +379,17 @@ export async function incrementEmailCount(userId: string): Promise<void> {
       throw fetchError
     }
 
-    const currentCount = currentUsage?.emails_sent_this_month || 0
+    const currentEmailCount = currentUsage?.emails_sent_this_month || 0
+    const currentRecipientCount = currentUsage?.recipients_created || 0
 
     // Update or insert the usage record
-    const { error: upsertError } = await supabase
+    const { error: upsertError } = await adminSupabase
       .from('subscription_usage')
       .upsert({
         user_id: userId,
         month_year: new Date().toISOString().slice(0, 7), // YYYY-MM format
-        emails_sent_this_month: currentCount + 1,
+        emails_sent_this_month: currentEmailCount + 1,
+        recipients_created: currentRecipientCount, // Keep existing recipient count
         updated_at: new Date().toISOString()
       })
 
