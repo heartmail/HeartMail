@@ -366,11 +366,13 @@ export async function incrementEmailCount(userId: string): Promise<void> {
   try {
     const adminSupabase = createAdminClient()
     
-    // Use a more robust date calculation to handle system clock issues
+    // Use UTC date to avoid system clock issues
     const now = new Date()
-    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    const utcYear = now.getUTCFullYear()
+    const utcMonth = now.getUTCMonth() + 1
+    const currentMonth = `${utcYear}-${String(utcMonth).padStart(2, '0')}`
     
-    console.log('incrementEmailCount - Current month:', currentMonth)
+    console.log('incrementEmailCount - Current month (UTC):', currentMonth)
     
     // First, get the current usage record
     const { data: currentUsage, error: fetchError } = await adminSupabase
@@ -418,11 +420,13 @@ export async function incrementRecipientCount(userId: string): Promise<void> {
   try {
     const adminSupabase = createAdminClient()
     
-    // Use a more robust date calculation to handle system clock issues
+    // Use UTC date to avoid system clock issues
     const now = new Date()
-    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    const utcYear = now.getUTCFullYear()
+    const utcMonth = now.getUTCMonth() + 1
+    const currentMonth = `${utcYear}-${String(utcMonth).padStart(2, '0')}`
     
-    console.log('incrementRecipientCount - Current month:', currentMonth)
+    console.log('incrementRecipientCount - Current month (UTC):', currentMonth)
     
     // First, get the current usage record
     const { data: currentUsage, error: fetchError } = await adminSupabase
@@ -470,11 +474,13 @@ export async function decrementRecipientCount(userId: string): Promise<void> {
   try {
     const adminSupabase = createAdminClient()
     
-    // Use a more robust date calculation to handle system clock issues
+    // Use UTC date to avoid system clock issues
     const now = new Date()
-    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    const utcYear = now.getUTCFullYear()
+    const utcMonth = now.getUTCMonth() + 1
+    const currentMonth = `${utcYear}-${String(utcMonth).padStart(2, '0')}`
     
-    console.log('decrementRecipientCount - Current month:', currentMonth)
+    console.log('decrementRecipientCount - Current month (UTC):', currentMonth)
     
     // First, get the current usage record
     const { data: currentUsage, error: fetchError } = await adminSupabase

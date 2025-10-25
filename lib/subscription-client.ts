@@ -43,11 +43,13 @@ export async function getUserLimits(userId: string): Promise<PlanLimits> {
  */
 export async function getUserUsage(userId: string): Promise<SubscriptionUsage | null> {
   try {
-    // Use a more robust date calculation to handle system clock issues
+    // Use UTC date to avoid system clock issues
     const now = new Date()
-    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    const utcYear = now.getUTCFullYear()
+    const utcMonth = now.getUTCMonth() + 1
+    const currentMonth = `${utcYear}-${String(utcMonth).padStart(2, '0')}`
     
-    console.log('getUserUsage - Current month:', currentMonth)
+    console.log('getUserUsage - Current month (UTC):', currentMonth)
     
     const { data: usage, error } = await supabase
       .from('subscription_usage')

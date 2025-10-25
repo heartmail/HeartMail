@@ -43,7 +43,7 @@ export async function createRecipient(userId: string, recipientData: Omit<Recipi
       last_name: recipientData.last_name || '',
       email: recipientData.email,
       relationship: recipientData.relationship,
-      birthday: recipientData.birthday,
+      birthday: recipientData.birthday && recipientData.birthday.trim() !== '' ? recipientData.birthday : null,
       notes: recipientData.notes,
       is_active: recipientData.is_active
     })

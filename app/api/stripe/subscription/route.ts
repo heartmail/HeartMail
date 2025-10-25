@@ -19,15 +19,10 @@ export async function GET(request: NextRequest) {
 
     const supabase = createAdminClient()
 
-    // Get user's subscription and actual recipient count
+    // Get user's subscription
     const { data: subscription, error } = await supabase
       .from('subscriptions')
-      .select(`
-        *,
-        subscription_usage (
-          emails_sent_this_month
-        )
-      `)
+      .select('*')
       .eq('user_id', userId)
       .single()
 
@@ -37,6 +32,19 @@ export async function GET(request: NextRequest) {
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
       .eq('is_active', true)
+
+    // Get actual email count from subscription_usage table
+    const now = new Date()
+    const utcYear = now.getUTCFullYear()
+    const utcMonth = now.getUTCMonth() + 1
+    const currentMonth = `${utcYear}-${String(utcMonth).padStart(2, '0')}`
+    
+    const { data: usageData } = await supabase
+      .from('subscription_usage')
+      .select('emails_sent_this_month')
+      .eq('user_id', userId)
+      .eq('month_year', currentMonth)
+      .single()
 
     if (error && error.code !== 'PGRST116') {
       console.error('Error fetching subscription:', error)
@@ -56,19 +64,32 @@ export async function GET(request: NextRequest) {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
         .eq('is_active', true)
+
+      // Get actual email count for free plan users too
+      const now = new Date()
+      const utcYear = now.getUTCFullYear()
+      const utcMonth = now.getUTCMonth() + 1
+      const currentMonth = `${utcYear}-${String(utcMonth).padStart(2, '0')}`
+      
+      const { data: freeUsageData } = await supabase
+        .from('subscription_usage')
+        .select('emails_sent_this_month')
+        .eq('user_id', userId)
+        .eq('month_year', currentMonth)
+        .single()
       
       const limits = await getUserLimits(userId)
       return NextResponse.json({
         subscription: {
           status: 'active',
-          plan: 'Free',
-          price_id: null,
+        plan: 'Free',
+        price_id: null,
           current_period_start: null,
           current_period_end: null,
           cancel_at_period_end: false,
           usage: {
             recipients_created: freeRecipientCount || 0,
-            emails_sent_this_month: 0
+            emails_sent_this_month: freeUsageData?.emails_sent_this_month || 0
           }
         },
         limits
@@ -97,7 +118,7 @@ export async function GET(request: NextRequest) {
         cancel_at_period_end: subscription.cancel_at_period_end,
         usage: {
           recipients_created: recipientCount || 0,
-          emails_sent_this_month: subscription.subscription_usage?.[0]?.emails_sent_this_month || 0
+          emails_sent_this_month: usageData?.emails_sent_this_month || 0
         }
       },
       limits

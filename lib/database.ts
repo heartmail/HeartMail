@@ -3,9 +3,11 @@ import { logScheduledEmailDeleted } from './activity-history'
 
 // Dashboard Stats
 export async function getDashboardStats(userId: string) {
-  // Use a more robust date calculation to handle system clock issues
+  // Use UTC date to avoid system clock issues
   const now = new Date()
-  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const utcYear = now.getUTCFullYear()
+  const utcMonth = now.getUTCMonth() + 1
+  const currentMonth = `${utcYear}-${String(utcMonth).padStart(2, '0')}`
   
   const [recipientsResult, scheduledEmailsResult, usageResult] = await Promise.all([
     supabase.from('recipients').select('id').eq('user_id', userId).eq('is_active', true),
