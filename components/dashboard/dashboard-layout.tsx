@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Home, Users, Palette, Calendar, Settings, Bell, Plus, LogOut, ChevronLeft, ChevronRight, BookOpen, Image, Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth-context'
+import { useSubscription } from '@/lib/subscription-context'
 import Logo from '@/components/ui/logo'
 
 const menuItems = [
@@ -28,6 +29,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isMobile, setIsMobile] = useState(false)
   const pathname = usePathname()
   const { user, signOut } = useAuth()
+  const { subscription, isLoading: subscriptionLoading } = useSubscription()
   const router = useRouter()
 
   // Load sidebar state from localStorage on mount
@@ -202,7 +204,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </div>
               <div className="user-info">
                 <div className="user-name">{user?.user_metadata?.username || user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'User'}</div>
-                <div className="user-plan">Free Plan</div>
+                <div className="user-plan">
+                  {subscriptionLoading ? (
+                    <span className="text-gray-400">Loading...</span>
+                  ) : subscription?.plan ? (
+                    `${subscription.plan} Plan`
+                  ) : (
+                    'Free Plan'
+                  )}
+                </div>
               </div>
             </div>
           </div>
