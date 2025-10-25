@@ -345,16 +345,21 @@ export default function SchedulePage() {
     // Safely get form data
     let formData: FormData
     try {
+      console.log('Form submission - currentTarget:', e.currentTarget)
+      console.log('Form submission - currentTarget type:', typeof e.currentTarget)
+      console.log('Form submission - currentTarget instanceof HTMLFormElement:', e.currentTarget instanceof HTMLFormElement)
+      
       if (e.currentTarget && e.currentTarget instanceof HTMLFormElement) {
         formData = new FormData(e.currentTarget)
+        console.log('FormData created successfully')
       } else {
-        console.error('Form element not found or invalid')
-        alert('Form submission error. Please try again.')
+        console.error('Form element not found or invalid:', e.currentTarget)
+        alert('Form submission error. Please refresh the page and try again.')
         return
       }
     } catch (error) {
       console.error('Error creating FormData:', error)
-      alert('Form submission error. Please try again.')
+      alert('Form submission error. Please refresh the page and try again.')
       return
     }
 
@@ -533,10 +538,19 @@ export default function SchedulePage() {
     // Proceed with scheduling the email
     try {
       // Find the form element more reliably
+      console.log('Looking for form with data-schedule-form attribute')
       const formElement = document.querySelector('form[data-schedule-form]') as HTMLFormElement
+      console.log('Found form element:', formElement)
+      
       if (!formElement) {
-        console.error('Schedule form not found')
-        alert('Form not found. Please try again.')
+        console.error('Schedule form not found - checking all forms:', document.querySelectorAll('form'))
+        alert('Form not found. Please refresh the page and try again.')
+        return
+      }
+      
+      if (!(formElement instanceof HTMLFormElement)) {
+        console.error('Found element is not an HTMLFormElement:', formElement)
+        alert('Invalid form element. Please refresh the page and try again.')
         return
       }
       
