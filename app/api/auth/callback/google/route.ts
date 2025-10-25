@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { initializeNewUser } from '@/lib/user-setup'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
@@ -23,6 +24,25 @@ export async function GET(request: NextRequest) {
       }
 
       if (data.user) {
+        // Check if this is a new user (no profile exists)
+        const { data: existingProfile } = await supabase
+          .from('user_profiles')
+          .select('id')
+          .eq('user_id', data.user.id)
+          .single()
+
+        // If no profile exists, initialize the user
+        if (!existingProfile) {
+          console.log('New Google OAuth user detected, initializing...')
+          try {
+            await initializeNewUser(data.user.id, data.user.email || '')
+            console.log('✅ Google OAuth user initialization completed')
+          } catch (initError) {
+            console.error('Error initializing Google OAuth user:', initError)
+            // Don't fail the auth flow if initialization fails
+          }
+        }
+
         // User successfully authenticated
         return NextResponse.redirect(`${baseUrl}${next}`)
       }

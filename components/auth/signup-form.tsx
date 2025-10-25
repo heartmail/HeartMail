@@ -82,6 +82,9 @@ export default function SignupForm() {
     setIsAnimating(true)
     setError('')
     
+    // Remove the current step from completed steps when going back
+    setCompletedSteps(prev => prev.filter(step => step !== currentStep))
+    
     setTimeout(() => {
       setCurrentStep(prev => Math.max(prev - 1, 1))
       setIsAnimating(false)
@@ -233,9 +236,6 @@ export default function SignupForm() {
     return (
       <div className={`transition-all duration-500 ease-in-out ${isAnimating ? 'opacity-0 transform translate-x-4' : 'opacity-100 transform translate-x-0'}`}>
         <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center">
-            <Icon className="h-8 w-8 text-white" />
-          </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">{currentStepData.title}</h2>
           <p className="text-gray-600">{currentStepData.description}</p>
         </div>
