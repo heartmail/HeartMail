@@ -1,6 +1,5 @@
 import { supabase } from './supabase'
 import { logRecipientActivity } from './activity-history'
-import { canAddRecipient } from './subscription'
 
 export interface Recipient {
   id: string
@@ -31,10 +30,28 @@ export async function getRecipients(userId: string): Promise<Recipient[]> {
 
 // Create a new recipient
 export async function createRecipient(userId: string, recipientData: Omit<Recipient, 'id' | 'user_id' | 'created_at' | 'updated_at'>): Promise<Recipient> {
-  // Check if user can add another recipient BEFORE creating
-  const canAdd = await canAddRecipient(userId)
-  if (!canAdd) {
-    throw new Error('Recipient limit reached. Please upgrade your plan to add more recipients.')
+  // Check if user can add another recipient BEFORE creating via API
+  try {
+    const response = await fetch('/api/recipients/check-limit', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId })
+    })
+
+    if (!response.ok) {
+      console.error('Failed to check recipient limit via API')
+      // Continue with creation if limit check fails
+    } else {
+      const { canAdd } = await response.json()
+      if (!canAdd) {
+        throw new Error('Recipient limit reached. Please upgrade your plan to add more recipients.')
+      }
+    }
+  } catch (limitError) {
+    console.error('Error checking recipient limit:', limitError)
+    // Continue with creation if limit check fails
   }
 
   // Combine first_name and last_name into name field for database compatibility
