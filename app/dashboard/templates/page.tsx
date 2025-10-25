@@ -59,6 +59,10 @@ export default function TemplatesPage() {
     }
   }
 
+  const removeVariable = (variableKey: string) => {
+    setAvailableVariables(prev => prev.filter(variable => variable.key !== variableKey))
+  }
+
   const createCustomVariable = () => {
     if (newCustomVarName.trim()) {
       const varName = newCustomVarName.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_')
@@ -378,7 +382,7 @@ export default function TemplatesPage() {
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <MessageSquare className="h-5 w-5 text-pink-500" />
-                    Share your heart
+                    Body/Message
                   </CardTitle>
                   <CardDescription>
                     Write the beautiful message you want to share
@@ -404,17 +408,28 @@ export default function TemplatesPage() {
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {availableVariables.map((variable) => (
-                        <Button
-                          key={variable.key}
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => insertVariable(variable.key)}
-                          className="text-xs"
-                          title={variable.description}
-                        >
-                          {variable.label}
-                        </Button>
+                        <div key={variable.key} className="flex items-center gap-1">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => insertVariable(variable.key)}
+                            className="text-xs"
+                            title={variable.description}
+                          >
+                            {variable.label}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeVariable(variable.key)}
+                            className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200"
+                            title="Remove variable"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
                       ))}
                     </div>
                     <p className="text-xs text-gray-500 mt-2">
@@ -495,15 +510,15 @@ export default function TemplatesPage() {
               <div className="flex space-x-4 pt-6">
                 <Button 
                   type="button" 
-                  variant="outline" 
+                  variant="outline"
                   onClick={handleDialogClose}
-                  className="flex-1 border-pink-300 text-pink-600 hover:bg-pink-50 hover:border-pink-400"
+                  className="flex-1 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 font-semibold py-3 px-6 rounded-lg transition-all duration-200"
                 >
                   Cancel
                 </Button>
                 <Button 
                   type="submit" 
-                  className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                  className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-semibold py-3 px-6 rounded-lg"
                 >
                   <Heart className="h-4 w-4 mr-2" />
                   {editingTemplate ? 'Update Template' : 'Create Template'}

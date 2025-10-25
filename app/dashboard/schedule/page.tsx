@@ -345,13 +345,8 @@ export default function SchedulePage() {
     // Safely get form data
     let formData: FormData
     try {
-      console.log('Form submission - currentTarget:', e.currentTarget)
-      console.log('Form submission - currentTarget type:', typeof e.currentTarget)
-      console.log('Form submission - currentTarget instanceof HTMLFormElement:', e.currentTarget instanceof HTMLFormElement)
-      
       if (e.currentTarget && e.currentTarget instanceof HTMLFormElement) {
         formData = new FormData(e.currentTarget)
-        console.log('FormData created successfully')
       } else {
         console.error('Form element not found or invalid:', e.currentTarget)
         alert('Form submission error. Please refresh the page and try again.')
