@@ -1,4 +1,4 @@
-import { zonedTimeToUtc, utcToZonedTime, format } from 'date-fns-tz'
+import { fromZonedTime, toZonedTime, formatInTimeZone } from 'date-fns-tz'
 
 // Comprehensive list of timezones with their IANA names and display names
 export const TIMEZONES = [
@@ -82,22 +82,22 @@ export function getUserTimezone(): string {
 
 // Convert local time to UTC for storage
 export function convertToUTC(date: Date, timezone: string): Date {
-  return zonedTimeToUtc(date, timezone)
+  return fromZonedTime(date, timezone)
 }
 
 // Convert UTC to local timezone for display
 export function convertFromUTC(utcDate: Date, timezone: string): Date {
-  return utcToZonedTime(utcDate, timezone)
+  return toZonedTime(utcDate, timezone)
 }
 
 // Format date in specific timezone
 export function formatInTimezone(date: Date, timezone: string, formatString: string = 'PPP p'): string {
-  return format(utcToZonedTime(date, timezone), formatString, { timeZone: timezone })
+  return formatInTimeZone(date, timezone, formatString)
 }
 
 // Get current time in timezone
 export function getCurrentTimeInTimezone(timezone: string): Date {
-  return utcToZonedTime(new Date(), timezone)
+  return toZonedTime(new Date(), timezone)
 }
 
 // Validate timezone
@@ -131,8 +131,8 @@ export function calculateNextOccurrence(
   timezone: string
 ): Date {
   const now = new Date()
-  const zonedNow = utcToZonedTime(now, timezone)
-  const zonedBase = utcToZonedTime(baseDate, timezone)
+  const zonedNow = toZonedTime(now, timezone)
+  const zonedBase = toZonedTime(baseDate, timezone)
   
   let nextDate = new Date(zonedBase)
   
@@ -150,7 +150,7 @@ export function calculateNextOccurrence(
     }
   }
   
-  return zonedTimeToUtc(nextDate, timezone)
+  return fromZonedTime(nextDate, timezone)
 }
 
 // Get timezone display name with current time
