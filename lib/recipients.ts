@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import { logRecipientActivity } from './activity-history'
-import { incrementRecipientCount, decrementRecipientCount, canAddRecipient } from './subscription'
+import { canAddRecipient } from './subscription'
 
 export interface Recipient {
   id: string
@@ -58,10 +58,21 @@ export async function createRecipient(userId: string, recipientData: Omit<Recipi
 
   if (error) throw error
 
-  // Increment recipient count for user
+  // Increment recipient count for user via API
   try {
-    await incrementRecipientCount(userId)
-    console.log('✅ Recipient count incremented for user:', userId)
+    const response = await fetch('/api/recipients/increment-count', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId })
+    })
+
+    if (!response.ok) {
+      console.error('Failed to increment recipient count via API')
+    } else {
+      console.log('✅ Recipient count incremented for user:', userId)
+    }
   } catch (countError) {
     console.error('Failed to increment recipient count:', countError)
     // Don't fail the recipient creation if count increment fails
@@ -150,10 +161,21 @@ export async function deleteRecipient(recipientId: string): Promise<void> {
 
   if (error) throw error
 
-  // Decrement recipient count for user
+  // Decrement recipient count for user via API
   try {
-    await decrementRecipientCount(recipient.user_id)
-    console.log('✅ Recipient count decremented for user:', recipient.user_id)
+    const response = await fetch('/api/recipients/decrement-count', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId: recipient.user_id })
+    })
+
+    if (!response.ok) {
+      console.error('Failed to decrement recipient count via API')
+    } else {
+      console.log('✅ Recipient count decremented for user:', recipient.user_id)
+    }
   } catch (countError) {
     console.error('Failed to decrement recipient count:', countError)
     // Don't fail the recipient deletion if count decrement fails
