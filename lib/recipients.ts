@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import { logRecipientActivity } from './activity-history'
-import { incrementRecipientCount, decrementRecipientCount } from './subscription'
+import { incrementRecipientCount, decrementRecipientCount, canAddRecipient } from './subscription'
 
 export interface Recipient {
   id: string
@@ -31,6 +31,12 @@ export async function getRecipients(userId: string): Promise<Recipient[]> {
 
 // Create a new recipient
 export async function createRecipient(userId: string, recipientData: Omit<Recipient, 'id' | 'user_id' | 'created_at' | 'updated_at'>): Promise<Recipient> {
+  // Check if user can add another recipient BEFORE creating
+  const canAdd = await canAddRecipient(userId)
+  if (!canAdd) {
+    throw new Error('Recipient limit reached. Please upgrade your plan to add more recipients.')
+  }
+
   // Combine first_name and last_name into name field for database compatibility
   const fullName = `${recipientData.first_name} ${recipientData.last_name || ''}`.trim()
   
