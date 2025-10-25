@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { logRecipientActivity } from './activity-history'
+import { incrementRecipientCount, decrementRecipientCount } from './subscription'
 
 export interface Recipient {
   id: string
@@ -50,6 +51,15 @@ export async function createRecipient(userId: string, recipientData: Omit<Recipi
     .single()
 
   if (error) throw error
+
+  // Increment recipient count for user
+  try {
+    await incrementRecipientCount(userId)
+    console.log('✅ Recipient count incremented for user:', userId)
+  } catch (countError) {
+    console.error('Failed to increment recipient count:', countError)
+    // Don't fail the recipient creation if count increment fails
+  }
 
   // Log activity
   try {
@@ -133,6 +143,15 @@ export async function deleteRecipient(recipientId: string): Promise<void> {
     .eq('id', recipientId)
 
   if (error) throw error
+
+  // Decrement recipient count for user
+  try {
+    await decrementRecipientCount(recipient.user_id)
+    console.log('✅ Recipient count decremented for user:', recipient.user_id)
+  } catch (countError) {
+    console.error('Failed to decrement recipient count:', countError)
+    // Don't fail the recipient deletion if count decrement fails
+  }
 
   // Log activity
   try {

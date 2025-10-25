@@ -406,6 +406,101 @@ export async function incrementEmailCount(userId: string): Promise<void> {
 }
 
 /**
+ * Increment recipient count for user
+ */
+export async function incrementRecipientCount(userId: string): Promise<void> {
+  try {
+    const adminSupabase = createAdminClient()
+    
+    // First, get the current usage record
+    const { data: currentUsage, error: fetchError } = await adminSupabase
+      .from('subscription_usage')
+      .select('emails_sent_this_month, recipients_created')
+      .eq('user_id', userId)
+      .eq('month_year', new Date().toISOString().slice(0, 7)) // YYYY-MM format
+      .single()
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error('Error fetching current usage:', fetchError)
+      throw fetchError
+    }
+
+    const currentEmailCount = currentUsage?.emails_sent_this_month || 0
+    const currentRecipientCount = currentUsage?.recipients_created || 0
+
+    // Update or insert the usage record
+    const { error: upsertError } = await adminSupabase
+      .from('subscription_usage')
+      .upsert({
+        user_id: userId,
+        month_year: new Date().toISOString().slice(0, 7), // YYYY-MM format
+        emails_sent_this_month: currentEmailCount, // Keep existing email count
+        recipients_created: currentRecipientCount + 1,
+        updated_at: new Date().toISOString()
+      })
+
+    if (upsertError) {
+      console.error('Error incrementing recipient count:', upsertError)
+      throw upsertError
+    }
+
+    console.log('✅ Recipient count incremented successfully for user:', userId)
+  } catch (error) {
+    console.error('Error in incrementRecipientCount:', error)
+    throw error
+  }
+}
+
+/**
+ * Decrement recipient count for user
+ */
+export async function decrementRecipientCount(userId: string): Promise<void> {
+  try {
+    const adminSupabase = createAdminClient()
+    
+    // First, get the current usage record
+    const { data: currentUsage, error: fetchError } = await adminSupabase
+      .from('subscription_usage')
+      .select('emails_sent_this_month, recipients_created')
+      .eq('user_id', userId)
+      .eq('month_year', new Date().toISOString().slice(0, 7)) // YYYY-MM format
+      .single()
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error('Error fetching current usage:', fetchError)
+      throw fetchError
+    }
+
+    const currentEmailCount = currentUsage?.emails_sent_this_month || 0
+    const currentRecipientCount = currentUsage?.recipients_created || 0
+
+    // Don't go below 0
+    const newRecipientCount = Math.max(0, currentRecipientCount - 1)
+
+    // Update or insert the usage record
+    const { error: upsertError } = await adminSupabase
+      .from('subscription_usage')
+      .upsert({
+        user_id: userId,
+        month_year: new Date().toISOString().slice(0, 7), // YYYY-MM format
+        emails_sent_this_month: currentEmailCount, // Keep existing email count
+        recipients_created: newRecipientCount,
+        updated_at: new Date().toISOString()
+      })
+
+    if (upsertError) {
+      console.error('Error decrementing recipient count:', upsertError)
+      throw upsertError
+    }
+
+    console.log('✅ Recipient count decremented successfully for user:', userId)
+  } catch (error) {
+    console.error('Error in decrementRecipientCount:', error)
+    throw error
+  }
+}
+
+/**
  * Check if user has access to premium templates
  */
 export async function hasPremiumTemplateAccess(userId: string): Promise<boolean> {
