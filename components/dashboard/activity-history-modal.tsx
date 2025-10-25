@@ -145,14 +145,23 @@ export default function ActivityHistoryModal({ isOpen, onClose }: ActivityHistor
   const totalPages = Math.ceil(totalCount / itemsPerPage)
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent 
-        className="max-w-[95vw] max-h-[95vh] w-full h-[95vh] flex flex-col p-0"
-        aria-describedby="activity-history-description"
-      >
-        <div id="activity-history-description" className="sr-only">
-          View and filter your HeartMail activity history including sent emails, template usage, and account actions.
-        </div>
+    <>
+      {/* Custom overlay to ensure modal appears above sidebar */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-[1000]"
+          onClick={onClose}
+        />
+      )}
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent 
+          className="max-w-[95vw] max-h-[95vh] w-full h-[95vh] flex flex-col p-0 z-[1001]"
+          aria-describedby="activity-history-description"
+          style={{ zIndex: 1001 }}
+        >
+          <div id="activity-history-description" className="sr-only">
+            View and filter your HeartMail activity history including sent emails, template usage, and account actions.
+          </div>
         
         <div className="flex flex-col h-full p-6">
           <DialogHeader className="flex-shrink-0">
@@ -325,5 +334,6 @@ export default function ActivityHistoryModal({ isOpen, onClose }: ActivityHistor
         </div>
       </DialogContent>
     </Dialog>
+    </>
   )
 }

@@ -14,6 +14,7 @@ import { useAuth } from '@/lib/auth-context'
 import { getTemplates, createTemplate, updateTemplate, deleteTemplate, Template } from '@/lib/templates'
 import { TEMPLATE_VARIABLES, getAllAvailableVariables } from '@/lib/template-variables'
 import { getCustomVariableNames } from '@/lib/custom-variables'
+import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 
 export default function TemplatesPage() {
@@ -59,7 +60,46 @@ export default function TemplatesPage() {
     }
   }
 
-  const removeVariable = (variableKey: string) => {
+  const removeVariable = async (variableKey: string) => {
+    // Check if this is a custom variable (not in TEMPLATE_VARIABLES)
+    const isBuiltInVariable = TEMPLATE_VARIABLES.some(v => v.key === variableKey)
+    
+    if (!isBuiltInVariable && user) {
+      // This is a custom variable, remove it from the database
+      try {
+        // Extract the variable name from the key (remove {{ and }})
+        const varName = variableKey.replace(/[{}]/g, '')
+        
+        // Find the custom variable in the database and delete it
+        const { data: customVars, error: fetchError } = await supabase
+          .from('custom_variables')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('name', varName)
+          .single()
+        
+        if (!fetchError && customVars) {
+          const { error: deleteError } = await supabase
+            .from('custom_variables')
+            .delete()
+            .eq('id', customVars.id)
+          
+          if (deleteError) {
+            console.error('Error deleting custom variable from database:', deleteError)
+            toast.error('Failed to remove variable from database')
+            return
+          }
+          
+          toast.success('Custom variable removed successfully')
+        }
+      } catch (error) {
+        console.error('Error removing custom variable:', error)
+        toast.error('Failed to remove custom variable')
+        return
+      }
+    }
+    
+    // Remove from frontend state
     setAvailableVariables(prev => prev.filter(variable => variable.key !== variableKey))
   }
 
