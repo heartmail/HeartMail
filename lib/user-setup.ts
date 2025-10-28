@@ -4,18 +4,18 @@ export async function initializeNewUser(userId: string, email: string) {
   const supabase = createAdminClient()
   
   try {
-    // Create user profile first
+    // Create user profile first (use upsert to handle existing profiles)
     const { error: profileError } = await supabase
       .from('user_profiles')
-      .insert({
+      .upsert({
         user_id: userId,
         email: email,
-        username: email.split('@')[0], // Use email prefix as default username
         first_name: '',
         last_name: '',
         avatar_url: null,
-        created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id'
       })
 
     if (profileError) {
