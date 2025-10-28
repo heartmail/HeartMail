@@ -212,17 +212,24 @@ WHERE t.table_schema = 'public'
 ORDER BY t.table_name, c.column_name;
 
 -- ==============================================
--- 10. CHECK FOR INEFFICIENT QUERIES (SLOW QUERIES)
+-- 10. CHECK FOR POTENTIAL PERFORMANCE ISSUES
 -- ==============================================
+-- Check for tables without proper indexes on foreign keys
 SELECT 
-  'SLOW QUERIES CHECK' as audit_section,
-  query,
-  calls,
-  total_time,
-  mean_time,
-  rows
-FROM pg_stat_statements 
-WHERE query NOT LIKE '%pg_stat_statements%'
-  AND mean_time > 100  -- Queries taking more than 100ms on average
-ORDER BY mean_time DESC
-LIMIT 10;
+  'PERFORMANCE ISSUES CHECK' as audit_section,
+  t.table_name,
+  c.column_name,
+  'Missing index on foreign key' as issue
+FROM information_schema.tables t
+JOIN information_schema.columns c ON t.table_name = c.table_name
+WHERE t.table_schema = 'public' 
+  AND t.table_type = 'BASE TABLE'
+  AND c.column_name LIKE '%_id' 
+  AND c.column_name != 'id'
+  AND NOT EXISTS (
+    SELECT 1 FROM pg_indexes 
+    WHERE schemaname = 'public' 
+      AND tablename = t.table_name 
+      AND indexdef LIKE '%' || c.column_name || '%'
+  )
+ORDER BY t.table_name, c.column_name;
