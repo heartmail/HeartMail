@@ -56,15 +56,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Fetch profile in background - don't await
           fetchUserProfile(session.user.id).then(async (avatarUrl) => {
             if (avatarUrl === null) {
-              // Profile doesn't exist, initialize new user
-              console.log('Profile not found, initializing new user:', session.user.id)
+              // Profile doesn't exist, create it client-side
+              console.log('Profile not found, creating profile for user:', session.user.id)
               try {
-                await initializeNewUser(session.user.id, session.user.email || '')
-                // Retry profile fetch after initialization
+                const { data, error } = await supabase.rpc('create_user_profile', {
+                  p_user_id: session.user.id,
+                  p_email: session.user.email || '',
+                  p_first_name: session.user.user_metadata?.first_name || session.user.user_metadata?.given_name || '',
+                  p_last_name: session.user.user_metadata?.last_name || session.user.user_metadata?.family_name || '',
+                  p_avatar_url: session.user.user_metadata?.avatar_url || null
+                })
+                
+                if (error) {
+                  console.error('Failed to create user profile:', error)
+                } else {
+                  console.log('User profile created successfully:', data)
+                }
+                
+                // Retry profile fetch after creation
                 const retryAvatarUrl = await fetchUserProfile(session.user.id)
                 setUser(prev => prev ? { ...prev, avatar_url: retryAvatarUrl } : null)
               } catch (initError) {
-                console.error('Failed to initialize new user:', initError)
+                console.error('Failed to create user profile:', initError)
               }
             } else {
               setUser(prev => prev ? { ...prev, avatar_url: avatarUrl } : null)
@@ -97,15 +110,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Fetch profile in background - don't await
         fetchUserProfile(session.user.id).then(async (avatarUrl) => {
           if (avatarUrl === null) {
-            // Profile doesn't exist, initialize new user
-            console.log('Profile not found, initializing new user:', session.user.id)
+            // Profile doesn't exist, create it client-side
+            console.log('Profile not found, creating profile for user:', session.user.id)
             try {
-              await initializeNewUser(session.user.id, session.user.email || '')
-              // Retry profile fetch after initialization
+              const { data, error } = await supabase.rpc('create_user_profile', {
+                p_user_id: session.user.id,
+                p_email: session.user.email || '',
+                p_first_name: session.user.user_metadata?.first_name || session.user.user_metadata?.given_name || '',
+                p_last_name: session.user.user_metadata?.last_name || session.user.user_metadata?.family_name || '',
+                p_avatar_url: session.user.user_metadata?.avatar_url || null
+              })
+              
+              if (error) {
+                console.error('Failed to create user profile:', error)
+              } else {
+                console.log('User profile created successfully:', data)
+              }
+              
+              // Retry profile fetch after creation
               const retryAvatarUrl = await fetchUserProfile(session.user.id)
               setUser(prev => prev ? { ...prev, avatar_url: retryAvatarUrl } : null)
             } catch (initError) {
-              console.error('Failed to initialize new user:', initError)
+              console.error('Failed to create user profile:', initError)
             }
           } else {
             setUser(prev => prev ? { ...prev, avatar_url: avatarUrl } : null)
