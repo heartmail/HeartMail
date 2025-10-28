@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     // Send custom branded confirmation email via Resend
     const { data, error } = await resend.emails.send({
-      from: 'HeartMail Support <support@heartsmail.com>',
+      from: 'HeartMail Support <support@letter.heartsmail.com>',
       to: [email],
       subject: 'Welcome to HeartMail! Please Confirm Your Email 💕',
       html: getSignupTemplate(confirmationUrl),

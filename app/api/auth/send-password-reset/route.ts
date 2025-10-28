@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     // Send custom branded password reset email via Resend
     const { data, error } = await resend.emails.send({
-      from: 'HeartMail Support <support@heartsmail.com>',
+      from: 'HeartMail Support <support@letter.heartsmail.com>',
       to: [email],
       subject: 'Reset Your HeartMail Password 🔐',
       html: getPasswordResetTemplate(resetUrl),
