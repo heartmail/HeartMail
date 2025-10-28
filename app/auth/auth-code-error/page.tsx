@@ -36,29 +36,49 @@ export default function AuthCodeError() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-pink-900 to-red-900">
-      <div className="bg-white/95 backdrop-blur-md shadow-2xl border-0 rounded-2xl p-8 max-w-md w-full mx-4 text-center">
+    <div className="min-h-screen flex items-center justify-center heartmail-gradient relative overflow-hidden">
+      {/* Floating Hearts */}
+      <div className="floating-hearts">
+        <div className="floating-heart">💖</div>
+        <div className="floating-heart">💕</div>
+        <div className="floating-heart">💗</div>
+        <div className="floating-heart">💝</div>
+        <div className="floating-heart">💘</div>
+        <div className="floating-heart">💖</div>
+        <div className="floating-heart">💕</div>
+        <div className="floating-heart">💗</div>
+      </div>
+      
+      <div className="relative z-10 bg-white/95 backdrop-blur-md shadow-2xl border-0 rounded-2xl p-8 max-w-md w-full mx-4 text-center">
         <Link href="/" className="flex items-center justify-center space-x-2 mb-6">
           <Heart className="h-8 w-8 text-heartmail-pink fill-heartmail-pink" />
           <span className="text-2xl font-bold text-heartmail-pink">HeartMail</span>
         </Link>
         
-        <div className="mb-6">
-          <AlertTriangle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Authentication Error</h1>
-          <p className="text-gray-600">
+        <div className="mb-8">
+          <div className="w-20 h-20 mx-auto mb-6 bg-red-100 rounded-full flex items-center justify-center">
+            <AlertTriangle className="h-10 w-10 text-red-500" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Authentication Error</h1>
+          <p className="text-lg text-gray-600 leading-relaxed">
             {getErrorMessage()}
           </p>
           {getErrorDetails()}
         </div>
 
-        <div className="space-y-3">
-          <Button asChild className="w-full btn-heartmail">
+        <div className="space-y-4">
+          <Button asChild className="w-full btn-heartmail h-12 text-lg font-semibold">
             <Link href="/login">Try Signing In</Link>
           </Button>
-          <Button asChild variant="outline" className="w-full">
+          <Button asChild variant="outline" className="w-full h-12 text-lg font-semibold border-2 hover:bg-gray-50">
             <Link href="/signup">Create New Account</Link>
           </Button>
+        </div>
+
+        <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-800">
+            <strong>Need help?</strong> If this error persists, please check that your Google account is properly configured or try using email/password authentication instead.
+          </p>
         </div>
       </div>
     </div>
