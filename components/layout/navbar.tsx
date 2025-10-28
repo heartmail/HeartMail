@@ -10,7 +10,16 @@ import Logo from '@/components/ui/logo'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
-  const { user } = useAuth()
+  
+  // Safely get user from auth context
+  let user = null
+  try {
+    const auth = useAuth()
+    user = auth?.user
+  } catch (error) {
+    // Auth context not available yet, user is null
+    user = null
+  }
 
   // Show logged-in navbar if user is authenticated
   if (user) {

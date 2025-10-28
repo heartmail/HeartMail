@@ -3,8 +3,6 @@
 import dynamicImport from 'next/dynamic'
 import Navbar from '@/components/layout/navbar'
 import HeroSection from '@/components/sections/hero-section'
-import { useAuth } from '@/lib/auth-context'
-import { useAuthState } from '@/lib/use-auth-state'
 import AuthInitializer from '@/components/auth/auth-initializer'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { Suspense } from 'react'
@@ -34,34 +32,8 @@ const CTASection = dynamicImport(() => import('@/components/sections/cta-section
 })
 
 export default function Home() {
-  // Use fast auth state check with error handling
-  let user = null
-  let isAuthenticated = false
-  let loading = true
-  
-  try {
-    const authState = useAuthState()
-    user = authState.user
-    isAuthenticated = authState.isAuthenticated
-    loading = authState.loading
-  } catch (error) {
-    console.error('Error with useAuthState:', error)
-    // Fallback to old auth context if needed
-    try {
-      const authContext = useAuth()
-      user = authContext?.user
-      isAuthenticated = !!user
-      loading = false
-    } catch (fallbackError) {
-      console.error('Error with useAuth fallback:', fallbackError)
-      user = null
-      isAuthenticated = false
-      loading = false
-    }
-  }
-  
-  // Use the most reliable user data
-  const currentUser = user
+  // Remove all auth hook usage from this component
+  // Auth state will be handled by the AuthProvider in layout.tsx
 
   return (
     <ErrorBoundary>
