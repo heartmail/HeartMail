@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/lib/auth-context'
 import { useRouter } from 'next/navigation'
-import { signInWithGoogle } from '@/lib/google-oauth'
+import { signUpWithGoogle } from '@/lib/google-oauth'
 import { supabase } from '@/lib/supabase'
 
 export default function SignupForm() {
@@ -216,15 +216,15 @@ export default function SignupForm() {
     }
   }
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignUp = async () => {
     setIsGoogleLoading(true)
     setError('')
 
     try {
-      await signInWithGoogle()
+      await signUpWithGoogle()
       // The redirect will happen automatically
     } catch (error: any) {
-      setError(error.message || 'Failed to sign in with Google')
+      setError(error.message || 'Failed to sign up with Google')
       setIsGoogleLoading(false)
     }
   }
@@ -546,7 +546,7 @@ export default function SignupForm() {
               type="button" 
               variant="outline" 
               className="w-full flex items-center justify-center space-x-3 hover:bg-gray-50 transition-colors py-4 text-base font-medium mt-4"
-              onClick={handleGoogleSignIn}
+              onClick={handleGoogleSignUp}
               disabled={isGoogleLoading}
             >
               {isGoogleLoading ? (

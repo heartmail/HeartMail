@@ -4,6 +4,25 @@ export async function initializeNewUser(userId: string, email: string) {
   const supabase = createAdminClient()
   
   try {
+    // Create user profile first
+    const { error: profileError } = await supabase
+      .from('user_profiles')
+      .insert({
+        user_id: userId,
+        email: email,
+        username: email.split('@')[0], // Use email prefix as default username
+        first_name: '',
+        last_name: '',
+        avatar_url: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+
+    if (profileError) {
+      console.error('Error creating user profile:', profileError)
+      // Don't throw here as this is not critical
+    }
+
     // Create user preferences with default values
     const { error: prefsError } = await supabase
       .from('user_preferences')

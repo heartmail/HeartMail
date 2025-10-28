@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
+import { initializeNewUser } from './user-setup'
 
 interface AuthContextType {
   user: (User & { avatar_url?: string }) | null
@@ -53,8 +54,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser({ ...session.user, avatar_url: undefined })
           
           // Fetch profile in background - don't await
-          fetchUserProfile(session.user.id).then(avatarUrl => {
-            setUser(prev => prev ? { ...prev, avatar_url: avatarUrl } : null)
+          fetchUserProfile(session.user.id).then(async (avatarUrl) => {
+            if (avatarUrl === null) {
+              // Profile doesn't exist, initialize new user
+              console.log('Profile not found, initializing new user:', session.user.id)
+              try {
+                await initializeNewUser(session.user.id, session.user.email || '')
+                // Retry profile fetch after initialization
+                const retryAvatarUrl = await fetchUserProfile(session.user.id)
+                setUser(prev => prev ? { ...prev, avatar_url: retryAvatarUrl } : null)
+              } catch (initError) {
+                console.error('Failed to initialize new user:', initError)
+              }
+            } else {
+              setUser(prev => prev ? { ...prev, avatar_url: avatarUrl } : null)
+            }
           }).catch(error => {
             console.log('Background profile fetch failed:', error)
           })
@@ -81,8 +95,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser({ ...session.user, avatar_url: undefined })
         
         // Fetch profile in background - don't await
-        fetchUserProfile(session.user.id).then(avatarUrl => {
-          setUser(prev => prev ? { ...prev, avatar_url: avatarUrl } : null)
+        fetchUserProfile(session.user.id).then(async (avatarUrl) => {
+          if (avatarUrl === null) {
+            // Profile doesn't exist, initialize new user
+            console.log('Profile not found, initializing new user:', session.user.id)
+            try {
+              await initializeNewUser(session.user.id, session.user.email || '')
+              // Retry profile fetch after initialization
+              const retryAvatarUrl = await fetchUserProfile(session.user.id)
+              setUser(prev => prev ? { ...prev, avatar_url: retryAvatarUrl } : null)
+            } catch (initError) {
+              console.error('Failed to initialize new user:', initError)
+            }
+          } else {
+            setUser(prev => prev ? { ...prev, avatar_url: avatarUrl } : null)
+          }
         }).catch(error => {
           console.log('Background profile fetch failed:', error)
         })
