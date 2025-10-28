@@ -12,21 +12,6 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useAuth()
   const router = useRouter()
-  const [loadingTimeout, setLoadingTimeout] = useState(false)
-
-  // Add timeout to prevent infinite loading
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (loading) {
-        setLoadingTimeout(true)
-        console.error('Authentication loading timeout - redirecting to login')
-        console.log('Current user state:', { user, loading })
-        router.push('/login')
-      }
-    }, 15000) // Increased to 15 second timeout for OAuth
-
-    return () => clearTimeout(timeout)
-  }, [loading, router, user])
 
   useEffect(() => {
     if (!loading && !user) {
@@ -34,7 +19,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     }
   }, [user, loading, router])
 
-  if (loading && !loadingTimeout) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-pink-900 to-red-900">
         <div className="text-center">

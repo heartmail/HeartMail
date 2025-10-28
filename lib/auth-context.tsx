@@ -44,60 +44,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    // Get initial session with timeout
+    // Get initial session
     const loadSession = async () => {
       try {
-        console.log('Loading initial session...')
         const { data: { session } } = await supabase.auth.getSession()
-        console.log('Initial session loaded:', { session: !!session, user: !!session?.user })
         setSession(session)
         if (session?.user) {
-          console.log('Initial user found:', { id: session.user.id, email: session.user.email })
-          // Set user immediately without waiting for profile
           setUser({ ...session.user, avatar_url: undefined })
-          
-          // Fetch profile in background - don't await
-          fetchUserProfile(session.user.id).then(async (avatarUrl) => {
-            if (avatarUrl === null) {
-              // Profile doesn't exist, create it client-side
-              console.log('Profile not found, creating profile for user:', session.user.id)
-              try {
-                const { data, error } = await supabase.rpc('create_user_profile', {
-                  p_user_id: session.user.id,
-                  p_email: session.user.email || '',
-                  p_first_name: session.user.user_metadata?.first_name || session.user.user_metadata?.given_name || '',
-                  p_last_name: session.user.user_metadata?.last_name || session.user.user_metadata?.family_name || '',
-                  p_avatar_url: session.user.user_metadata?.avatar_url || null
-                })
-                
-                if (error) {
-                  console.error('Failed to create user profile:', error)
-                } else {
-                  console.log('User profile created successfully:', data)
-                }
-                
-                // Retry profile fetch after creation
-                const retryAvatarUrl = await fetchUserProfile(session.user.id)
-                setUser(prev => prev ? { ...prev, avatar_url: retryAvatarUrl } : null)
-              } catch (initError) {
-                console.error('Failed to create user profile:', initError)
-              }
-            } else {
-              console.log('Profile found, setting avatar URL')
-              setUser(prev => prev ? { ...prev, avatar_url: avatarUrl } : null)
-            }
-          }).catch(error => {
-            console.log('Background profile fetch failed:', error)
-          })
         } else {
-          console.log('No initial user found')
           setUser(null)
         }
       } catch (error) {
         console.error('Error loading session:', error)
         setUser(null)
       } finally {
-        console.log('Setting loading to false')
         setLoading(false)
       }
     }
@@ -108,48 +68,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change:', { event, session: !!session, user: !!session?.user })
       setSession(session)
       if (session?.user) {
-        console.log('User authenticated:', { id: session.user.id, email: session.user.email })
-        // Set user immediately without waiting for profile
         setUser({ ...session.user, avatar_url: undefined })
         
-        // Fetch profile in background - don't await
-        fetchUserProfile(session.user.id).then(async (avatarUrl) => {
-          if (avatarUrl === null) {
-            // Profile doesn't exist, create it client-side
-            console.log('Profile not found, creating profile for user:', session.user.id)
-            try {
-              const { data, error } = await supabase.rpc('create_user_profile', {
-                p_user_id: session.user.id,
-                p_email: session.user.email || '',
-                p_first_name: session.user.user_metadata?.first_name || session.user.user_metadata?.given_name || '',
-                p_last_name: session.user.user_metadata?.last_name || session.user.user_metadata?.family_name || '',
-                p_avatar_url: session.user.user_metadata?.avatar_url || null
-              })
-              
-              if (error) {
-                console.error('Failed to create user profile:', error)
-              } else {
-                console.log('User profile created successfully:', data)
-              }
-              
-              // Retry profile fetch after creation
-              const retryAvatarUrl = await fetchUserProfile(session.user.id)
-              setUser(prev => prev ? { ...prev, avatar_url: retryAvatarUrl } : null)
-            } catch (initError) {
-              console.error('Failed to create user profile:', initError)
-            }
-          } else {
-            console.log('Profile found, setting avatar URL')
-            setUser(prev => prev ? { ...prev, avatar_url: avatarUrl } : null)
+        // Create user profile if it doesn't exist (for Google OAuth)
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          try {
+            await supabase.rpc('create_user_profile', {
+              p_user_id: session.user.id,
+              p_email: session.user.email || '',
+              p_first_name: session.user.user_metadata?.first_name || session.user.user_metadata?.given_name || '',
+              p_last_name: session.user.user_metadata?.last_name || session.user.user_metadata?.family_name || '',
+              p_avatar_url: session.user.user_metadata?.avatar_url || null
+            })
+          } catch (error) {
+            console.log('Profile creation failed (non-critical):', error)
           }
-        }).catch(error => {
-          console.log('Background profile fetch failed:', error)
-        })
+        }
       } else {
-        console.log('No user in session')
         setUser(null)
       }
       setLoading(false)
