@@ -144,6 +144,23 @@ DROP POLICY IF EXISTS "Users can insert own templates" ON templates;
 DROP POLICY IF EXISTS "Users can update own templates" ON templates;
 DROP POLICY IF EXISTS "Users can delete own templates" ON templates;
 
+DROP POLICY IF EXISTS "Users can view own scheduled_emails" ON scheduled_emails;
+DROP POLICY IF EXISTS "Users can insert own scheduled_emails" ON scheduled_emails;
+DROP POLICY IF EXISTS "Users can update own scheduled_emails" ON scheduled_emails;
+DROP POLICY IF EXISTS "Users can delete own scheduled_emails" ON scheduled_emails;
+
+DROP POLICY IF EXISTS "Users can view own subscriptions" ON subscriptions;
+DROP POLICY IF EXISTS "Users can insert own subscriptions" ON subscriptions;
+DROP POLICY IF EXISTS "Users can update own subscriptions" ON subscriptions;
+
+DROP POLICY IF EXISTS "Users can view own subscription_usage" ON subscription_usage;
+DROP POLICY IF EXISTS "Users can insert own subscription_usage" ON subscription_usage;
+DROP POLICY IF EXISTS "Users can update own subscription_usage" ON subscription_usage;
+
+DROP POLICY IF EXISTS "Users can view own preferences" ON user_preferences;
+DROP POLICY IF EXISTS "Users can insert own preferences" ON user_preferences;
+DROP POLICY IF EXISTS "Users can update own preferences" ON user_preferences;
+
 -- Create optimized RLS policies
 -- User profiles policies
 CREATE POLICY "Users can view own profile" ON user_profiles
