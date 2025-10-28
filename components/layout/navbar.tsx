@@ -45,16 +45,16 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-              <div className="hidden md:flex items-center space-x-8">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="text-gray-700 hover:text-heartmail-pink transition-all duration-200 link-smooth"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+          <div className="hidden md:flex items-center space-x-8">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-gray-700 hover:text-heartmail-pink transition-all duration-200 link-smooth whitespace-nowrap"
+              >
+                {item.label}
+              </Link>
+            ))}
             <Link href="/signup">
               <Button className="btn-heartmail">
                 Get Started

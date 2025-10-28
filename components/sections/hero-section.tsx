@@ -6,7 +6,7 @@ import { Play } from 'lucide-react'
 export default function HeroSection() {
   return (
     <section 
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      className="hero-section relative min-h-screen flex items-center justify-center overflow-hidden"
     >
       {/* Semi-transparent overlay for better text readability */}
       <div className="absolute inset-0 bg-black/50"></div>
@@ -28,10 +28,10 @@ export default function HeroSection() {
         </div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div className="hero-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[80vh]">
           {/* Left Content */}
-          <div className="text-center lg:text-left">
+          <div className="text-center lg:text-left space-y-6">
             <h1 className="hero-title">
               Keeping <span className="text-pink-300 underline decoration-pink-300 decoration-4 underline-offset-4">hearts</span> connected, one email at a time
             </h1>
