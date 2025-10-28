@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Google OAuth</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Test Google OAuth</h1>
+    <button id="googleSignIn">Sign in with Google</button>
+    <div id="result"></div>
+
+    <script>
+        const supabaseUrl = 'https://fmuhjcrbwuoisjwuvreg.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtdWhqY3Jid3VvaXNqd3V2cmVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA2MjA4ODgsImV4cCI6MjA3NjE5Njg4OH0.f1G9WvhRKHhwQrTZ-CIzj8BoerQfbTZuBoKUpkGAV7U'
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+
+        document.getElementById('googleSignIn').addEventListener('click', async () => {
+            try {
+                const { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: 'https://heartsmail.com/dashboard'
+                    }
+                })
+                
+                if (error) {
+                    document.getElementById('result').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`
+                } else {
+                    document.getElementById('result').innerHTML = `<p style="color: green;">OAuth initiated successfully</p>`
+                }
+            } catch (err) {
+                document.getElementById('result').innerHTML = `<p style="color: red;">Exception: ${err.message}</p>`
+            }
+        })
+
+        // Check current session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                document.getElementById('result').innerHTML = `<p style="color: green;">Already logged in: ${session.user.email}</p>`
+            }
+        })
+    </script>
+</body>
+</html>
