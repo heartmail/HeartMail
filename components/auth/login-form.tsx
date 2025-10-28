@@ -9,12 +9,12 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/lib/auth-context'
 import { useRouter } from 'next/navigation'
-// Google OAuth temporarily removed
+import { signInWithGoogle } from '@/lib/google-oauth'
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  // Google OAuth state removed
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
     email: '',
@@ -46,7 +46,18 @@ export default function LoginForm() {
     })
   }
 
-  // Google OAuth handler removed
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true)
+    setError('')
+
+    try {
+      await signInWithGoogle()
+      // The redirect will happen automatically
+    } catch (error: any) {
+      setError(error.message || 'Failed to sign in with Google')
+      setIsGoogleLoading(false)
+    }
+  }
 
   return (
     <Card className="bg-white/95 backdrop-blur-md shadow-2xl border-0 w-full max-w-lg">
