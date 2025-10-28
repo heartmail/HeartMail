@@ -20,12 +20,13 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
       if (loading) {
         setLoadingTimeout(true)
         console.error('Authentication loading timeout - redirecting to login')
+        console.log('Current user state:', { user, loading })
         router.push('/login')
       }
-    }, 10000) // 10 second timeout
+    }, 15000) // Increased to 15 second timeout for OAuth
 
     return () => clearTimeout(timeout)
-  }, [loading, router])
+  }, [loading, router, user])
 
   useEffect(() => {
     if (!loading && !user) {
