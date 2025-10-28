@@ -1,3 +1,5 @@
+'use client'
+
 // Test page to verify Google OAuth client ID
 import { useEffect, useState } from 'react'
 
