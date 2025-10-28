@@ -72,20 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         setUser({ ...session.user, avatar_url: undefined })
         
-        // Create user profile if it doesn't exist (for Google OAuth)
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          try {
-            await supabase.rpc('create_user_profile', {
-              p_user_id: session.user.id,
-              p_email: session.user.email || '',
-              p_first_name: session.user.user_metadata?.first_name || session.user.user_metadata?.given_name || '',
-              p_last_name: session.user.user_metadata?.last_name || session.user.user_metadata?.family_name || '',
-              p_avatar_url: session.user.user_metadata?.avatar_url || null
-            })
-          } catch (error) {
-            console.log('Profile creation failed (non-critical):', error)
-          }
-        }
+        // Google OAuth profile creation removed
       } else {
         setUser(null)
       }

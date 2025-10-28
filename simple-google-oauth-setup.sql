@@ -31,7 +31,10 @@ CREATE POLICY "Users can update own profile" ON public.user_profiles
 CREATE POLICY "Users can insert own profile" ON public.user_profiles
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- 5. Create simple profile creation function
+-- 5. Drop existing function if it exists (to handle return type conflicts)
+DROP FUNCTION IF EXISTS public.create_user_profile(UUID, TEXT, TEXT, TEXT, TEXT);
+
+-- 6. Create simple profile creation function
 CREATE OR REPLACE FUNCTION public.create_user_profile(
   p_user_id UUID,
   p_email TEXT,
@@ -52,5 +55,5 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 6. Verify setup
+-- 7. Verify setup
 SELECT 'Simple Google OAuth setup complete' as status;
