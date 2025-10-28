@@ -23,9 +23,9 @@ export default function TestOAuthSimple() {
 
       console.log('OAuth result:', { data, error })
       setResult({ data, error })
-    } catch (error) {
+    } catch (error: any) {
       console.error('OAuth exception:', error)
-      setResult({ error: error.message })
+      setResult({ error: error.message || 'Unknown error occurred' })
     } finally {
       setLoading(false)
     }
