@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
 import Logo from '@/components/ui/logo'
@@ -20,8 +20,19 @@ export default function LoginForm() {
     password: ''
   })
 
-  const { signIn, signInWithGoogle } = useAuth()
+  const { signIn, signInWithGoogle, user } = useAuth()
   const router = useRouter()
+
+  // Redirect when user becomes available after login
+  useEffect(() => {
+    if (user && isLoading) {
+      console.log('✅ User authenticated, redirecting to dashboard')
+      // Give a moment for cookies to sync, then redirect
+      setTimeout(() => {
+        window.location.href = '/dashboard'
+      }, 300)
+    }
+  }, [user, isLoading])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,12 +44,8 @@ export default function LoginForm() {
     if (error) {
       setError(error.message)
       setIsLoading(false)
-    } else {
-      console.log('✅ Login successful, redirecting to dashboard')
-      // Longer delay to ensure cookies are fully synced to server
-      await new Promise(resolve => setTimeout(resolve, 500))
-      window.location.href = '/dashboard'
     }
+    // Don't manually redirect - let the useEffect handle it when user state updates
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
