@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, Users, Mail, Calendar, Heart, User, X, Search } from 'lucide-react'
+import { Plus, Edit, Trash2, Users, Mail, Calendar, Heart, User, X, Search, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -38,6 +38,7 @@ export default function RecipientsPage() {
   const [upgradeModalType, setUpgradeModalType] = useState<'emails' | 'recipients' | 'templates' | 'scheduling'>('recipients')
   const [currentUsage, setCurrentUsage] = useState(0)
   const [currentLimit, setCurrentLimit] = useState(0)
+  const [isOptionalSectionsOpen, setIsOptionalSectionsOpen] = useState(false)
 
   const { user } = useAuth()
 
@@ -359,89 +360,112 @@ export default function RecipientsPage() {
                 </CardContent>
               </Card>
               
-              
-              <div className="space-y-2">
-                <Label htmlFor="birthday">Birthday (Optional)</Label>
-                <Input
-                  id="birthday"
-                  type="date"
-                  value={formData.birthday}
-                  onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
-                  className="form-input"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notes (Optional)</Label>
-                <Textarea
-                  id="notes"
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Any special notes about this recipient"
-                  rows={3}
-                />
-              </div>
-
-              {/* Custom Variables Section */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Label className="text-lg font-semibold">Custom Variables</Label>
-                  <span className="text-sm text-gray-500">(Optional)</span>
-                </div>
-                <p className="text-sm text-gray-600">
-                  Add custom fields that can be used in email templates with variables like {'{{nickname}}'}, {'{{favorite_color}}'}, etc.
-                </p>
+              {/* Optional Fields Section */}
+              <div className="space-y-4 border-t pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsOptionalSectionsOpen(!isOptionalSectionsOpen)}
+                  className="flex items-center justify-between w-full text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                >
+                  <span>Optional Information</span>
+                  <ChevronDown 
+                    className={`h-4 w-4 transition-transform duration-200 ${isOptionalSectionsOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
                 
-                {/* Add new custom variable */}
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Variable name (e.g., nickname)"
-                    value={newCustomVarName}
-                    onChange={(e) => setNewCustomVarName(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Input
-                    placeholder="Value"
-                    value={newCustomVarValue}
-                    onChange={(e) => setNewCustomVarValue(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button
-                    type="button"
-                    onClick={addCustomVariable}
-                    disabled={!newCustomVarName.trim() || !newCustomVarValue.trim()}
-                    size="sm"
-                  >
-                    Add
-                  </Button>
-                </div>
+                <div 
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                    isOptionalSectionsOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+                  }`}
+                >
+                  <div className="space-y-4 pt-2">
+                    {/* Birthday */}
+                    <div className="space-y-2">
+                      <Label htmlFor="birthday">Birthday (Optional)</Label>
+                      <Input
+                        id="birthday"
+                        type="date"
+                        value={formData.birthday}
+                        onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
+                        className="form-input"
+                      />
+                    </div>
+                    
+                    {/* Notes */}
+                    <div className="space-y-2">
+                      <Label htmlFor="notes">Notes (Optional)</Label>
+                      <Textarea
+                        id="notes"
+                        value={formData.notes}
+                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                        placeholder="Any special notes about this recipient"
+                        rows={3}
+                      />
+                    </div>
 
-                {/* Display existing custom variables */}
-                {Object.entries(customVariables).length > 0 && (
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Current Variables:</Label>
-                    {Object.entries(customVariables).map(([key, value]) => (
-                      <div key={key} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
-                        <span className="font-mono text-sm">{'{{' + key + '}}'}</span>
-                        <span className="text-gray-500">=</span>
+                    {/* Custom Variables Section */}
+                    <div className="space-y-4 pt-4">
+                      <div className="flex items-center gap-2">
+                        <Label className="text-lg font-semibold">Custom Variables</Label>
+                        <span className="text-sm text-gray-500">(Optional)</span>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Add custom fields that can be used in email templates with variables like {'{{nickname}}'}, {'{{favorite_color}}'}, etc.
+                      </p>
+                      
+                      {/* Add new custom variable */}
+                      <div className="flex gap-2">
                         <Input
-                          value={value}
-                          onChange={(e) => updateCustomVariable(key, e.target.value)}
+                          placeholder="Variable name (e.g., nickname)"
+                          value={newCustomVarName}
+                          onChange={(e) => setNewCustomVarName(e.target.value)}
+                          className="flex-1"
+                        />
+                        <Input
+                          placeholder="Value"
+                          value={newCustomVarValue}
+                          onChange={(e) => setNewCustomVarValue(e.target.value)}
                           className="flex-1"
                         />
                         <Button
                           type="button"
-                          variant="outline"
+                          onClick={addCustomVariable}
+                          disabled={!newCustomVarName.trim() || !newCustomVarValue.trim()}
                           size="sm"
-                          onClick={() => removeCustomVariable(key)}
-                          className="text-red-500 hover:text-red-700"
                         >
-                          <X className="h-4 w-4" />
+                          Add
                         </Button>
                       </div>
-                    ))}
+
+                      {/* Display existing custom variables */}
+                      {Object.entries(customVariables).length > 0 && (
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">Current Variables:</Label>
+                          {Object.entries(customVariables).map(([key, value]) => (
+                            <div key={key} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                              <span className="font-mono text-sm">{'{{' + key + '}}'}</span>
+                              <span className="text-gray-500">=</span>
+                              <Input
+                                value={value}
+                                onChange={(e) => updateCustomVariable(key, e.target.value)}
+                                className="flex-1"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeCustomVariable(key)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
               
               <div className="flex items-center space-x-2">
