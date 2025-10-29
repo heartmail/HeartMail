@@ -8,11 +8,11 @@ export default function HeroSection() {
     <section 
       className="hero-section relative min-h-screen flex items-center justify-center overflow-hidden"
     >
-      {/* Semi-transparent overlay for better text readability */}
-      <div className="absolute inset-0 bg-black/50"></div>
+      {/* Strong overlay for better text readability */}
+      <div className="absolute inset-0 bg-black/70"></div>
       
       {/* Additional gradient overlay for better text contrast */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/50"></div>
       
       {/* Floating hearts */}
       <div className="absolute inset-0">
@@ -29,9 +29,9 @@ export default function HeroSection() {
       </div>
 
       <div className="hero-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[80vh]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center min-h-[80vh]">
           {/* Left Content */}
-          <div className="text-center lg:text-left space-y-6">
+          <div className="text-center lg:text-left space-y-8">
             <h1 className="hero-title">
               Keeping <span className="text-pink-300 underline decoration-pink-300 decoration-4 underline-offset-4">hearts</span> connected, one email at a time
             </h1>
@@ -48,18 +48,18 @@ export default function HeroSection() {
                 Watch Demo
               </Button>
             </div>
-            <div className="flex flex-col sm:flex-row gap-8 justify-center lg:justify-start text-white">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-pink-300" style={{textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)'}}>10,000+</div>
-                <div className="text-sm text-white" style={{textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)'}}>Emails Sent</div>
+            <div className="flex flex-col sm:flex-row gap-6 lg:gap-8 justify-center lg:justify-start text-white">
+              <div className="text-center bg-black/20 backdrop-blur-sm rounded-lg p-4">
+                <div className="text-2xl lg:text-3xl font-bold text-pink-300" style={{textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)'}}>10,000+</div>
+                <div className="text-sm text-white" style={{textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)'}}>Emails Sent</div>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-pink-300" style={{textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)'}}>500+</div>
-                <div className="text-sm text-white" style={{textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)'}}>Happy Families</div>
+              <div className="text-center bg-black/20 backdrop-blur-sm rounded-lg p-4">
+                <div className="text-2xl lg:text-3xl font-bold text-pink-300" style={{textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)'}}>500+</div>
+                <div className="text-sm text-white" style={{textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)'}}>Happy Families</div>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-pink-300" style={{textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)'}}>99%</div>
-                <div className="text-sm text-white" style={{textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)'}}>Deliverability</div>
+              <div className="text-center bg-black/20 backdrop-blur-sm rounded-lg p-4">
+                <div className="text-2xl lg:text-3xl font-bold text-pink-300" style={{textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)'}}>99%</div>
+                <div className="text-sm text-white" style={{textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)'}}>Deliverability</div>
               </div>
             </div>
           </div>

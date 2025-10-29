@@ -56,6 +56,9 @@ export default function Home() {
             }}
           />
           
+          {/* Strong overlay for better text readability */}
+          <div className="absolute inset-0 bg-black/60 z-5"></div>
+          
           {/* Content with overlay */}
           <div className="relative z-10">
             <Navbar />
