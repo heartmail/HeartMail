@@ -1575,7 +1575,7 @@ export default function SchedulePage() {
 
       {/* View Email Modal */}
       {showViewModal && viewingEmail && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowViewModal(false)}>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]" onClick={() => setShowViewModal(false)}>
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div className="bg-gradient-to-r from-red-800 via-red-700 to-rose-900 text-white p-6 rounded-t-2xl">

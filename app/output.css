@@ -4545,6 +4545,10 @@ body {
   z-index: 100;
 }
 
+.z-\[60\] {
+  z-index: 60;
+}
+
 .col-span-1 {
   grid-column: span 1 / span 1;
 }
