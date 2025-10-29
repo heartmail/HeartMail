@@ -86,7 +86,7 @@ export async function getUpcomingEmails(userId: string) {
 
   if (error) throw error
 
-  return data?.map(email => ({
+  return data?.map((email: any) => ({
     id: email.id,
     title: email.title,
     recipient: email.recipients?.name || 'recipient',
