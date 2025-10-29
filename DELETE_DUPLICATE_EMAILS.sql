@@ -3,6 +3,10 @@
 -- ============================================
 -- Run this in Supabase SQL Editor to remove the duplicate emails
 
+-- STEP 0: Check valid status values (OPTIONAL - for debugging)
+-- Uncomment this if you want to see what status values exist in your database:
+-- SELECT DISTINCT status FROM scheduled_emails ORDER BY status;
+
 -- STEP 1: View all "Birthday Wish" emails to confirm which ones to delete
 SELECT 
     id,
@@ -18,11 +22,12 @@ WHERE title = 'Birthday Wish'
 ORDER BY created_at DESC;
 
 -- STEP 2: Delete ALL "Birthday Wish" emails for Oct 28, 9:47 PM
--- (This will remove both duplicates)
+-- (This will remove both duplicates - no status check needed)
 DELETE FROM scheduled_emails 
 WHERE title = 'Birthday Wish'
   AND scheduled_date = '2025-10-28'
-  AND scheduled_time = '21:47:00';
+  AND scheduled_time = '21:47:00'
+  AND status != 'sent';  -- Only delete if not already sent
 
 -- STEP 3: Verify they're deleted
 SELECT COUNT(*) as remaining_birthday_wishes
@@ -51,10 +56,10 @@ ORDER BY created_at DESC;
 -- ============================================
 -- If you want to remove all test emails you created:
 
--- Remove all emails scheduled for today or past dates
+-- Remove all emails scheduled for today or past dates (not sent yet)
 DELETE FROM scheduled_emails 
 WHERE scheduled_date <= CURRENT_DATE
-  AND status IN ('pending', 'scheduled');
+  AND status != 'sent';
 
 -- Or remove ALL scheduled emails (use with caution!)
 -- DELETE FROM scheduled_emails WHERE status != 'sent';
