@@ -39,6 +39,7 @@ export default function DashboardContent() {
   // Listen for email sent/scheduled events to update stats
   useEffect(() => {
     const handleEmailEvent = () => {
+      console.log('🔄 Email event received, refreshing dashboard data...')
       if (refetch) {
         refetch()
       }
@@ -46,10 +47,12 @@ export default function DashboardContent() {
 
     window.addEventListener('emailSent', handleEmailEvent)
     window.addEventListener('emailScheduled', handleEmailEvent)
+    window.addEventListener('refreshDashboard', handleEmailEvent)
 
     return () => {
       window.removeEventListener('emailSent', handleEmailEvent)
       window.removeEventListener('emailScheduled', handleEmailEvent)
+      window.removeEventListener('refreshDashboard', handleEmailEvent)
     }
   }, [refetch])
 

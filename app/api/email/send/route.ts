@@ -71,22 +71,11 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Email sent successfully:', data?.id);
     
-    // Increment email count for user via API
+    // Increment email count for user directly
     if (userId) {
       try {
-        const countResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/email/increment-count`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ userId })
-        })
-
-        if (!countResponse.ok) {
-          console.error('Failed to increment email count via API')
-        } else {
-          console.log('✅ Email count incremented for user:', userId)
-        }
+        await incrementEmailCount(userId)
+        console.log('✅ Email count incremented for user:', userId)
       } catch (countError) {
         console.error('Failed to increment email count:', countError)
         // Don't fail the request if count increment fails
@@ -108,6 +97,9 @@ export async function POST(request: NextRequest) {
         // Don't fail the request if activity logging fails
       }
     }
+    
+    // Small delay to ensure database commits before returning
+    await new Promise(resolve => setTimeout(resolve, 100))
     
     return NextResponse.json({ 
       success: true, 

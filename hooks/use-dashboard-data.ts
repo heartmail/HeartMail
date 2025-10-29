@@ -117,6 +117,26 @@ export function useDashboardData(): {
     return () => clearInterval(interval)
   }, [user])
 
+  // Listen for email events to refresh immediately
+  useEffect(() => {
+    if (!user) return
+
+    const handleEmailEvent = () => {
+      console.log('🔄 Dashboard data hook: Email event received, fetching fresh data...')
+      fetchData()
+    }
+
+    window.addEventListener('emailSent', handleEmailEvent)
+    window.addEventListener('emailScheduled', handleEmailEvent)
+    window.addEventListener('refreshDashboard', handleEmailEvent)
+
+    return () => {
+      window.removeEventListener('emailSent', handleEmailEvent)
+      window.removeEventListener('emailScheduled', handleEmailEvent)
+      window.removeEventListener('refreshDashboard', handleEmailEvent)
+    }
+  }, [user])
+
   const refetch = () => {
     fetchData()
   }

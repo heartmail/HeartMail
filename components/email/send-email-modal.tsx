@@ -272,13 +272,19 @@ export default function SendEmailModal({ isOpen, onClose, onEmailSent }: SendEma
         setSelectedRecipientId('')
         setSelectedTemplateId('')
         
-        // Trigger dashboard refresh
-        if (onEmailSent) {
-          onEmailSent()
-        }
-        
-        // Trigger global email sent event for billing refresh
-        window.dispatchEvent(new CustomEvent('emailSent'))
+        // Wait a moment for database to commit, then trigger refreshes
+        setTimeout(() => {
+          // Trigger dashboard refresh
+          if (onEmailSent) {
+            onEmailSent()
+          }
+          
+          // Trigger global email sent event for billing refresh
+          window.dispatchEvent(new CustomEvent('emailSent'))
+          
+          // Force a page refresh for all components
+          window.dispatchEvent(new CustomEvent('refreshDashboard'))
+        }, 200)
         
         // Don't auto-close the success modal - let user close it manually
         // setTimeout(() => {

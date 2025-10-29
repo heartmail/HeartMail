@@ -31,6 +31,7 @@ export default function BillingSettings() {
   // Listen for email sent/scheduled events to refresh billing data
   useEffect(() => {
     const handleEmailEvent = () => {
+      console.log('🔄 Email event received, refreshing billing data...')
       if (user) {
         fetchSubscription()
       }
@@ -38,9 +39,11 @@ export default function BillingSettings() {
 
     window.addEventListener('emailSent', handleEmailEvent)
     window.addEventListener('emailScheduled', handleEmailEvent)
+    window.addEventListener('refreshDashboard', handleEmailEvent)
     return () => {
       window.removeEventListener('emailSent', handleEmailEvent)
       window.removeEventListener('emailScheduled', handleEmailEvent)
+      window.removeEventListener('refreshDashboard', handleEmailEvent)
     }
   }, [user])
 
