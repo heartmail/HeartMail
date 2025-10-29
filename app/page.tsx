@@ -38,48 +38,53 @@ export default function Home() {
   return (
     <ErrorBoundary>
       <AuthInitializer>
-        <main className="min-h-screen relative">
-          {/* Background Image - Full width coverage */}
-          <div 
-            className="full-width-bg"
-            style={{
-              backgroundImage: 'url(https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/heartmail_optimized/no_wm_background_desktop_1920x1080.jpeg)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center center',
-              backgroundRepeat: 'no-repeat',
-              backgroundAttachment: 'fixed',
-              backgroundColor: '#f3f4f6', // Fallback color
-            }}
-            onError={(e) => {
-              // Fallback to gradient if image fails to load
-              e.currentTarget.style.backgroundImage = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-            }}
-          />
-          
-          {/* Strong overlay for better text readability */}
-          <div className="absolute inset-0 bg-black/60 z-5"></div>
-          
-          {/* Content with overlay */}
-          <div className="relative z-10">
-            <Navbar />
-            <HeroSection />
-            <Suspense fallback={<div className="h-96 bg-gray-50" />}>
-              <FeaturesSection />
-            </Suspense>
-            <Suspense fallback={<div className="h-96 bg-gray-50" />}>
-              <AboutSection />
-            </Suspense>
-            <Suspense fallback={<div className="h-96 bg-gray-50" />}>
-              <PricingSection />
-            </Suspense>
-            <Suspense fallback={<div className="h-64 bg-gray-50" />}>
-              <CTASection />
-            </Suspense>
-            <Suspense fallback={<div className="h-32 bg-gray-50" />}>
-              <Footer />
-            </Suspense>
-          </div>
-        </main>
+        <div className="min-h-screen">
+          <Navbar />
+          <main className="relative">
+            {/* Background Image - Full width coverage */}
+            <div 
+              className="full-width-bg"
+              style={{
+                backgroundImage: 'url(https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/heartmail_optimized/no_wm_background_desktop_1920x1080.jpeg)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center center',
+                backgroundRepeat: 'no-repeat',
+                backgroundAttachment: 'fixed',
+                backgroundColor: '#f3f4f6', // Fallback color
+              }}
+              onError={(e) => {
+                // Fallback to gradient if image fails to load
+                e.currentTarget.style.backgroundImage = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+              }}
+            />
+            
+            {/* Content */}
+            <div className="relative">
+              {/* Hero section with dark overlay */}
+              <div className="relative">
+                <div className="absolute inset-0 bg-black/60 pointer-events-none"></div>
+                <div className="relative">
+                  <HeroSection />
+                </div>
+              </div>
+              <Suspense fallback={<div className="h-96 bg-gray-50" />}>
+                <FeaturesSection />
+              </Suspense>
+              <Suspense fallback={<div className="h-96 bg-gray-50" />}>
+                <AboutSection />
+              </Suspense>
+              <Suspense fallback={<div className="h-96 bg-gray-50" />}>
+                <PricingSection />
+              </Suspense>
+              <Suspense fallback={<div className="h-64 bg-gray-50" />}>
+                <CTASection />
+              </Suspense>
+              <Suspense fallback={<div className="h-32 bg-gray-50" />}>
+                <Footer />
+              </Suspense>
+            </div>
+          </main>
+        </div>
       </AuthInitializer>
     </ErrorBoundary>
   )

@@ -7,16 +7,10 @@ import Link from 'next/link'
 export default function HeroSection() {
   return (
     <section 
-      className="hero-section relative min-h-screen flex items-center justify-center overflow-hidden"
+      className="hero-section relative min-h-screen flex items-center justify-center overflow-hidden pt-16"
     >
-      {/* Strong overlay for better text readability */}
-      <div className="absolute inset-0 bg-black/70"></div>
-      
-      {/* Additional gradient overlay for better text contrast */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/50"></div>
-      
       {/* Floating hearts */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 pointer-events-none z-0">
         <div className="floating-hearts">
           <div className="floating-heart">💖</div>
           <div className="floating-heart">💕</div>
@@ -29,7 +23,7 @@ export default function HeroSection() {
         </div>
       </div>
 
-      <div className="hero-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20">
+      <div className="hero-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center min-h-[80vh]">
           {/* Left Content */}
           <div className="text-center lg:text-left space-y-8">
