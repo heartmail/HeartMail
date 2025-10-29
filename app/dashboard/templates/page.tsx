@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, Palette, Eye, Copy, Heart, Mail, MessageSquare, Search, X } from 'lucide-react'
+import { Plus, Edit, Trash2, Palette, Eye, Copy, Heart, Mail, MessageSquare, Search, X, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -37,6 +37,7 @@ export default function TemplatesPage() {
   const [tagInput, setTagInput] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [filteredTemplates, setFilteredTemplates] = useState<Template[]>([])
+  const [isVariablesOpen, setIsVariablesOpen] = useState(false)
 
   const { user } = useAuth()
 
@@ -431,50 +432,64 @@ export default function TemplatesPage() {
                 <CardContent>
                   {/* Variable Insertion Buttons */}
                   <div className="mb-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <Label className="text-sm font-medium text-gray-700">
-                        Insert Variables
-                      </Label>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShowCustomVarDialog(true)}
-                        className="text-xs"
-                      >
-                        <Plus className="h-3 w-3 mr-1" />
-                        Create Custom
-                      </Button>
+                    <button
+                      type="button"
+                      onClick={() => setIsVariablesOpen(!isVariablesOpen)}
+                      className="flex items-center justify-between w-full mb-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                    >
+                      <span>Insert Variables (Optional)</span>
+                      <ChevronDown 
+                        className={`h-4 w-4 transition-transform duration-200 ${isVariablesOpen ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+                    
+                    <div 
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                        isVariablesOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+                      }`}
+                    >
+                      <div className="flex items-center justify-end mb-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowCustomVarDialog(true)}
+                          className="text-xs"
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          Create Custom
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {availableVariables.map((variable) => (
+                          <div key={variable.key} className="flex items-center">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => insertVariable(variable.key)}
+                              className="text-xs rounded-r-none border-r-0"
+                              title={variable.description}
+                            >
+                              {variable.label}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeVariable(variable.key)}
+                              className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200 rounded-l-none px-2"
+                              title="Remove variable"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2">
+                        Click any button above to insert variables that will be replaced with recipient information
+                      </p>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {availableVariables.map((variable) => (
-                        <div key={variable.key} className="flex items-center">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => insertVariable(variable.key)}
-                            className="text-xs rounded-r-none border-r-0"
-                            title={variable.description}
-                          >
-                            {variable.label}
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeVariable(variable.key)}
-                            className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200 rounded-l-none px-2"
-                            title="Remove variable"
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                    <p className="text-xs text-gray-500 mt-2">
-                      Click any button above to insert variables that will be replaced with recipient information
-                    </p>
                   </div>
                   
                   <Textarea
@@ -485,9 +500,6 @@ export default function TemplatesPage() {
                     rows={8}
                     required
                   />
-                  <p className="text-sm text-gray-500 mt-2">
-                    Use variables like {'{{first_name}}'}, {'{{last_name}}'}, {'{{full_name}}'}, {'{{email}}'}, {'{{relationship}}'}
-                  </p>
                 </CardContent>
               </Card>
               

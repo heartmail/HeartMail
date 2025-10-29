@@ -4829,6 +4829,14 @@ body {
   max-height: 95vh;
 }
 
+.max-h-0 {
+  max-height: 0px;
+}
+
+.max-h-\[500px\] {
+  max-height: 500px;
+}
+
 .min-h-0 {
   min-height: 0px;
 }
@@ -5028,6 +5036,11 @@ body {
 
 .translate-y-\[-50\%\] {
   --tw-translate-y: -50%;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.rotate-180 {
+  --tw-rotate: 180deg;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
@@ -6990,6 +7003,11 @@ html, body {
 .hover\:text-white:hover {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+}
+
+.hover\:text-gray-900:hover {
+  --tw-text-opacity: 1;
+  color: rgb(17 24 39 / var(--tw-text-opacity, 1));
 }
 
 .hover\:underline:hover {
