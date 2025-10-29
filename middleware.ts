@@ -62,7 +62,7 @@ export async function middleware(req: NextRequest) {
   if (!session && req.nextUrl.pathname.startsWith('/dashboard')) {
     const redirectUrl = req.nextUrl.clone()
     redirectUrl.pathname = '/login'
-    redirectUrl.searchParams.set('redirectedFrom', req.nextUrl.pathname)
+    redirectUrl.search = '' // Remove all query parameters
     return NextResponse.redirect(redirectUrl)
   }
 
