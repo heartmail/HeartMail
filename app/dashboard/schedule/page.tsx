@@ -238,7 +238,7 @@ export default function SchedulePage() {
       }
 
       // Get unique recipient IDs
-      const recipientIds = [...new Set(emails.map(e => e.recipient_id).filter(Boolean))]
+      const recipientIds = Array.from(new Set(emails.map(e => e.recipient_id).filter(Boolean)))
 
       // Fetch recipients separately to avoid relationship ambiguity
       const { data: recipients, error: recipientsError } = await supabase
