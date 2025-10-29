@@ -22,9 +22,9 @@ export async function POST(request: NextRequest) {
     } = await request.json()
 
     // Validate required fields
-    if (!userId || !toEmail || !subject || !bodyHtml || !sendAt) {
+    if (!userId || !recipientId || !toEmail || !subject || !bodyHtml || !sendAt) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields (userId, recipientId, toEmail, subject, bodyHtml, sendAt)' },
         { status: 400 }
       )
     }
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       .insert({
         user_id: userId,
         recipient_id: recipientId,
-        template_id: templateId,
+        template_id: templateId || null,
         title: subject,
         content: bodyHtml,
         scheduled_date: utcSendDate.toISOString().split('T')[0],
