@@ -43,16 +43,14 @@ export default function AboutSection() {
           </div>
           
           <div className="flex justify-center">
-            <div className="w-80 h-80 bg-gradient-to-br from-pink-500 to-pink-600 rounded-3xl flex items-center justify-center p-8 shadow-2xl">
-              <div className="text-center text-white">
-                <div className="w-48 h-48 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-                  <svg className="w-32 h-32 text-pink-500" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-                    <path d="M12 13L4 8v10h16V8l-8 5z" opacity="0.5"/>
-                  </svg>
-                </div>
-                <div className="text-2xl font-bold">HeartMail</div>
-              </div>
+            <div className="w-80 h-80 rounded-3xl flex items-center justify-center shadow-2xl">
+              <Image 
+                src="https://fmuhjcrbwuoisjwuvreg.supabase.co/storage/v1/object/public/heartmail-site-bucket/logo.png"
+                alt="HeartMail Logo"
+                width={320}
+                height={320}
+                className="w-full h-full object-contain"
+              />
             </div>
           </div>
         </div>
