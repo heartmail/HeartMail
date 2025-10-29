@@ -4740,6 +4740,10 @@ body {
   height: 100vh;
 }
 
+.h-24 {
+  height: 6rem;
+}
+
 .max-h-0 {
   max-height: 0px;
 }
@@ -5916,6 +5920,10 @@ body {
 
 .fill-pink-500 {
   fill: #ec4899;
+}
+
+.fill-white {
+  fill: #fff;
 }
 
 .object-contain {

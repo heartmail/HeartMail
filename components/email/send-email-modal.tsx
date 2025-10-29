@@ -68,6 +68,11 @@ export default function SendEmailModal({ isOpen, onClose, onEmailSent }: SendEma
       fetchRecipients()
       fetchTemplates()
     }
+    
+    // Reset success state when modal closes
+    if (!isOpen) {
+      setIsSuccess(false)
+    }
   }, [isOpen, user])
 
   const fetchRecipients = async () => {
@@ -323,22 +328,31 @@ export default function SendEmailModal({ isOpen, onClose, onEmailSent }: SendEma
         </div>
 
         {isSuccess ? (
-          <div className="text-center py-8">
-            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <Heart className="h-8 w-8 text-green-600" />
+          <div className="text-center py-12 px-6">
+            {/* Animated Heart Icon */}
+            <div className="mx-auto w-24 h-24 bg-gradient-to-br from-heartmail-pink to-pink-600 rounded-full flex items-center justify-center mb-6 animate-bounce shadow-xl">
+              <Heart className="h-12 w-12 text-white fill-white" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Email Sent! 💕</h3>
-            <p className="text-gray-600 mb-6">Your heartfelt message has been delivered to your loved one.</p>
+            
+            {/* Success Message */}
+            <h3 className="text-3xl font-bold text-gray-900 mb-3">
+              Email Sent Successfully! 💕
+            </h3>
+            <p className="text-lg text-gray-600 mb-8 max-w-md mx-auto">
+              Your heartfelt message has been delivered with love. They're going to smile when they see it! ❤️
+            </p>
+            
+            {/* Close Button */}
             <div className="flex justify-center">
               <Button 
                 onClick={() => {
                   setIsSuccess(false)
                   onClose()
                 }}
-                className="px-6 py-2.5 bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+                className="px-8 py-4 text-lg bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1 rounded-xl"
               >
-                <Heart className="h-4 w-4 mr-2" />
-                Close
+                <Heart className="h-5 w-5 mr-2" />
+                Done
               </Button>
             </div>
           </div>
