@@ -35,7 +35,9 @@ export default function LoginForm() {
       setError(error.message)
       setIsLoading(false)
     } else {
-      router.push('/dashboard')
+      console.log('✅ Login successful, redirecting to dashboard')
+      // Use window.location for reliable redirect
+      window.location.href = '/dashboard'
     }
   }
 
