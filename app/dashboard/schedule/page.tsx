@@ -123,6 +123,10 @@ export default function SchedulePage() {
   const [unreplacedVariables, setUnreplacedVariables] = useState<string[]>([])
   const [pendingEmailContent, setPendingEmailContent] = useState<string>('')
   
+  // Submission states
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  
   const { user } = useAuth()
 
   // Fetch recipients and templates from database
@@ -362,12 +366,15 @@ export default function SchedulePage() {
 
   const handleScheduleEmail = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (!user) return
+    if (!user || isSubmitting) return
+
+    setIsSubmitting(true)
 
     // Check if user can schedule emails
     const canSchedule = await canScheduleEmails(user.id)
     if (!canSchedule) {
       alert('Email scheduling is only available with Family and Extended plans. Please upgrade to schedule emails.')
+      setIsSubmitting(false)
       return
     }
 
@@ -410,6 +417,7 @@ export default function SchedulePage() {
 
     if (!recipientId || !subject || !date || !time) {
       alert('Please fill in all required fields')
+      setIsSubmitting(false)
       return
     }
 
@@ -420,6 +428,7 @@ export default function SchedulePage() {
 
     if (sendAt <= twoMinutesFromNow) {
       alert('Please schedule the email for at least 2 minutes in the future')
+      setIsSubmitting(false)
       return
     }
 
@@ -431,6 +440,7 @@ export default function SchedulePage() {
       setUnreplacedVariables(unreplacedVars)
       setPendingEmailContent(emailContent)
       setShowVariableValidation(true)
+      setIsSubmitting(false)
       return
     }
 
@@ -441,6 +451,7 @@ export default function SchedulePage() {
 
       if (!recipient) {
         alert('Please select a valid recipient')
+        setIsSubmitting(false)
         return
       }
       
@@ -468,24 +479,28 @@ export default function SchedulePage() {
 
         if (response.ok) {
           const result = await response.json()
-          alert('Email scheduled successfully!')
+          setShowSuccessModal(true)
           handleCloseModal()
           // Refresh the data
           fetchRecipients()
           fetchTemplates()
           fetchScheduledEmails()
+          setIsSubmitting(false)
         } else {
           const errorData = await response.json()
           console.error('Failed to schedule email:', errorData)
           alert(`Failed to schedule email: ${errorData.error || 'Unknown error'}`)
+          setIsSubmitting(false)
         }
       } catch (error) {
         console.error('Error scheduling email:', error)
         alert('Failed to schedule email. Please try again.')
+        setIsSubmitting(false)
       }
     } catch (error) {
       console.error('Error scheduling email:', error)
       alert('Failed to schedule email. Please try again.')
+      setIsSubmitting(false)
     }
   }
 
@@ -1152,10 +1167,11 @@ export default function SchedulePage() {
                   </Button>
                   <Button 
                     type="submit" 
-                    className="flex-1 py-3 text-lg font-semibold bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                    disabled={isSubmitting}
+                    className="flex-1 py-3 text-lg font-semibold bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Calendar className="h-5 w-5 mr-2" />
-                    Schedule with Love
+                    {isSubmitting ? 'Scheduling...' : 'Schedule with Love'}
                   </Button>
                 </div>
               </form>
@@ -1640,6 +1656,57 @@ export default function SchedulePage() {
         unreplacedVariables={unreplacedVariables}
         emailContent={pendingEmailContent}
       />
-    </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in zoom-in duration-300">
+            {/* Animated Header */}
+            <div className="relative bg-gradient-to-br from-heartmail-pink via-pink-500 to-purple-600 text-white p-8 text-center">
+              <div className="absolute inset-0 bg-[url('/heart-pattern.svg')] opacity-10"></div>
+              <div className="relative">
+                <div className="w-20 h-20 bg-white bg-opacity-20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                  <Heart className="h-10 w-10 text-white fill-current" />
+                </div>
+                <h3 className="text-3xl font-bold mb-2">Email Scheduled!</h3>
+                <p className="text-pink-100 text-lg">Your heartfelt message is ready to send</p>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3 text-gray-700">
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Calendar className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Status</p>
+                    <p className="font-semibold">Successfully Scheduled</p>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-4 border border-pink-100">
+                  <p className="text-sm text-gray-600 text-center">
+                    ✨ Your email will be sent at the scheduled time. We'll make sure your love reaches them!
+                  </p>
+                </div>
+              </div>
+
+              {/* Button */}
+              <div className="mt-6">
+                <Button
+                  onClick={() => setShowSuccessModal(false)}
+                  className="w-full py-3 text-lg font-semibold bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  <Heart className="h-5 w-5 mr-2" />
+                  Perfect!
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+   </div>
   )
 }
