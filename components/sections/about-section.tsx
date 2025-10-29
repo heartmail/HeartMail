@@ -1,9 +1,14 @@
+import Logo from '@/components/ui/logo'
+
 export default function AboutSection() {
   return (
     <section id="about" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">About HeartMail</h2>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Logo size={48} className="h-12 w-12" />
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900">About HeartMail</h2>
+          </div>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             We believe that love knows no distance
           </p>
