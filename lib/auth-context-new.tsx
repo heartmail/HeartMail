@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single()
 
       if (profileError && profileError.code !== 'PGRST116') {
-        console.error('❌ Error checking profile:', profileError)
+        console.log('ℹ️ Error checking profile:', profileError.message)
         return false
       }
 
@@ -52,12 +52,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         })
 
         if (createError) {
-          console.error('❌ Error creating profile:', createError)
+          console.log('ℹ️ Error creating profile:', createError.message)
           return false
         }
 
         if (profileResult && !profileResult.success) {
-          console.error('❌ Profile creation failed:', profileResult.message)
+          console.log('ℹ️ Profile creation failed:', profileResult.message)
           return false
         }
 
@@ -67,8 +67,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       return true
-    } catch (error) {
-      console.error('❌ Exception in ensureUserProfile:', error)
+    } catch (error: any) {
+      console.log('ℹ️ Exception in ensureUserProfile:', error.message || error)
       return false
     }
   }
@@ -104,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { session, error } = await getCurrentSession()
         
         if (error) {
-          console.error('❌ Auth initialization error:', error)
+          console.log('ℹ️ Auth initialization error:', error.message)
           if (mounted) {
             setUser(null)
             setSession(null)
@@ -136,8 +136,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setSession(null)
           }
         }
-      } catch (error) {
-        console.error('❌ Auth initialization exception:', error)
+      } catch (error: any) {
+        console.log('ℹ️ Auth initialization exception:', error.message || error)
         if (mounted) {
           setUser(null)
           setSession(null)
@@ -213,18 +213,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           })
 
           if (!response.ok) {
-            console.error('❌ Failed to send confirmation email')
+            console.log('ℹ️ Failed to send confirmation email')
           } else {
             console.log('✅ Confirmation email sent')
           }
-        } catch (emailError) {
-          console.error('❌ Email sending error:', emailError)
+        } catch (emailError: any) {
+          console.log('ℹ️ Email sending error:', emailError.message || emailError)
         }
       }
       
       return { error }
     } catch (error: any) {
-      console.error('❌ Sign up exception:', error)
+      console.log('ℹ️ Sign up exception:', error.message || error)
       return { error: { message: error.message || 'Sign up failed' } }
     }
   }
@@ -239,14 +239,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
       
       if (error) {
-        console.error('❌ Sign in error:', error)
-      } else {
-        console.log('✅ Sign in successful')
+        // Log without console.error to avoid console errors in UI
+        console.log('❌ Sign in error:', error.message)
+        return { error }
       }
       
-      return { error }
+      console.log('✅ Sign in successful')
+      return { error: null }
     } catch (error: any) {
-      console.error('❌ Sign in exception:', error)
+      // Handle exceptions gracefully without console.error
+      console.log('❌ Sign in exception:', error.message)
       return { error: { message: error.message || 'Sign in failed' } }
     }
   }
@@ -260,12 +262,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (result.success) {
         console.log('✅ Sign out successful')
       } else {
-        console.error('❌ Sign out error:', result.error)
+        console.log('ℹ️ Sign out error:', result.error)
       }
       
       return { error: result.success ? null : { message: result.error } }
     } catch (error: any) {
-      console.error('❌ Sign out exception:', error)
+      console.log('ℹ️ Sign out exception:', error.message || error)
       return { error: { message: error.message || 'Sign out failed' } }
     }
   }
@@ -282,14 +284,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!response.ok) {
         const errorData = await response.json()
-        console.error('❌ Password reset error:', errorData)
+        console.log('ℹ️ Password reset error:', errorData)
         return { error: { message: 'Failed to send password reset email' } }
       }
 
       console.log('✅ Password reset email sent')
       return { error: null }
     } catch (error: any) {
-      console.error('❌ Password reset exception:', error)
+      console.log('ℹ️ Password reset exception:', error.message || error)
       return { error: { message: 'Failed to send password reset email' } }
     }
   }
@@ -303,11 +305,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('✅ Google sign in initiated')
         return { success: true }
       } else {
-        console.error('❌ Google sign in failed:', result.error)
+        console.log('ℹ️ Google sign in failed:', result.error)
         return { success: false, error: result.error }
       }
     } catch (error: any) {
-      console.error('❌ Google sign in exception:', error)
+      console.log('ℹ️ Google sign in exception:', error.message || error)
       return { success: false, error: error.message || 'Google sign in failed' }
     }
   }
@@ -321,11 +323,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('✅ Google sign up initiated')
         return { success: true }
       } else {
-        console.error('❌ Google sign up failed:', result.error)
+        console.log('ℹ️ Google sign up failed:', result.error)
         return { success: false, error: result.error }
       }
     } catch (error: any) {
-      console.error('❌ Google sign up exception:', error)
+      console.log('ℹ️ Google sign up exception:', error.message || error)
       return { success: false, error: error.message || 'Google sign up failed' }
     }
   }

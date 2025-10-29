@@ -26,7 +26,7 @@ export const signInWithGoogle = async (): Promise<GoogleOAuthResult> => {
     })
 
     if (error) {
-      console.error('❌ Google OAuth error:', error)
+      console.log('ℹ️ Google OAuth error:', error.message)
       return {
         success: false,
         error: error.message,
@@ -41,7 +41,7 @@ export const signInWithGoogle = async (): Promise<GoogleOAuthResult> => {
       data
     }
   } catch (error: any) {
-    console.error('❌ Google OAuth exception:', error)
+    console.log('ℹ️ Google OAuth exception:', error.message || error)
     return {
       success: false,
       error: error.message || 'An unexpected error occurred',
@@ -67,14 +67,14 @@ export const getCurrentSession = async () => {
     const { data: { session }, error } = await supabase.auth.getSession()
     
     if (error) {
-      console.error('❌ Session error:', error)
+      console.log('ℹ️ Session error:', error.message)
       return { session: null, error }
     }
 
     console.log('✅ Session retrieved:', session ? 'Active' : 'None')
     return { session, error: null }
   } catch (error: any) {
-    console.error('❌ Session exception:', error)
+    console.log('ℹ️ Session exception:', error.message || error)
     return { session: null, error }
   }
 }
@@ -89,7 +89,7 @@ export const signOut = async (): Promise<GoogleOAuthResult> => {
     const { error } = await supabase.auth.signOut()
     
     if (error) {
-      console.error('❌ Sign out error:', error)
+      console.log('ℹ️ Sign out error:', error.message)
       return {
         success: false,
         error: error.message,
@@ -104,7 +104,7 @@ export const signOut = async (): Promise<GoogleOAuthResult> => {
       data: null
     }
   } catch (error: any) {
-    console.error('❌ Sign out exception:', error)
+    console.log('ℹ️ Sign out exception:', error.message || error)
     return {
       success: false,
       error: error.message || 'An unexpected error occurred',
