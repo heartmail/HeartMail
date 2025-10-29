@@ -68,7 +68,8 @@ export async function createRecipient(userId: string, recipientData: Omit<Recipi
       relationship: recipientData.relationship,
       birthday: recipientData.birthday && recipientData.birthday.trim() !== '' ? recipientData.birthday : null,
       notes: recipientData.notes,
-      is_active: recipientData.is_active
+      is_active: recipientData.is_active,
+      custom_variables: recipientData.custom_variables || {}
     })
     .select()
     .single()
@@ -127,6 +128,11 @@ export async function updateRecipient(recipientId: string, updates: Partial<Omit
     const newFirstName = updates.first_name !== undefined ? updates.first_name : currentData?.first_name || ''
     const newLastName = updates.last_name !== undefined ? updates.last_name : currentData?.last_name || ''
     updateData.name = `${newFirstName} ${newLastName}`.trim()
+  }
+  
+  // Convert empty birthday to null
+  if (updateData.birthday !== undefined) {
+    updateData.birthday = updateData.birthday && updateData.birthday.trim() !== '' ? updateData.birthday : null
   }
   
   const { data, error } = await supabase
