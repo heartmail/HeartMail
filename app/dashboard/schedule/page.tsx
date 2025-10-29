@@ -738,24 +738,55 @@ export default function SchedulePage() {
 
   const handleViewEmail = async (emailId: string) => {
     try {
-      // Fetch the full email details
-      const { data: email, error } = await supabase
+      // Fetch the scheduled email first
+      const { data: email, error: emailError } = await supabase
         .from('scheduled_emails')
-        .select(`
-          *,
-          recipients!inner(first_name, last_name, email),
-          templates(title, content)
-        `)
+        .select('*')
         .eq('id', emailId)
         .single()
 
-      if (error) {
-        console.error('Error fetching email:', error)
+      if (emailError) {
+        console.error('Error fetching email:', emailError)
         alert('Failed to load email details')
         return
       }
 
-      setViewingEmail(email)
+      // Fetch recipient separately to avoid relationship ambiguity
+      let recipientData = null
+      if (email.recipient_id) {
+        const { data: recipient, error: recipientError } = await supabase
+          .from('recipients')
+          .select('first_name, last_name, email')
+          .eq('id', email.recipient_id)
+          .single()
+
+        if (!recipientError && recipient) {
+          recipientData = recipient
+        }
+      }
+
+      // Fetch template if template_id exists
+      let templateData = null
+      if (email.template_id) {
+        const { data: template, error: templateError } = await supabase
+          .from('templates')
+          .select('title, content')
+          .eq('id', email.template_id)
+          .single()
+
+        if (!templateError && template) {
+          templateData = template
+        }
+      }
+
+      // Combine the data
+      const emailWithDetails = {
+        ...email,
+        recipients: recipientData,
+        templates: templateData
+      }
+
+      setViewingEmail(emailWithDetails)
       setShowViewModal(true)
     } catch (error) {
       console.error('Error viewing email:', error)
@@ -952,43 +983,49 @@ export default function SchedulePage() {
             <div className="upcoming-emails">
               <h3>Upcoming Scheduled Emails</h3>
               <div className="emails-list">
-                {filteredScheduledEmails.map((email) => (
-                  <div key={email.id} className="email-item">
-                    <div className="email-time">
-                      <Calendar className="h-4 w-4" />
-                      <div>
-                        <div className="email-date">{new Date(email.date).toLocaleDateString()}</div>
-                        <div className="email-time-text">{email.time}</div>
+                {filteredScheduledEmails.map((email) => {
+                  const recipientName = email.recipients 
+                    ? `${email.recipients.first_name} ${email.recipients.last_name || ''}`.trim() 
+                    : email.recipients?.email || 'Unknown'
+                  
+                  return (
+                    <div key={email.id} className="email-item">
+                      <div className="email-time">
+                        <Calendar className="h-4 w-4" />
+                        <div>
+                          <div className="email-date">{new Date(email.scheduled_date).toLocaleDateString()}</div>
+                          <div className="email-time-text">{email.scheduled_time}</div>
+                        </div>
+                      </div>
+                      <div className="email-content">
+                        <div className="email-title">{email.title}</div>
+                        <div className="email-recipient">to {recipientName}</div>
+                      </div>
+                      <div className="email-meta">
+                        <span className={`email-type ${email.frequency || 'one-time'}`}>{email.frequency || 'one-time'}</span>
+                        <span className={`email-status ${email.status}`}>{email.status}</span>
+                      </div>
+                      <div className="email-actions">
+                        <button 
+                          className="action-btn view-btn"
+                          onClick={() => handleViewEmail(email.id)}
+                          title="View email details"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                        {email.status !== 'sent' && (
+                          <button 
+                            className="action-btn delete-btn"
+                            onClick={() => handleDeleteScheduledEmail(email.id)}
+                            title="Delete scheduled email"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
-                    <div className="email-content">
-                      <div className="email-title">{email.title}</div>
-                      <div className="email-recipient">to {email.recipient}</div>
-                    </div>
-                    <div className="email-meta">
-                      <span className={`email-type ${email.type}`}>{email.type}</span>
-                      <span className={`email-status ${email.status}`}>{email.status}</span>
-                    </div>
-                    <div className="email-actions">
-                      <button 
-                        className="action-btn view-btn"
-                        onClick={() => handleViewEmail(email.id)}
-                        title="View email details"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </button>
-                      {email.status !== 'sent' && (
-                        <button 
-                          className="action-btn delete-btn"
-                          onClick={() => handleDeleteScheduledEmail(email.id)}
-                          title="Delete scheduled email"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           </div>
