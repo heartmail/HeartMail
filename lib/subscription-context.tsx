@@ -36,6 +36,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
+  const [hasFetched, setHasFetched] = useState(false)
   
   // Get user from auth context
   const { user } = useAuth()
@@ -46,13 +47,18 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
   const fetchSubscription = useCallback(async () => {
     if (!user) {
-      console.log('SubscriptionContext - No user, setting subscription to null')
       setSubscription(null)
       setIsLoading(false)
+      setHasFetched(false)
       return
     }
 
-    console.log('SubscriptionContext - Fetching subscription for user:', user.email)
+    // Prevent multiple simultaneous fetches
+    if (hasFetched && isLoading) {
+      return
+    }
+
+    setHasFetched(true)
     setIsLoading(true)
     try {
       const { data, error } = await supabase
@@ -63,8 +69,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         .limit(1)
         .single()
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
-        console.log('SubscriptionContext - No subscription found, using free plan')
+      if (error && error.code !== 'PGRST116') {
         // Use free plan without creating database record
         setSubscription({
           id: 'free-plan',
@@ -81,7 +86,6 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
           updated_at: new Date().toISOString(),
         })
       } else if (data) {
-        console.log('SubscriptionContext - Found subscription:', data)
         setSubscription(data)
       } else {
         // No subscription found, use free plan
@@ -101,7 +105,6 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         })
       }
     } catch (error) {
-      console.log('SubscriptionContext - Error fetching subscription, using free plan:', error)
       // Use free plan on error instead of null
       setSubscription({
         id: 'free-plan',

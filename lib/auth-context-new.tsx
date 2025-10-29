@@ -24,74 +24,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Create user profile if it doesn't exist
+  // Simple profile check - non-blocking
   const ensureUserProfile = async (user: User) => {
-    try {
-      console.log('🔄 Ensuring user profile exists for:', user.email)
-      
-      const { data: existingProfile, error: profileError } = await supabase
-        .from('user_profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single()
+    // Run in background, don't block login
+    setTimeout(async () => {
+      try {
+        const { data: existingProfile } = await supabase
+          .from('user_profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .single()
 
-      if (profileError && profileError.code !== 'PGRST116') {
-        console.log('ℹ️ Error checking profile:', profileError.message)
-        return false
-      }
-
-      if (!existingProfile) {
-        console.log('🔄 Creating new user profile...')
-        
-        const { data: profileResult, error: createError } = await supabase.rpc('create_user_profile', {
-          p_user_id: user.id,
-          p_email: user.email || '',
-          p_first_name: user.user_metadata?.first_name || user.user_metadata?.given_name || '',
-          p_last_name: user.user_metadata?.last_name || user.user_metadata?.family_name || '',
-          p_avatar_url: user.user_metadata?.avatar_url || null
-        })
-
-        if (createError) {
-          console.log('ℹ️ Error creating profile:', createError.message)
-          return false
+        if (!existingProfile) {
+          await supabase.rpc('create_user_profile', {
+            p_user_id: user.id,
+            p_email: user.email || '',
+            p_first_name: user.user_metadata?.first_name || user.user_metadata?.given_name || '',
+            p_last_name: user.user_metadata?.last_name || user.user_metadata?.family_name || '',
+            p_avatar_url: user.user_metadata?.avatar_url || null
+          })
         }
-
-        if (profileResult && !profileResult.success) {
-          console.log('ℹ️ Profile creation failed:', profileResult.message)
-          return false
-        }
-
-        console.log('✅ User profile created successfully')
-      } else {
-        console.log('✅ User profile already exists')
+      } catch (error) {
+        // Silent fail - don't block user
       }
-
-      return true
-    } catch (error: any) {
-      console.log('ℹ️ Exception in ensureUserProfile:', error.message || error)
-      return false
-    }
-  }
-
-  // Fetch user profile data
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data: profile, error } = await supabase
-        .from('user_profiles')
-        .select('avatar_url')
-        .eq('user_id', userId)
-        .single()
-
-      if (error) {
-        console.log('Profile fetch error (non-critical):', error.message)
-        return null
-      }
-
-      return profile?.avatar_url
-    } catch (error) {
-      console.log('Profile fetch exception (non-critical):', error)
-      return null
-    }
+    }, 0)
+    
+    return true
   }
 
   useEffect(() => {
@@ -99,45 +57,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const initializeAuth = async () => {
       try {
-        console.log('🔄 Initializing authentication...')
-        
         const { session, error } = await getCurrentSession()
         
-        if (error) {
-          console.log('ℹ️ Auth initialization error:', error.message)
-          if (mounted) {
-            setUser(null)
-            setSession(null)
-            setLoading(false)
-          }
-          return
-        }
-
+        if (!mounted) return
+        
         if (session?.user) {
-          console.log('✅ User session found:', session.user.email)
-          
-          if (mounted) {
-            setSession(session)
-            setUser({ ...session.user, avatar_url: undefined })
-          }
-
-          // Ensure user profile exists
-          await ensureUserProfile(session.user)
-
-          // Fetch avatar if needed
-          const avatarUrl = await fetchUserProfile(session.user.id)
-          if (mounted && avatarUrl) {
-            setUser(prev => prev ? { ...prev, avatar_url: avatarUrl } : null)
-          }
+          setSession(session)
+          setUser(session.user)
+          // Non-blocking profile check
+          ensureUserProfile(session.user)
         } else {
-          console.log('ℹ️ No active session')
-          if (mounted) {
-            setUser(null)
-            setSession(null)
-          }
+          setUser(null)
+          setSession(null)
         }
       } catch (error: any) {
-        console.log('ℹ️ Auth initialization exception:', error.message || error)
         if (mounted) {
           setUser(null)
           setSession(null)
@@ -152,25 +85,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initializeAuth()
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔄 Auth state change:', event, session?.user?.email)
-      
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return
 
       if (session?.user) {
         setSession(session)
-        setUser({ ...session.user, avatar_url: undefined })
-
-        // Handle new sign-ins
+        setUser(session.user)
+        // Non-blocking profile check for new sign-ins
         if (event === 'SIGNED_IN') {
-          console.log('🔄 New sign-in detected, ensuring profile...')
-          await ensureUserProfile(session.user)
-          
-          // Fetch avatar
-          const avatarUrl = await fetchUserProfile(session.user.id)
-          if (avatarUrl) {
-            setUser(prev => prev ? { ...prev, avatar_url: avatarUrl } : null)
-          }
+          ensureUserProfile(session.user)
         }
       } else {
         setUser(null)
@@ -231,24 +154,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log('🔄 Signing in:', email)
-      
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
       
       if (error) {
-        // Log without console.error to avoid console errors in UI
-        console.log('❌ Sign in error:', error.message)
         return { error }
       }
       
-      console.log('✅ Sign in successful')
+      // Set user immediately for fast UI update
+      if (data.session?.user) {
+        setUser(data.session.user)
+        setSession(data.session)
+      }
+      
       return { error: null }
     } catch (error: any) {
-      // Handle exceptions gracefully without console.error
-      console.log('❌ Sign in exception:', error.message)
       return { error: { message: error.message || 'Sign in failed' } }
     }
   }
