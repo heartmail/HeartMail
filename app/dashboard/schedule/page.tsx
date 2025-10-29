@@ -220,21 +220,49 @@ export default function SchedulePage() {
     if (!user) return
     
     try {
-      const { data, error } = await supabase
+      // Fetch scheduled emails first
+      const { data: emails, error: emailsError } = await supabase
         .from('scheduled_emails')
-        .select(`
-          *,
-          recipients!inner(first_name, last_name, email)
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .order('scheduled_date')
 
-      if (error) {
-        console.error('Error fetching scheduled emails:', error)
-      } else {
-        console.log('Fetched scheduled emails:', data)
-        setScheduledEmails(data || [])
+      if (emailsError) {
+        console.error('Error fetching scheduled emails:', emailsError)
+        return
       }
+
+      if (!emails || emails.length === 0) {
+        setScheduledEmails([])
+        return
+      }
+
+      // Get unique recipient IDs
+      const recipientIds = [...new Set(emails.map(e => e.recipient_id).filter(Boolean))]
+
+      // Fetch recipients separately to avoid relationship ambiguity
+      const { data: recipients, error: recipientsError } = await supabase
+        .from('recipients')
+        .select('id, first_name, last_name, email')
+        .in('id', recipientIds)
+
+      if (recipientsError) {
+        console.error('Error fetching recipients:', recipientsError)
+        setScheduledEmails(emails) // Still show emails even if recipient fetch fails
+        return
+      }
+
+      // Create a map for quick lookup
+      const recipientMap = new Map(recipients?.map(r => [r.id, r]) || [])
+
+      // Combine emails with recipient data
+      const emailsWithRecipients = emails.map(email => ({
+        ...email,
+        recipients: recipientMap.get(email.recipient_id) || null
+      }))
+
+      console.log('Fetched scheduled emails:', emailsWithRecipients)
+      setScheduledEmails(emailsWithRecipients)
     } catch (error) {
       console.error('Error fetching scheduled emails:', error)
     }
