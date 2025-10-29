@@ -68,11 +68,6 @@ export default function SendEmailModal({ isOpen, onClose, onEmailSent }: SendEma
       fetchRecipients()
       fetchTemplates()
     }
-    
-    // Reset success state when modal closes
-    if (!isOpen) {
-      setIsSuccess(false)
-    }
   }, [isOpen, user])
 
   const fetchRecipients = async () => {
@@ -318,7 +313,13 @@ export default function SendEmailModal({ isOpen, onClose, onEmailSent }: SendEma
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      // Only close the modal, don't handle reopening
+      if (!open) {
+        setIsSuccess(false)
+        onClose()
+      }
+    }}>
       <DialogContent 
         className="max-w-2xl max-h-[90vh] overflow-y-auto"
         aria-describedby="send-email-description"
