@@ -35,8 +35,8 @@ export default function LoginForm() {
       setIsLoading(false)
     } else {
       console.log('✅ Login successful, redirecting to dashboard')
-      // Small delay to ensure cookies are set before redirect
-      await new Promise(resolve => setTimeout(resolve, 100))
+      // Longer delay to ensure cookies are fully synced to server
+      await new Promise(resolve => setTimeout(resolve, 500))
       window.location.href = '/dashboard'
     }
   }
