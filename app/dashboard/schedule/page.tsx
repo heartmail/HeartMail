@@ -735,8 +735,18 @@ export default function SchedulePage() {
       if (response.ok) {
         const result = await response.json()
         alert('Scheduled email deleted successfully!')
+        
+        // Close any open modals
+        setShowViewModal(false)
+        setShowDayModal(false)
+        setViewingEmail(null)
+        
         // Refresh the data
         fetchScheduledEmails()
+        
+        // Dispatch event to update dashboard counters
+        window.dispatchEvent(new CustomEvent('emailScheduled'))
+        window.dispatchEvent(new CustomEvent('refreshDashboard'))
       } else {
         const errorData = await response.json()
         console.error('Failed to delete scheduled email:', errorData)

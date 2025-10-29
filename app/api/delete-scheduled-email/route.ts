@@ -18,21 +18,30 @@ export async function DELETE(request: NextRequest) {
     // First get the scheduled email info for activity logging and Inngest cancellation
     const { data: scheduledEmail, error: fetchError } = await supabase
       .from('scheduled_emails')
-      .select(`
-        user_id,
-        title,
-        scheduled_date,
-        status,
-        recipients!inner(first_name, last_name, email)
-      `)
+      .select('user_id, title, scheduled_date, status, recipient_id')
       .eq('id', emailId)
       .single()
 
     if (fetchError) {
+      console.error('Error fetching scheduled email:', fetchError)
       return NextResponse.json(
         { error: 'Scheduled email not found' },
         { status: 404 }
       )
+    }
+    
+    // Fetch recipient info separately to avoid relationship ambiguity
+    let recipientInfo = null
+    if (scheduledEmail.recipient_id) {
+      const { data: recipient } = await supabase
+        .from('recipients')
+        .select('first_name, last_name, email')
+        .eq('id', scheduledEmail.recipient_id)
+        .single()
+      
+      if (recipient) {
+        recipientInfo = recipient
+      }
     }
 
     // Only allow deletion of scheduled emails (not sent ones)
@@ -73,8 +82,10 @@ export async function DELETE(request: NextRequest) {
 
     // Log activity
     try {
-      const recipient = scheduledEmail.recipients[0]
-      const recipientName = `${recipient.first_name} ${recipient.last_name || ''}`.trim()
+      let recipientName = 'Unknown'
+      if (recipientInfo) {
+        recipientName = `${recipientInfo.first_name} ${recipientInfo.last_name || ''}`.trim()
+      }
       
       // Import the activity logging function
       const { logScheduledEmailDeleted } = await import('@/lib/activity-history')
