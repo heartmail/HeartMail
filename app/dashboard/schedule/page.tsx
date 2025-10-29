@@ -129,6 +129,18 @@ export default function SchedulePage() {
   
   const { user } = useAuth()
 
+  // Helper function to convert 24-hour time to 12-hour format with AM/PM
+  const formatTimeTo12Hour = (time24: string): string => {
+    if (!time24) return ''
+    
+    const [hours, minutes] = time24.split(':')
+    const hour = parseInt(hours, 10)
+    const ampm = hour >= 12 ? 'PM' : 'AM'
+    const hour12 = hour % 12 || 12
+    
+    return `${hour12}:${minutes} ${ampm}`
+  }
+
   // Fetch recipients and templates from database
   useEffect(() => {
     if (user) {
@@ -994,7 +1006,7 @@ export default function SchedulePage() {
                         <Calendar className="h-4 w-4" />
                         <div>
                           <div className="email-date">{new Date(email.scheduled_date).toLocaleDateString()}</div>
-                          <div className="email-time-text">{email.scheduled_time}</div>
+                          <div className="email-time-text">{formatTimeTo12Hour(email.scheduled_time)}</div>
                         </div>
                       </div>
                       <div className="email-content">
@@ -1260,7 +1272,7 @@ export default function SchedulePage() {
                         </div>
                         <div className="email-time">
                           <Clock className="h-4 w-4" />
-                          <span>Time: {email.time}</span>
+                          <span>Time: {formatTimeTo12Hour(email.time)}</span>
                         </div>
                         <div className="email-type">
                           <span className={`type-badge ${email.type}`}>
@@ -1566,7 +1578,7 @@ export default function SchedulePage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowViewModal(false)}>
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-6 rounded-t-2xl">
+            <div className="bg-gradient-to-r from-red-800 via-red-700 to-rose-900 text-white p-6 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
@@ -1574,7 +1586,7 @@ export default function SchedulePage() {
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold">Scheduled Email Details</h3>
-                    <p className="text-blue-100">View email content and details</p>
+                    <p className="text-red-100">View email content and details</p>
                   </div>
                 </div>
                 <button
@@ -1627,7 +1639,7 @@ export default function SchedulePage() {
                 <div>
                   <label className="text-sm font-medium text-gray-500">Scheduled Time</label>
                   <p className="text-lg text-gray-900">
-                    {viewingEmail.scheduled_time}
+                    {formatTimeTo12Hour(viewingEmail.scheduled_time)}
                   </p>
                 </div>
               </div>
@@ -1677,10 +1689,15 @@ export default function SchedulePage() {
                   setShowViewModal(false)
                   handleDeleteScheduledEmail(viewingEmail.id)
                 }}
-                className="bg-red-600 hover:bg-red-700 text-white px-6"
+                disabled={viewingEmail.status === 'sent'}
+                className={`px-6 ${
+                  viewingEmail.status === 'sent' 
+                    ? 'bg-gray-400 cursor-not-allowed opacity-50 text-white' 
+                    : 'bg-red-600 hover:bg-red-700 text-white'
+                }`}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete Email
+                {viewingEmail.status === 'sent' ? 'Email Already Sent' : 'Delete Email'}
               </Button>
             </div>
           </div>
