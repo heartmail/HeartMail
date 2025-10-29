@@ -28,25 +28,29 @@ export default function BillingSettings() {
   const [portalLoading, setPortalLoading] = useState(false)
   const { user } = useAuth()
 
-  // Listen for email sent events to refresh billing data
+  // Listen for email sent/scheduled events to refresh billing data
   useEffect(() => {
-    const handleEmailSent = () => {
+    const handleEmailEvent = () => {
       if (user) {
         fetchSubscription()
       }
     }
 
-    window.addEventListener('emailSent', handleEmailSent)
-    return () => window.removeEventListener('emailSent', handleEmailSent)
+    window.addEventListener('emailSent', handleEmailEvent)
+    window.addEventListener('emailScheduled', handleEmailEvent)
+    return () => {
+      window.removeEventListener('emailSent', handleEmailEvent)
+      window.removeEventListener('emailScheduled', handleEmailEvent)
+    }
   }, [user])
 
-  // Periodic refresh to catch scheduled emails
+  // Periodic refresh to catch scheduled emails being sent
   useEffect(() => {
     if (!user) return
 
     const interval = setInterval(() => {
       fetchSubscription()
-    }, 30000) // Refresh every 30 seconds
+    }, 10000) // Refresh every 10 seconds to catch sent emails faster
 
     return () => clearInterval(interval)
   }, [user])

@@ -485,6 +485,8 @@ export default function SchedulePage() {
           fetchRecipients()
           fetchTemplates()
           fetchScheduledEmails()
+          // Notify other components that an email was scheduled
+          window.dispatchEvent(new CustomEvent('emailScheduled'))
           setIsSubmitting(false)
         } else {
           const errorData = await response.json()
