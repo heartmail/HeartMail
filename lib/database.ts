@@ -112,17 +112,25 @@ export async function deleteScheduledEmail(scheduledEmailId: string): Promise<vo
   // First get the scheduled email info for activity logging
   const { data: scheduledEmail, error: fetchError } = await supabase
     .from('scheduled_emails')
-    .select(`
-      user_id,
-      title,
-      scheduled_date,
-      recipient_id,
-      recipients:recipient_id(first_name, last_name, email)
-    `)
+    .select('user_id, title, scheduled_date, recipient_id')
     .eq('id', scheduledEmailId)
     .single()
 
   if (fetchError) throw fetchError
+
+  // Get recipient info separately to avoid relationship ambiguity
+  let recipientName = 'Unknown'
+  if (scheduledEmail.recipient_id) {
+    const { data: recipient } = await supabase
+      .from('recipients')
+      .select('first_name, last_name')
+      .eq('id', scheduledEmail.recipient_id)
+      .single()
+    
+    if (recipient) {
+      recipientName = `${recipient.first_name} ${recipient.last_name || ''}`.trim()
+    }
+  }
 
   const { error } = await supabase
     .from('scheduled_emails')
@@ -133,8 +141,6 @@ export async function deleteScheduledEmail(scheduledEmailId: string): Promise<vo
 
   // Log activity
   try {
-    const recipient = scheduledEmail.recipients as any
-    const recipientName = recipient ? `${recipient.first_name} ${recipient.last_name || ''}`.trim() : 'Unknown'
     await logScheduledEmailDeleted(
       scheduledEmail.user_id,
       scheduledEmail.title,
