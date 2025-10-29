@@ -96,7 +96,7 @@ export default function DashboardContent() {
       label: 'Scheduled Emails', 
       value: data.stats?.scheduledEmails?.toString() || '0', 
       icon: Clock, 
-      change: data.stats?.scheduledEmails > 0 ? 'Next: Tomorrow' : 'No emails scheduled',
+      change: data.stats?.scheduledEmails > 0 && data.stats?.nextScheduledDate ? `Next: ${data.stats.nextScheduledDate}` : data.stats?.scheduledEmails > 0 ? 'Scheduled' : 'No emails scheduled',
       changeType: data.stats?.scheduledEmails > 0 ? 'positive' : 'neutral'
     },
   ]

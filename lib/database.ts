@@ -11,7 +11,7 @@ export async function getDashboardStats(userId: string) {
   
   const [recipientsResult, scheduledEmailsResult, usageResult] = await Promise.all([
     supabase.from('recipients').select('id').eq('user_id', userId).eq('is_active', true),
-    supabase.from('scheduled_emails').select('id, status').eq('user_id', userId),
+    supabase.from('scheduled_emails').select('id, status, scheduled_date, scheduled_time').eq('user_id', userId).neq('status', 'sent'),
     supabase.from('subscription_usage').select('emails_sent_this_month').eq('user_id', userId).eq('month_year', currentMonth).single()
   ])
 
@@ -19,10 +19,41 @@ export async function getDashboardStats(userId: string) {
   const scheduledEmails = scheduledEmailsResult.data?.length || 0
   const sentThisMonth = usageResult.data?.emails_sent_this_month || 0
   
+  // Find the next scheduled email date
+  let nextScheduledDate = null
+  if (scheduledEmailsResult.data && scheduledEmailsResult.data.length > 0) {
+    // Sort by date and time to find the earliest upcoming email
+    const sortedEmails = [...scheduledEmailsResult.data].sort((a, b) => {
+      const dateA = new Date(`${a.scheduled_date}T${a.scheduled_time}`)
+      const dateB = new Date(`${b.scheduled_date}T${b.scheduled_time}`)
+      return dateA.getTime() - dateB.getTime()
+    })
+    
+    const nextEmail = sortedEmails[0]
+    if (nextEmail && nextEmail.scheduled_date) {
+      // Format the date nicely
+      const date = new Date(nextEmail.scheduled_date)
+      const today = new Date()
+      const tomorrow = new Date(today)
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      
+      // Check if it's today, tomorrow, or a specific date
+      if (date.toDateString() === today.toDateString()) {
+        nextScheduledDate = 'Today'
+      } else if (date.toDateString() === tomorrow.toDateString()) {
+        nextScheduledDate = 'Tomorrow'
+      } else {
+        // Format as "Oct 30" or similar
+        nextScheduledDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      }
+    }
+  }
+  
   return {
     activeRecipients,
     scheduledEmails,
-    sentThisMonth
+    sentThisMonth,
+    nextScheduledDate
   }
 }
 
