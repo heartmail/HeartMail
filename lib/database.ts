@@ -68,32 +68,43 @@ export async function getRecipients(userId: string) {
 
 // Upcoming Emails
 export async function getUpcomingEmails(userId: string) {
-  const { data, error } = await supabase
+  // First get the scheduled emails
+  const { data: emails, error: emailsError } = await supabase
     .from('scheduled_emails')
-    .select(`
-      id,
-      title,
-      scheduled_date,
-      scheduled_time,
-      status,
-      recipient_id,
-      recipients:recipient_id(name, email)
-    `)
+    .select('id, title, scheduled_date, scheduled_time, status, recipient_id')
     .eq('user_id', userId)
     .gte('scheduled_date', new Date().toISOString().split('T')[0])
     .order('scheduled_date', { ascending: true })
     .limit(3)
 
-  if (error) throw error
+  if (emailsError) throw emailsError
+  if (!emails || emails.length === 0) return []
 
-  return data?.map((email: any) => ({
-    id: email.id,
-    title: email.title,
-    recipient: email.recipients?.name || 'recipient',
-    date: formatDate(email.scheduled_date),
-    time: formatTime(email.scheduled_time),
-    status: email.status
-  })) || []
+  // Get recipient IDs
+  const recipientIds = emails.map(e => e.recipient_id).filter(Boolean)
+  
+  // Fetch recipients separately to avoid relationship ambiguity
+  const { data: recipients, error: recipientsError } = await supabase
+    .from('recipients')
+    .select('id, name, email')
+    .in('id', recipientIds)
+
+  if (recipientsError) throw recipientsError
+
+  // Create a map for quick lookup
+  const recipientMap = new Map(recipients?.map(r => [r.id, r]) || [])
+
+  return emails.map((email) => {
+    const recipient = recipientMap.get(email.recipient_id)
+    return {
+      id: email.id,
+      title: email.title,
+      recipient: recipient?.name || 'recipient',
+      date: formatDate(email.scheduled_date),
+      time: formatTime(email.scheduled_time),
+      status: email.status
+    }
+  })
 }
 
 // Delete a scheduled email
