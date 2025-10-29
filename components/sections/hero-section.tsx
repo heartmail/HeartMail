@@ -87,7 +87,7 @@ export default function HeroSection() {
                 </p>
                 <div className="flex items-center space-x-2 text-sm text-gray-500 bg-gray-50 p-2 rounded-lg">
                   <span>📷</span>
-                  <span>Family photo from last weekend</span>
+                  <span>Family photo from last weekend!</span>
                 </div>
               </div>
             </div>
