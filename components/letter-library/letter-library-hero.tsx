@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 
 export default function LetterLibraryHero() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 via-pink-500 to-purple-700 overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 via-purple-500 to-pink-500 overflow-hidden">
       {/* Floating Hearts */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="floating-hearts">
@@ -24,19 +24,19 @@ export default function LetterLibraryHero() {
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-20">
         {/* Dashboard Button - Positioned Top Left */}
         <div className="absolute top-8 left-8">
-          <Link href="https://heartsmail.com/dashboard">
+          <a href="https://heartsmail.com/dashboard" target="_blank" rel="noopener noreferrer">
             <Button variant="outline" className="bg-white/10 backdrop-blur-md border-white/20 text-white hover:bg-white hover:text-pink-600 px-6 py-3 text-base font-semibold shadow-xl hover:shadow-2xl transition-all duration-300">
               <Home className="h-5 w-5 mr-2" />
               Dashboard
             </Button>
-          </Link>
+          </a>
         </div>
 
         {/* Main Content - Centered */}
         <div className="space-y-8">
           {/* Title */}
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6" style={{textShadow: '0 4px 20px rgba(0, 0, 0, 0.3)'}}>
-            Letter <span className="text-pink-200 underline decoration-pink-200 decoration-4 underline-offset-8">Library</span>
+            Letter <span className="text-blue-200 underline decoration-blue-200 decoration-4 underline-offset-8">Library</span>
           </h1>
           
           {/* Subtitle */}
