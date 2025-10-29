@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, Users, Palette, Calendar, Mail, Camera, Check, Clock, UserPlus, AlertTriangle, Heart, Loader2, Sparkles, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -35,6 +35,23 @@ export default function DashboardContent() {
       refetch()
     }
   }
+
+  // Listen for email sent/scheduled events to update stats
+  useEffect(() => {
+    const handleEmailEvent = () => {
+      if (refetch) {
+        refetch()
+      }
+    }
+
+    window.addEventListener('emailSent', handleEmailEvent)
+    window.addEventListener('emailScheduled', handleEmailEvent)
+
+    return () => {
+      window.removeEventListener('emailSent', handleEmailEvent)
+      window.removeEventListener('emailScheduled', handleEmailEvent)
+    }
+  }, [refetch])
 
   if (loading) {
     return (

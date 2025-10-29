@@ -1880,9 +1880,16 @@ html, body {
   }
 
   .calendar-day.today {
-    background: #fef5f5;
+    background: linear-gradient(135deg, #fef5f5 0%, #ffe5ec 100%);
     border-color: #E63365;
     border-width: 2px;
+    box-shadow: 0 0 0 3px rgba(230, 51, 101, 0.1);
+    font-weight: 600;
+  }
+  
+  .calendar-day.today .day-number {
+    color: #E63365;
+    font-weight: 700;
   }
 
   .calendar-day.has-events {
