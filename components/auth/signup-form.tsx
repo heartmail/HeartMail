@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/lib/auth-context-new'
 import { useRouter } from 'next/navigation'
-import { signUpWithGoogle } from '@/lib/google-oauth'
 import { supabase } from '@/lib/supabase'
 
 export default function SignupForm() {
@@ -32,7 +31,7 @@ export default function SignupForm() {
     confirmPassword: ''
   })
 
-  const { signUp } = useAuth()
+  const { signUp, signUpWithGoogle } = useAuth()
   const router = useRouter()
 
   const steps = [

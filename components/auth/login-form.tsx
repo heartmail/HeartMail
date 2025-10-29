@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/lib/auth-context-new'
 import { useRouter } from 'next/navigation'
-import { signInWithGoogle } from '@/lib/google-oauth'
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -21,7 +20,7 @@ export default function LoginForm() {
     password: ''
   })
 
-  const { signIn } = useAuth()
+  const { signIn, signInWithGoogle } = useAuth()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
