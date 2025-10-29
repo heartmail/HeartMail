@@ -798,6 +798,9 @@ export default function SchedulePage() {
         templates: templateData
       }
 
+      // Close the day modal if it's open
+      setShowDayModal(false)
+      
       setViewingEmail(emailWithDetails)
       setShowViewModal(true)
     } catch (error) {
