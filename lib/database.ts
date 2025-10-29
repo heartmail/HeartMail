@@ -76,7 +76,8 @@ export async function getUpcomingEmails(userId: string) {
       scheduled_date,
       scheduled_time,
       status,
-      recipients!inner(name, email)
+      recipient_id,
+      recipients:recipient_id(name, email)
     `)
     .eq('user_id', userId)
     .gte('scheduled_date', new Date().toISOString().split('T')[0])
@@ -88,7 +89,7 @@ export async function getUpcomingEmails(userId: string) {
   return data?.map(email => ({
     id: email.id,
     title: email.title,
-    recipient: email.recipients?.[0]?.name || 'recipient',
+    recipient: email.recipients?.name || 'recipient',
     date: formatDate(email.scheduled_date),
     time: formatTime(email.scheduled_time),
     status: email.status
@@ -104,7 +105,8 @@ export async function deleteScheduledEmail(scheduledEmailId: string): Promise<vo
       user_id,
       title,
       scheduled_date,
-      recipients!inner(first_name, last_name, email)
+      recipient_id,
+      recipients:recipient_id(first_name, last_name, email)
     `)
     .eq('id', scheduledEmailId)
     .single()
@@ -120,8 +122,8 @@ export async function deleteScheduledEmail(scheduledEmailId: string): Promise<vo
 
   // Log activity
   try {
-    const recipient = scheduledEmail.recipients[0]
-    const recipientName = `${recipient.first_name} ${recipient.last_name || ''}`.trim()
+    const recipient = scheduledEmail.recipients
+    const recipientName = recipient ? `${recipient.first_name} ${recipient.last_name || ''}`.trim() : 'Unknown'
     await logScheduledEmailDeleted(
       scheduledEmail.user_id,
       scheduledEmail.title,

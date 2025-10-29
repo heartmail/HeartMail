@@ -22,7 +22,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 via-pink-500 to-purple-700">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-800 via-red-700 to-rose-900">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin text-white mx-auto mb-4" />
           <p className="text-white text-lg">Loading your dashboard...</p>
