@@ -242,10 +242,10 @@ export default function PricingSection({ user }: PricingSectionProps) {
   }
 
   return (
-    <section id="pricing" className="py-20" style={{ backgroundColor: '#363636' }}>
+    <section id="pricing" className="py-20 bg-gray-800">
       <div className="container mx-auto px-4 text-center">
-        <h2 className="text-4xl font-bold text-white mb-4">Simple & Transparent Pricing</h2>
-        <p className="text-xl text-gray-300 mb-8">
+        <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Simple & Transparent Pricing</h2>
+        <p className="text-xl text-gray-300 mb-10">
           Choose the plan that's right for you and start sending heartfelt messages.
         </p>
         
@@ -278,26 +278,35 @@ export default function PricingSection({ user }: PricingSectionProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {pricingPlans.map((plan, index) => {
             const { text, action, disabled, className } = getButtonProps(plan.name, plan.priceId)
             return (
               <div
                 key={index}
-                className={`bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg p-8 flex flex-col ${
-                  plan.isPrimary ? 'border-4 border-heartmail-pink transform scale-105' : 'border border-gray-200 dark:border-gray-700'
+                className={`bg-white rounded-2xl shadow-xl p-8 flex flex-col transition-all duration-300 ${
+                  plan.isPrimary ? 'border-4 border-pink-500 transform scale-105 relative' : 'border border-gray-200'
                 }`}
               >
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{plan.name}</h3>
-                <p className="text-5xl font-extrabold text-heartmail-pink mb-4">
-                  {plan.price}
-                  <span className="text-lg font-medium text-gray-600 dark:text-gray-300"> {plan.frequency}</span>
-                </p>
-                <ul className="text-gray-700 dark:text-gray-300 text-left space-y-3 flex-grow mb-8">
+                {plan.isPrimary && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <span className="bg-pink-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                      Most Popular
+                    </span>
+                  </div>
+                )}
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">{plan.name}</h3>
+                <div className="mb-6">
+                  <span className="text-5xl font-extrabold text-pink-500">
+                    {plan.price}
+                  </span>
+                  <span className="text-gray-600 ml-2">{plan.frequency}</span>
+                </div>
+                <ul className="text-gray-600 text-left space-y-4 flex-grow mb-8">
                   {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-center">
-                      <Check className="h-5 w-5 text-green-500 mr-2" />
-                      {feature}
+                    <li key={i} className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                      <span>{feature}</span>
                     </li>
                   ))}
                 </ul>

@@ -36,8 +36,8 @@ export default function SignupForm() {
 
   const steps = [
     { id: 1, title: 'Name', description: 'Tell us your name', icon: User },
-    { id: 2, title: 'Username', description: 'Choose your username', icon: User },
-    { id: 3, title: 'Email', description: 'Enter your email', icon: Mail },
+    { id: 2, title: 'Email', description: 'Enter your email', icon: Mail },
+    { id: 3, title: 'Username', description: 'Choose your username', icon: User },
     { id: 4, title: 'Password', description: 'Create a secure password', icon: Lock }
   ]
 
@@ -95,6 +95,17 @@ export default function SignupForm() {
         }
         return true
       case 2:
+        if (!formData.email.trim()) {
+          setError('Please enter your email')
+          return false
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(formData.email)) {
+          setError('Please enter a valid email address')
+          return false
+        }
+        return true
+      case 3:
         if (!formData.username.trim()) {
           setError('Please enter a username')
           return false
@@ -106,17 +117,6 @@ export default function SignupForm() {
         const usernameRegex = /^[a-zA-Z0-9._]+$/
         if (!usernameRegex.test(formData.username)) {
           setError('Username can only contain letters, numbers, dots, and underscores')
-          return false
-        }
-        return true
-      case 3:
-        if (!formData.email.trim()) {
-          setError('Please enter your email')
-          return false
-        }
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!emailRegex.test(formData.email)) {
-          setError('Please enter a valid email address')
           return false
         }
         return true
@@ -317,6 +317,30 @@ export default function SignupForm() {
           {currentStep === 2 && (
             <div className="space-y-4">
               <div className="space-y-2">
+                <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="Enter your email address"
+                    className="pl-10 h-12 text-lg"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    autoFocus
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {currentStep === 3 && (
+            <div className="space-y-4">
+              <div className="space-y-2">
                 <label htmlFor="username" className="text-sm font-medium text-gray-700">
                   Username
                 </label>
@@ -335,30 +359,6 @@ export default function SignupForm() {
                   />
                 </div>
                 <p className="text-xs text-gray-500">This will be your public display name</p>
-              </div>
-            </div>
-          )}
-
-          {currentStep === 3 && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-gray-700">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="Enter your email address"
-                    className="pl-10 h-12 text-lg"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    autoFocus
-                  />
-                </div>
               </div>
             </div>
           )}

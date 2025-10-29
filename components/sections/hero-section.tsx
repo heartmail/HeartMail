@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Play } from 'lucide-react'
+import Link from 'next/link'
 
 export default function HeroSection() {
   return (
@@ -32,34 +33,36 @@ export default function HeroSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center min-h-[80vh]">
           {/* Left Content */}
           <div className="text-center lg:text-left space-y-8">
-            <h1 className="hero-title">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight" style={{textShadow: '0 4px 12px rgba(0, 0, 0, 0.8)'}}>
               Keeping <span className="text-pink-300 underline decoration-pink-300 decoration-4 underline-offset-4">hearts</span> connected, one email at a time
             </h1>
-            <p className="hero-subtitle">
+            <p className="text-lg lg:text-xl text-white leading-relaxed" style={{textShadow: '0 2px 6px rgba(0, 0, 0, 0.8)'}}>
               Automatically send heartfelt emails to your loved ones. 
               Set it once, and let HeartMail deliver your love on schedule.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
-              <Button size="lg" className="btn-heartmail text-lg px-8 py-4">
-                Start Free Trial
-              </Button>
-              <Button size="lg" variant="outline" className="btn-heartmail-outline text-lg px-8 py-4">
+              <Link href="/signup">
+                <Button size="lg" className="btn-heartmail text-lg px-8 py-4 w-full sm:w-auto">
+                  Start Free Trial
+                </Button>
+              </Link>
+              <Button size="lg" variant="outline" className="bg-white/10 backdrop-blur-sm text-white border-white hover:bg-white/20 text-lg px-8 py-4">
                 <Play className="mr-2 h-5 w-5" />
                 Watch Demo
               </Button>
             </div>
             <div className="flex flex-col sm:flex-row gap-6 lg:gap-8 justify-center lg:justify-start text-white">
-              <div className="text-center bg-black/20 backdrop-blur-sm rounded-lg p-4">
-                <div className="text-2xl lg:text-3xl font-bold text-pink-300" style={{textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)'}}>10,000+</div>
-                <div className="text-sm text-white" style={{textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)'}}>Emails Sent</div>
+              <div className="text-center">
+                <div className="text-3xl lg:text-4xl font-bold text-white" style={{textShadow: '0 2px 6px rgba(0, 0, 0, 0.9)'}}>10,000+</div>
+                <div className="text-sm text-white/90" style={{textShadow: '0 1px 3px rgba(0, 0, 0, 0.9)'}}>Emails Sent</div>
               </div>
-              <div className="text-center bg-black/20 backdrop-blur-sm rounded-lg p-4">
-                <div className="text-2xl lg:text-3xl font-bold text-pink-300" style={{textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)'}}>500+</div>
-                <div className="text-sm text-white" style={{textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)'}}>Happy Families</div>
+              <div className="text-center">
+                <div className="text-3xl lg:text-4xl font-bold text-white" style={{textShadow: '0 2px 6px rgba(0, 0, 0, 0.9)'}}>500+</div>
+                <div className="text-sm text-white/90" style={{textShadow: '0 1px 3px rgba(0, 0, 0, 0.9)'}}>Happy Families</div>
               </div>
-              <div className="text-center bg-black/20 backdrop-blur-sm rounded-lg p-4">
-                <div className="text-2xl lg:text-3xl font-bold text-pink-300" style={{textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)'}}>99%</div>
-                <div className="text-sm text-white" style={{textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)'}}>Deliverability</div>
+              <div className="text-center">
+                <div className="text-3xl lg:text-4xl font-bold text-white" style={{textShadow: '0 2px 6px rgba(0, 0, 0, 0.9)'}}>99%</div>
+                <div className="text-sm text-white/90" style={{textShadow: '0 1px 3px rgba(0, 0, 0, 0.9)'}}>Deliverability</div>
               </div>
             </div>
           </div>
