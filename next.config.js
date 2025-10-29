@@ -9,7 +9,7 @@ const nextConfig = {
     webpackBuildWorker: true,
   },
   images: {
-    domains: ['images.unsplash.com'],
+    domains: ['images.unsplash.com', 'fmuhjcrbwuoisjwuvreg.supabase.co'],
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60,
   },
