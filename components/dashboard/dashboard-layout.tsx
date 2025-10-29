@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Home, Users, Palette, Calendar, Settings, Bell, Plus, LogOut, ChevronLeft, ChevronRight, BookOpen, Image, Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@/lib/auth-context-new'
 import { useSubscription } from '@/lib/subscription-context'
 import Logo from '@/components/ui/logo'
 

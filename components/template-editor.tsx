@@ -13,7 +13,7 @@ import {
   Trash2,
   Plus
 } from 'lucide-react'
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@/lib/auth-context-new'
 import { getUserPhotos, getPhotoUrl, UserPhoto } from '@/lib/photo-library'
 import { 
   getTemplatePhotos, 

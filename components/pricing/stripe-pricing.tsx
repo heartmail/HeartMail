@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Check, Loader2 } from 'lucide-react'
 import { redirectToCheckout } from '@/lib/stripe-client'
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@/lib/auth-context-new'
 
 const plans = [
   {

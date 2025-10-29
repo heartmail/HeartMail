@@ -6,7 +6,7 @@ import { Heart, Mail, Loader2, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@/lib/auth-context-new'
 
 export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false)

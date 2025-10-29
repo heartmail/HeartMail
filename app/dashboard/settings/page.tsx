@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 // DashboardLayout is already applied through the main layout
 import BillingSettings from '@/components/billing/billing-settings'
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@/lib/auth-context-new'
 import { useTheme } from '@/lib/theme-context'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getUserProfile, upsertUserProfile, UserProfile } from '@/lib/profile'

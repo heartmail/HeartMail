@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@/lib/auth-context-new'
 import { getRecipients, createRecipient, updateRecipient, deleteRecipient, Recipient, getFullName } from '@/lib/recipients'
 import { canAddRecipient, getUserUsage, getUserLimits } from '@/lib/subscription-client'
 import UpgradeModal from '@/components/billing/upgrade-modal'

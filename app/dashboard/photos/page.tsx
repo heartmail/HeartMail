@@ -15,7 +15,7 @@ import {
   X,
   AlertCircle
 } from 'lucide-react'
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@/lib/auth-context-new'
 import { 
   getUserPhotos, 
   uploadPhoto, 

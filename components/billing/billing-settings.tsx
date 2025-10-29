@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { CreditCard, ExternalLink, Loader2, Calendar, Users, Mail, X } from 'lucide-react'
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@/lib/auth-context-new'
 import { Subscription, SubscriptionUsage, PlanLimits } from '@/lib/subscription'
 
 interface SubscriptionData {

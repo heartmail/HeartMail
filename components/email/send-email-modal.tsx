@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Mail, Heart, Send, Loader2, X, User, MessageSquare } from 'lucide-react'
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@/lib/auth-context-new'
 import { supabase } from '@/lib/supabase'
 import { getFullName } from '@/lib/recipients'
 import { replaceTemplateVariables, RecipientData } from '@/lib/template-variables'
