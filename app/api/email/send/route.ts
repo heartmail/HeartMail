@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     console.log('📧 Email send API called');
     
     const { to, subject, message, from, userId } = await request.json()
-    console.log('📧 Request data:', { to, subject, message: message?.substring(0, 50) + '...', from });
+    console.log('📧 Request data:', { to, subject, message: message?.substring(0, 50) + '...', from, userId });
 
     if (!to || !subject || !message) {
       console.log('❌ Missing required fields');
@@ -73,13 +73,16 @@ export async function POST(request: NextRequest) {
     
     // Increment email count for user directly
     if (userId) {
+      console.log('📧 About to increment email count for user:', userId)
       try {
         await incrementEmailCount(userId)
-        console.log('✅ Email count incremented for user:', userId)
+        console.log('✅ Email count incremented successfully for user:', userId)
       } catch (countError) {
-        console.error('Failed to increment email count:', countError)
+        console.error('❌ Failed to increment email count:', countError)
         // Don't fail the request if count increment fails
       }
+    } else {
+      console.log('❌ No userId provided, skipping email count increment')
     }
     
     // Log activity (extract recipient name from email if possible)

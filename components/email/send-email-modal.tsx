@@ -240,7 +240,8 @@ export default function SendEmailModal({ isOpen, onClose, onEmailSent }: SendEma
       to: formData.to,
       subject: formData.subject,
       message: formData.message?.substring(0, 50) + '...',
-      from: user?.email || 'heartmailio@gmail.com'
+      from: user?.email || 'heartmailio@gmail.com',
+      userId: user?.id
     });
 
     try {
@@ -277,7 +278,7 @@ export default function SendEmailModal({ isOpen, onClose, onEmailSent }: SendEma
           
           // Force a page refresh for all components
           window.dispatchEvent(new CustomEvent('refreshDashboard'))
-        }, 500) // Increased delay to ensure database commit
+        }, 1000) // Increased delay to ensure database commit and prevent modal from closing
         
         // Don't reset form here - let handleClose do it when user clicks Done
         // This prevents the modal from reopening

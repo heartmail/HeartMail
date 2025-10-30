@@ -53,7 +53,7 @@ export default function BillingSettings() {
 
     const interval = setInterval(() => {
       fetchSubscription()
-    }, 10000) // Refresh every 10 seconds to catch sent emails faster
+    }, 30000) // Refresh every 30 seconds to reduce frequency
 
     return () => clearInterval(interval)
   }, [user])

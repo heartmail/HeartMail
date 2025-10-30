@@ -112,7 +112,7 @@ export function useDashboardData(): {
 
     const interval = setInterval(() => {
       fetchData()
-    }, 30000) // Refresh every 30 seconds
+    }, 60000) // Refresh every 60 seconds to reduce frequency
 
     return () => clearInterval(interval)
   }, [user])
