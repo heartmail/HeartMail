@@ -38,11 +38,22 @@ export default function DashboardContent() {
 
   // Listen for email sent/scheduled events to update stats
   useEffect(() => {
+    let refreshTimeout: NodeJS.Timeout | null = null
+
     const handleEmailEvent = () => {
       console.log('🔄 Email event received, refreshing dashboard data...')
-      if (refetch) {
-        refetch()
+      
+      // Clear any existing timeout to prevent multiple refreshes
+      if (refreshTimeout) {
+        clearTimeout(refreshTimeout)
       }
+      
+      // Add a delay to prevent rapid refreshes
+      refreshTimeout = setTimeout(() => {
+        if (refetch) {
+          refetch()
+        }
+      }, 300) // Small delay to prevent rapid refreshes
     }
 
     window.addEventListener('emailSent', handleEmailEvent)
@@ -50,6 +61,9 @@ export default function DashboardContent() {
     window.addEventListener('refreshDashboard', handleEmailEvent)
 
     return () => {
+      if (refreshTimeout) {
+        clearTimeout(refreshTimeout)
+      }
       window.removeEventListener('emailSent', handleEmailEvent)
       window.removeEventListener('emailScheduled', handleEmailEvent)
       window.removeEventListener('refreshDashboard', handleEmailEvent)

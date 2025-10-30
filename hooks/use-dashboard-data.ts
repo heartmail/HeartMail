@@ -121,12 +121,20 @@ export function useDashboardData(): {
   useEffect(() => {
     if (!user) return
 
+    let refreshTimeout: NodeJS.Timeout | null = null
+
     const handleEmailEvent = () => {
       console.log('🔄 Dashboard data hook: Email event received, fetching fresh data...')
-      // Add a small delay to ensure database has been updated
-      setTimeout(() => {
+      
+      // Clear any existing timeout to prevent multiple refreshes
+      if (refreshTimeout) {
+        clearTimeout(refreshTimeout)
+      }
+      
+      // Add a delay to ensure database has been updated and prevent rapid refreshes
+      refreshTimeout = setTimeout(() => {
         fetchData()
-      }, 100)
+      }, 500) // Increased delay to prevent rapid refreshes
     }
 
     window.addEventListener('emailSent', handleEmailEvent)
@@ -134,6 +142,9 @@ export function useDashboardData(): {
     window.addEventListener('refreshDashboard', handleEmailEvent)
 
     return () => {
+      if (refreshTimeout) {
+        clearTimeout(refreshTimeout)
+      }
       window.removeEventListener('emailSent', handleEmailEvent)
       window.removeEventListener('emailScheduled', handleEmailEvent)
       window.removeEventListener('refreshDashboard', handleEmailEvent)

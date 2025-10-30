@@ -60,11 +60,13 @@ export default function SendEmailModal({ isOpen, onClose, onEmailSent }: SendEma
   const [upgradeModalType, setUpgradeModalType] = useState<'emails' | 'recipients' | 'templates' | 'scheduling'>('emails')
   const [currentUsage, setCurrentUsage] = useState(0)
   const [currentLimit, setCurrentLimit] = useState(0)
+  const [hasBeenClosed, setHasBeenClosed] = useState(false)
   const { user } = useAuth()
 
   // Fetch recipients and templates when modal opens
   useEffect(() => {
     if (isOpen && user) {
+      setHasBeenClosed(false) // Reset the closed flag when modal opens
       fetchRecipients()
       fetchTemplates()
     }
@@ -278,7 +280,7 @@ export default function SendEmailModal({ isOpen, onClose, onEmailSent }: SendEma
           
           // Force a page refresh for all components
           window.dispatchEvent(new CustomEvent('refreshDashboard'))
-        }, 1000) // Increased delay to ensure database commit and prevent modal from closing
+        }, 2000) // Increased delay to 2 seconds to prevent modal from reopening
         
         // Don't reset form here - let handleClose do it when user clicks Done
         // This prevents the modal from reopening
@@ -313,11 +315,12 @@ export default function SendEmailModal({ isOpen, onClose, onEmailSent }: SendEma
     setFormData({ to: '', subject: '', message: '' })
     setSelectedRecipientId('')
     setSelectedTemplateId('')
+    setHasBeenClosed(true)
     onClose()
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => {
+    <Dialog open={isOpen && !hasBeenClosed} onOpenChange={(open) => {
       // Only close the modal, don't handle reopening
       if (!open) {
         handleClose()
