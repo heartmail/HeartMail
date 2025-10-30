@@ -2206,6 +2206,27 @@ html, body {
     color: #4a5568;
   }
 
+  /* Frequency badge colors aligned with the legend */
+  .email-type.weekly {
+    background: #bee3f8; /* light blue */
+    color: #2c5282;      /* dark blue text */
+  }
+
+  .email-type.monthly {
+    background: #c6f6d5; /* light green */
+    color: #22543d;      /* dark green text */
+  }
+
+  .email-type.one-time {
+    background: #fde68a; /* light orange */
+    color: #92400e;      /* dark orange text */
+  }
+
+  .email-type.special {
+    background: #ffd5e0; /* light pink/red */
+    color: #9b1c31;      /* dark red text */
+  }
+
   .email-status {
     font-size: 0.8rem;
     padding: 0.25rem 0.5rem;
