@@ -262,10 +262,6 @@ export default function SendEmailModal({ isOpen, onClose, onEmailSent }: SendEma
 
       if (response.ok) {
         setIsSuccess(true)
-        // Reset form after success
-        setFormData({ to: '', subject: '', message: '' })
-        setSelectedRecipientId('')
-        setSelectedTemplateId('')
         
         // Wait a moment for database to commit, then trigger refreshes
         setTimeout(() => {
@@ -281,11 +277,8 @@ export default function SendEmailModal({ isOpen, onClose, onEmailSent }: SendEma
           window.dispatchEvent(new CustomEvent('refreshDashboard'))
         }, 200)
         
-        // Don't auto-close the success modal - let user close it manually
-        // setTimeout(() => {
-        //   setIsSuccess(false)
-        //   onClose()
-        // }, 2000)
+        // Don't reset form here - let handleClose do it when user clicks Done
+        // This prevents the modal from reopening
       } else {
         const errorData = await response.json()
         
@@ -312,12 +305,19 @@ export default function SendEmailModal({ isOpen, onClose, onEmailSent }: SendEma
     })
   }
 
+  const handleClose = () => {
+    setIsSuccess(false)
+    setFormData({ to: '', subject: '', message: '' })
+    setSelectedRecipientId('')
+    setSelectedTemplateId('')
+    onClose()
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
       // Only close the modal, don't handle reopening
       if (!open) {
-        setIsSuccess(false)
-        onClose()
+        handleClose()
       }
     }}>
       <DialogContent 
@@ -352,10 +352,7 @@ export default function SendEmailModal({ isOpen, onClose, onEmailSent }: SendEma
             {/* Close Button */}
             <div className="flex justify-center">
               <Button 
-                onClick={() => {
-                  setIsSuccess(false)
-                  onClose()
-                }}
+                onClick={handleClose}
                 className="px-8 py-4 text-lg bg-gradient-to-r from-heartmail-pink to-pink-500 hover:from-pink-600 hover:to-pink-600 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1 rounded-xl"
               >
                 <Heart className="h-5 w-5 mr-2" />
@@ -495,7 +492,7 @@ export default function SendEmailModal({ isOpen, onClose, onEmailSent }: SendEma
               <Button
                 type="button"
                 variant="outline"
-                onClick={onClose}
+                onClick={handleClose}
                 className="flex-1"
                 disabled={isLoading}
               >
