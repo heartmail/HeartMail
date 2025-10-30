@@ -7,6 +7,18 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Ensure anchor links work properly */
+a[href^="#"] {
+  scroll-behavior: smooth;
+}
+
+/* Fix for anchor scrolling with fixed navbar */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 /* Ensure full-width background coverage */
 html, body {
   width: 100%;

@@ -5,7 +5,7 @@ import Navbar from '@/components/layout/navbar'
 import HeroSection from '@/components/sections/hero-section'
 import AuthInitializer from '@/components/auth/auth-initializer'
 import { ErrorBoundary } from '@/components/error-boundary'
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 
 // Force dynamic rendering to prevent AuthProvider issues during build
 export const dynamic = 'force-dynamic'
@@ -34,6 +34,51 @@ const CTASection = dynamicImport(() => import('@/components/sections/cta-section
 export default function Home() {
   // Remove all auth hook usage from this component
   // Auth state will be handled by the AuthProvider in layout.tsx
+
+  // Handle anchor link scrolling
+  useEffect(() => {
+    const handleAnchorClick = (e: Event) => {
+      const target = e.target as HTMLAnchorElement
+      if (target && target.getAttribute('href')?.startsWith('#')) {
+        e.preventDefault()
+        const targetId = target.getAttribute('href')?.substring(1)
+        if (targetId) {
+          const element = document.getElementById(targetId)
+          if (element) {
+            const navbarHeight = 64 // h-16 = 64px
+            const elementPosition = element.offsetTop - navbarHeight
+            window.scrollTo({
+              top: elementPosition,
+              behavior: 'smooth'
+            })
+          }
+        }
+      }
+    }
+
+    // Add event listener to all anchor links
+    document.addEventListener('click', handleAnchorClick)
+    
+    // Handle URL hash on page load
+    if (window.location.hash) {
+      setTimeout(() => {
+        const targetId = window.location.hash.substring(1)
+        const element = document.getElementById(targetId)
+        if (element) {
+          const navbarHeight = 64
+          const elementPosition = element.offsetTop - navbarHeight
+          window.scrollTo({
+            top: elementPosition,
+            behavior: 'smooth'
+          })
+        }
+      }, 100) // Small delay to ensure page is loaded
+    }
+
+    return () => {
+      document.removeEventListener('click', handleAnchorClick)
+    }
+  }, [])
 
   return (
     <ErrorBoundary>

@@ -242,7 +242,7 @@ export default function PricingSection({ user }: PricingSectionProps) {
   }
 
   return (
-    <section id="pricing" className="py-20 bg-gray-800 scroll-mt-20">
+    <section id="pricing" className="py-20 bg-gray-800 scroll-mt-24">
       <div className="container mx-auto px-4 text-center">
         <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Simple & Transparent Pricing</h2>
         <p className="text-xl text-gray-300 mb-10">
