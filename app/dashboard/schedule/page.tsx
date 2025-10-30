@@ -349,11 +349,14 @@ export default function SchedulePage() {
       // Use frequency for email type instead of title parsing
       let emailType = email.frequency || 'one-time'
       
-      // Override for special occasions
-      if (email.title?.toLowerCase().includes('birthday')) {
-        emailType = 'special'
-      } else if (email.title?.toLowerCase().includes('family') || email.title?.toLowerCase().includes('gang')) {
-        emailType = 'special'
+      // Only mark "special" for one-time items with special keywords,
+      // never override recurring frequencies (weekly/monthly) colors
+      if ((emailType === 'one-time') && email.title) {
+        const title = email.title.toLowerCase()
+        const specialKeywords = ['birthday', 'anniversary', 'valentine', 'holiday', 'special']
+        if (specialKeywords.some(k => title.includes(k))) {
+          emailType = 'special'
+        }
       }
       
       return {
