@@ -82,15 +82,15 @@ export async function POST(request: NextRequest) {
       } catch (countError) {
         console.error('❌ Failed to increment email count:', countError)
         console.error('❌ Error details:', {
-          name: countError.name,
-          message: countError.message,
-          stack: countError.stack
+          name: countError instanceof Error ? countError.name : 'Unknown',
+          message: countError instanceof Error ? countError.message : String(countError),
+          stack: countError instanceof Error ? countError.stack : undefined
         })
         // Return error details in response for debugging
         return NextResponse.json({
           success: false,
           error: 'Email sent but failed to update count',
-          countError: countError.message,
+          countError: countError instanceof Error ? countError.message : String(countError),
           messageId: data?.id
         }, { status: 200 })
       }
