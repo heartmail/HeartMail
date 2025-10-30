@@ -115,13 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-          data: {
-            username: username || `user_${Date.now()}`,
-            first_name: firstName,
-            last_name: lastName,
-            display_name: username || firstName || email.split('@')[0]
-          }
+          emailRedirectTo: `${window.location.origin}/auth/callback`
         },
       })
       

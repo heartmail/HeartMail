@@ -497,7 +497,7 @@ export default function SignupForm() {
               variant="outline"
               onClick={prevStep}
               disabled={currentStep === 1 || isAnimating}
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-2 py-3 px-6 text-base"
             >
               <ArrowLeft className="h-4 w-4" />
               <span>Back</span>
