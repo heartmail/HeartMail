@@ -75,10 +75,17 @@ export async function POST(request: NextRequest) {
     if (userId) {
       console.log('📧 About to increment email count for user:', userId)
       try {
-        await incrementEmailCount(userId)
+        console.log('📧 Calling incrementEmailCount function...')
+        const result = await incrementEmailCount(userId)
+        console.log('📧 incrementEmailCount returned:', result)
         console.log('✅ Email count incremented successfully for user:', userId)
       } catch (countError) {
         console.error('❌ Failed to increment email count:', countError)
+        console.error('❌ Error details:', {
+          name: countError.name,
+          message: countError.message,
+          stack: countError.stack
+        })
         // Don't fail the request if count increment fails
       }
     } else {
