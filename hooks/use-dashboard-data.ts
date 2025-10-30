@@ -123,7 +123,10 @@ export function useDashboardData(): {
 
     const handleEmailEvent = () => {
       console.log('🔄 Dashboard data hook: Email event received, fetching fresh data...')
-      fetchData()
+      // Add a small delay to ensure database has been updated
+      setTimeout(() => {
+        fetchData()
+      }, 100)
     }
 
     window.addEventListener('emailSent', handleEmailEvent)

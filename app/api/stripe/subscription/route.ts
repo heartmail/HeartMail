@@ -39,12 +39,18 @@ export async function GET(request: NextRequest) {
     const utcMonth = now.getUTCMonth() + 1
     const currentMonth = `${utcYear}-${String(utcMonth).padStart(2, '0')}`
     
-    const { data: usageData } = await supabase
+    console.log('📊 Subscription API - User ID:', userId)
+    console.log('📊 Subscription API - Current month (UTC):', currentMonth)
+    
+    const { data: usageData, error: usageError } = await supabase
       .from('subscription_usage')
       .select('emails_sent_this_month')
       .eq('user_id', userId)
       .eq('month_year', currentMonth)
       .single()
+    
+    console.log('📊 Subscription API - Usage data:', usageData)
+    console.log('📊 Subscription API - Usage error:', usageError)
 
     if (error && error.code !== 'PGRST116') {
       console.error('Error fetching subscription:', error)

@@ -9,15 +9,29 @@ export async function getDashboardStats(userId: string) {
   const utcMonth = now.getUTCMonth() + 1
   const currentMonth = `${utcYear}-${String(utcMonth).padStart(2, '0')}`
   
+  console.log('📊 getDashboardStats - User ID:', userId)
+  console.log('📊 getDashboardStats - Current month (UTC):', currentMonth)
+  
   const [recipientsResult, scheduledEmailsResult, usageResult] = await Promise.all([
     supabase.from('recipients').select('id').eq('user_id', userId).eq('is_active', true),
     supabase.from('scheduled_emails').select('id, status, scheduled_date, scheduled_time').eq('user_id', userId).neq('status', 'sent'),
     supabase.from('subscription_usage').select('emails_sent_this_month').eq('user_id', userId).eq('month_year', currentMonth).single()
   ])
 
+  console.log('📊 getDashboardStats - Usage result:', usageResult)
+  console.log('📊 getDashboardStats - Usage data:', usageResult.data)
+  console.log('📊 getDashboardStats - Usage error:', usageResult.error)
+
   const activeRecipients = recipientsResult.data?.length || 0
   const scheduledEmails = scheduledEmailsResult.data?.length || 0
   const sentThisMonth = usageResult.data?.emails_sent_this_month || 0
+  
+  console.log('📊 getDashboardStats - Final stats:', {
+    activeRecipients,
+    scheduledEmails,
+    sentThisMonth,
+    currentMonth
+  })
   
   // Find the next scheduled email date
   let nextScheduledDate = null

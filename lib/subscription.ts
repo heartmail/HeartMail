@@ -391,12 +391,21 @@ export async function incrementEmailCount(userId: string): Promise<void> {
     const currentRecipientCount = currentUsage?.recipients_created || 0
 
     // Update or insert the usage record
+    const newEmailCount = currentEmailCount + 1
+    console.log('📧 incrementEmailCount - Updating email count:', {
+      userId,
+      currentMonth,
+      currentEmailCount,
+      newEmailCount,
+      currentRecipientCount
+    })
+    
     const { error: upsertError } = await adminSupabase
       .from('subscription_usage')
       .upsert({
         user_id: userId,
         month_year: currentMonth,
-        emails_sent_this_month: currentEmailCount + 1,
+        emails_sent_this_month: newEmailCount,
         recipients_created: currentRecipientCount, // Keep existing recipient count
         updated_at: new Date().toISOString()
       })
@@ -406,7 +415,7 @@ export async function incrementEmailCount(userId: string): Promise<void> {
       throw upsertError
     }
 
-    console.log('✅ Email count incremented successfully for user:', userId)
+    console.log('✅ Email count incremented successfully for user:', userId, 'New count:', newEmailCount)
   } catch (error) {
     console.error('Error in incrementEmailCount:', error)
     throw error
