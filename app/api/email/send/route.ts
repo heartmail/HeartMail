@@ -86,7 +86,13 @@ export async function POST(request: NextRequest) {
           message: countError.message,
           stack: countError.stack
         })
-        // Don't fail the request if count increment fails
+        // Return error details in response for debugging
+        return NextResponse.json({
+          success: false,
+          error: 'Email sent but failed to update count',
+          countError: countError.message,
+          messageId: data?.id
+        }, { status: 200 })
       }
     } else {
       console.log('❌ No userId provided, skipping email count increment')
