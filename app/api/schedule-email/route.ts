@@ -16,15 +16,16 @@ export async function POST(request: NextRequest) {
       subject, 
       bodyHtml, 
       bodyText, 
-      sendAt,
+      scheduledDate,
+      scheduledTime,
       frequency = 'one-time',
       userTimezone = 'UTC'
     } = await request.json()
 
     // Validate required fields
-    if (!userId || !recipientId || !toEmail || !subject || !bodyHtml || !sendAt) {
+    if (!userId || !recipientId || !toEmail || !subject || !bodyHtml || !scheduledDate || !scheduledTime) {
       return NextResponse.json(
-        { error: 'Missing required fields (userId, recipientId, toEmail, subject, bodyHtml, sendAt)' },
+        { error: 'Missing required fields (userId, recipientId, toEmail, subject, bodyHtml, scheduledDate, scheduledTime)' },
         { status: 400 }
       )
     }
@@ -38,20 +39,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
-            // Convert user's local time to UTC for storage
-            const userLocalDate = new Date(sendAt)
-            const utcSendDate = convertToUTC(userLocalDate, userTimezone)
-            
-            // Validate sendAt is at least 2 minutes in the future (in UTC)
-            const now = new Date()
-            const twoMinutesFromNow = new Date(now.getTime() + 2 * 60 * 1000) // 2 minutes from now
-            
-            if (utcSendDate <= twoMinutesFromNow) {
-              return NextResponse.json(
-                { error: 'Email must be scheduled for at least 2 minutes in the future' },
-                { status: 400 }
-              )
-            }
+    // Create a date object from the user's local date/time input
+    // This represents the time in the user's timezone
+    const localDateTime = `${scheduledDate}T${scheduledTime}:00`
+    const userLocalDate = new Date(localDateTime)
+    
+    // Convert user's local time to UTC for storage and scheduling
+    const utcSendDate = convertToUTC(userLocalDate, userTimezone)
+    
+    // Validate sendAt is at least 2 minutes in the future (in UTC)
+    const now = new Date()
+    const twoMinutesFromNow = new Date(now.getTime() + 2 * 60 * 1000)
+    
+    if (utcSendDate <= twoMinutesFromNow) {
+      return NextResponse.json(
+        { error: 'Email must be scheduled for at least 2 minutes in the future' },
+        { status: 400 }
+      )
+    }
 
     const supabase = createAdminClient()
 
@@ -91,7 +96,7 @@ export async function POST(request: NextRequest) {
         userId,
         toName || toEmail,
         subject,
-        sendAt,
+        utcSendDate.toISOString(),
         scheduledEmail.id
       )
     } catch (activityError) {

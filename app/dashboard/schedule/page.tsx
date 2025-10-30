@@ -11,6 +11,7 @@ import { getFullName } from '@/lib/recipients'
 import { replaceTemplateVariables, hasTemplateVariables, RecipientData, hasUnreplacedVariables, getUnreplacedVariables } from '@/lib/template-variables'
 import { hasPremiumTemplateAccess, canScheduleEmails } from '@/lib/subscription-client'
 import { getUserTimezone } from '@/lib/timezone'
+import { getUserProfile } from '@/lib/profile'
 import VariableValidationModal from '@/components/email/variable-validation-modal'
 // DashboardLayout is already applied through the main layout
 
@@ -132,6 +133,9 @@ export default function SchedulePage() {
   const [emailToDelete, setEmailToDelete] = useState<string | null>(null)
   const [showDeleteSuccess, setShowDeleteSuccess] = useState(false)
   
+  // Timezone state
+  const [userTimezone, setUserTimezone] = useState<string>(getUserTimezone())
+  
   const { user } = useAuth()
 
   // Helper function to convert 24-hour time to 12-hour format with AM/PM
@@ -145,6 +149,20 @@ export default function SchedulePage() {
     
     return `${hour12}:${minutes} ${ampm}`
   }
+
+  // Fetch user's timezone preference from profile
+  useEffect(() => {
+    if (user) {
+      getUserProfile(user.id).then(profile => {
+        if (profile?.timezone) {
+          setUserTimezone(profile.timezone)
+        }
+      }).catch(err => {
+        console.error('Error fetching user profile for timezone:', err)
+        // Fall back to browser timezone
+      })
+    }
+  }, [user])
 
   // Fetch recipients and templates from database
   useEffect(() => {
@@ -437,13 +455,17 @@ export default function SchedulePage() {
       setIsSubmitting(false)
       return
     }
-
+    
     // Validate that the scheduled time is at least 2 minutes in the future
-    const sendAt = new Date(`${date}T${time}`)
+    // Create date in user's local timezone for validation
+    const scheduledDateTime = `${date}T${time}:00`
     const now = new Date()
-    const twoMinutesFromNow = new Date(now.getTime() + 2 * 60 * 1000) // 2 minutes from now
+    const twoMinutesFromNow = new Date(now.getTime() + 2 * 60 * 1000)
 
-    if (sendAt <= twoMinutesFromNow) {
+    // Parse the scheduled time as local time for comparison
+    const scheduledLocalTime = new Date(scheduledDateTime)
+    
+    if (scheduledLocalTime <= twoMinutesFromNow) {
       alert('Please schedule the email for at least 2 minutes in the future')
       setIsSubmitting(false)
       return
@@ -488,9 +510,10 @@ export default function SchedulePage() {
             subject: subject || template?.title || 'Heartfelt Message',
             bodyHtml: template?.content || personalMessage,
             bodyText: personalMessage,
-            sendAt: sendAt.toISOString(),
+            scheduledDate: date,
+            scheduledTime: time,
             frequency: frequency || 'one-time',
-            userTimezone: getUserTimezone()
+            userTimezone: userTimezone
           })
         })
 
