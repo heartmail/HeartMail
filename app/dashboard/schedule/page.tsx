@@ -127,6 +127,11 @@ export default function SchedulePage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   
+  // Delete confirmation states
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [emailToDelete, setEmailToDelete] = useState<string | null>(null)
+  const [showDeleteSuccess, setShowDeleteSuccess] = useState(false)
+  
   const { user } = useAuth()
 
   // Helper function to convert 24-hour time to 12-hour format with AM/PM
@@ -719,9 +724,15 @@ export default function SchedulePage() {
   }
 
   const handleDeleteScheduledEmail = async (emailId: string) => {
-    if (!confirm('Are you sure you want to delete this scheduled email? This action cannot be undone.')) {
-      return
-    }
+    // Show confirmation modal instead of native confirm
+    setEmailToDelete(emailId)
+    setShowDeleteConfirm(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!emailToDelete) return
+
+    setShowDeleteConfirm(false)
 
     try {
       const response = await fetch('/api/delete-scheduled-email', {
@@ -729,17 +740,20 @@ export default function SchedulePage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ emailId })
+        body: JSON.stringify({ emailId: emailToDelete })
       })
 
       if (response.ok) {
         const result = await response.json()
-        alert('Scheduled email deleted successfully!')
         
         // Close any open modals
         setShowViewModal(false)
         setShowDayModal(false)
         setViewingEmail(null)
+        setEmailToDelete(null)
+        
+        // Show success modal instead of native alert
+        setShowDeleteSuccess(true)
         
         // Refresh the data
         fetchScheduledEmails()
@@ -756,6 +770,11 @@ export default function SchedulePage() {
       console.error('Error deleting scheduled email:', error)
       alert('Failed to delete scheduled email. Please try again.')
     }
+  }
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false)
+    setEmailToDelete(null)
   }
 
   const handleViewEmail = async (emailId: string) => {
@@ -1725,6 +1744,90 @@ export default function SchedulePage() {
         unreplacedVariables={unreplacedVariables}
         emailContent={pendingEmailContent}
       />
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[70] animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in zoom-in duration-300">
+            {/* Header */}
+            <div className="relative bg-gradient-to-br from-red-600 via-red-700 to-rose-900 text-white p-8 text-center">
+              <div className="absolute inset-0 bg-[url('/heart-pattern.svg')] opacity-10"></div>
+              <div className="relative">
+                <div className="w-20 h-20 bg-white bg-opacity-20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Trash2 className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-2">Delete Scheduled Email?</h3>
+                <p className="text-red-100 text-sm">This action cannot be undone</p>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+                <p className="text-gray-700 text-center leading-relaxed">
+                  Are you sure you want to delete this scheduled email? Once deleted, this email will not be sent and cannot be recovered.
+                </p>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex space-x-3">
+                <Button
+                  onClick={cancelDelete}
+                  variant="outline"
+                  className="flex-1 py-3 text-base font-semibold border-2 hover:bg-gray-50"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={confirmDelete}
+                  className="flex-1 py-3 text-base font-semibold bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Email
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Success Modal */}
+      {showDeleteSuccess && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70] animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in zoom-in duration-300">
+            {/* Animated Header */}
+            <div className="relative bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 text-white p-8 text-center">
+              <div className="absolute inset-0 bg-[url('/heart-pattern.svg')] opacity-10"></div>
+              <div className="relative">
+                <div className="w-20 h-20 bg-white bg-opacity-20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                  <svg className="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-3xl font-bold mb-2">Email Deleted!</h3>
+                <p className="text-green-100 text-lg">Scheduled email removed successfully</p>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200 mb-6">
+                <p className="text-sm text-gray-600 text-center">
+                  ✨ The scheduled email has been permanently deleted and will not be sent.
+                </p>
+              </div>
+
+              {/* Button */}
+              <Button
+                onClick={() => setShowDeleteSuccess(false)}
+                className="w-full py-3 text-lg font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                Got it!
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Success Modal */}
       {showSuccessModal && (
