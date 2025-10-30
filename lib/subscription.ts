@@ -377,7 +377,7 @@ export async function incrementEmailCount(userId: string): Promise<void> {
     // First, get the current usage record
     const { data: currentUsage, error: fetchError } = await adminSupabase
       .from('subscription_usage')
-      .select('emails_sent_this_month, recipients_created')
+      .select('emails_sent_this_month, recipients_count')
       .eq('user_id', userId)
       .eq('month_year', currentMonth)
       .single()
@@ -388,7 +388,7 @@ export async function incrementEmailCount(userId: string): Promise<void> {
     }
 
     const currentEmailCount = currentUsage?.emails_sent_this_month || 0
-    const currentRecipientCount = currentUsage?.recipients_created || 0
+    const currentRecipientCount = currentUsage?.recipients_count || 0
 
     // Update or insert the usage record
     const newEmailCount = currentEmailCount + 1
@@ -406,7 +406,7 @@ export async function incrementEmailCount(userId: string): Promise<void> {
         user_id: userId,
         month_year: currentMonth,
         emails_sent_this_month: newEmailCount,
-        recipients_created: currentRecipientCount, // Keep existing recipient count
+        recipients_count: currentRecipientCount, // Keep existing recipient count
         updated_at: new Date().toISOString()
       })
 
@@ -440,7 +440,7 @@ export async function incrementRecipientCount(userId: string): Promise<void> {
     // First, get the current usage record
     const { data: currentUsage, error: fetchError } = await adminSupabase
       .from('subscription_usage')
-      .select('emails_sent_this_month, recipients_created')
+      .select('emails_sent_this_month, recipients_count')
       .eq('user_id', userId)
       .eq('month_year', currentMonth)
       .single()
@@ -451,7 +451,7 @@ export async function incrementRecipientCount(userId: string): Promise<void> {
     }
 
     const currentEmailCount = currentUsage?.emails_sent_this_month || 0
-    const currentRecipientCount = currentUsage?.recipients_created || 0
+    const currentRecipientCount = currentUsage?.recipients_count || 0
 
     // Update or insert the usage record
     const { error: upsertError } = await adminSupabase
@@ -460,7 +460,7 @@ export async function incrementRecipientCount(userId: string): Promise<void> {
         user_id: userId,
         month_year: currentMonth,
         emails_sent_this_month: currentEmailCount, // Keep existing email count
-        recipients_created: currentRecipientCount + 1,
+        recipients_count: currentRecipientCount + 1,
         updated_at: new Date().toISOString()
       })
 
@@ -494,7 +494,7 @@ export async function decrementRecipientCount(userId: string): Promise<void> {
     // First, get the current usage record
     const { data: currentUsage, error: fetchError } = await adminSupabase
       .from('subscription_usage')
-      .select('emails_sent_this_month, recipients_created')
+      .select('emails_sent_this_month, recipients_count')
       .eq('user_id', userId)
       .eq('month_year', currentMonth)
       .single()
@@ -505,7 +505,7 @@ export async function decrementRecipientCount(userId: string): Promise<void> {
     }
 
     const currentEmailCount = currentUsage?.emails_sent_this_month || 0
-    const currentRecipientCount = currentUsage?.recipients_created || 0
+    const currentRecipientCount = currentUsage?.recipients_count || 0
 
     // Don't go below 0
     const newRecipientCount = Math.max(0, currentRecipientCount - 1)
@@ -517,7 +517,7 @@ export async function decrementRecipientCount(userId: string): Promise<void> {
         user_id: userId,
         month_year: currentMonth,
         emails_sent_this_month: currentEmailCount, // Keep existing email count
-        recipients_created: newRecipientCount,
+        recipients_count: newRecipientCount,
         updated_at: new Date().toISOString()
       })
 

@@ -16,7 +16,7 @@ interface SubscriptionData {
   current_period_end: string | null
   cancel_at_period_end: boolean
   usage: {
-    recipients_created: number
+    recipients_count: number
     emails_sent_this_month: number
   }
 }
@@ -29,34 +29,9 @@ export default function BillingSettings() {
   const { user } = useAuth()
 
   // Listen for email sent/scheduled events to refresh billing data
-  useEffect(() => {
-    const handleEmailEvent = () => {
-      console.log('🔄 Email event received, refreshing billing data...')
-      if (user) {
-        fetchSubscription()
-      }
-    }
+  // No automatic refresh on email events
 
-    window.addEventListener('emailSent', handleEmailEvent)
-    window.addEventListener('emailScheduled', handleEmailEvent)
-    window.addEventListener('refreshDashboard', handleEmailEvent)
-    return () => {
-      window.removeEventListener('emailSent', handleEmailEvent)
-      window.removeEventListener('emailScheduled', handleEmailEvent)
-      window.removeEventListener('refreshDashboard', handleEmailEvent)
-    }
-  }, [user])
-
-  // Periodic refresh to catch scheduled emails being sent
-  useEffect(() => {
-    if (!user) return
-
-    const interval = setInterval(() => {
-      fetchSubscription()
-    }, 30000) // Refresh every 30 seconds to reduce frequency
-
-    return () => clearInterval(interval)
-  }, [user])
+  // No periodic refresh
 
   useEffect(() => {
     if (user) {
@@ -226,7 +201,7 @@ export default function BillingSettings() {
                       <span className="text-sm text-gray-600">Recipients</span>
                     </div>
                     <span className="text-sm font-medium">
-                      {subscription.usage.recipients_created} / {limits?.recipients_limit === null ? '∞' : (limits?.recipients_limit ?? 2)}
+                      {subscription.usage.recipients_count} / {limits?.recipients_limit === null ? '∞' : (limits?.recipients_limit ?? 2)}
                     </span>
                   </div>
                   

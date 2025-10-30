@@ -266,21 +266,7 @@ export default function SendEmailModal({ isOpen, onClose, onEmailSent }: SendEma
       if (response.ok) {
         setIsSuccess(true)
         
-        // Wait a moment for database to commit, then trigger refreshes
-        setTimeout(() => {
-          console.log('📧 Frontend: Triggering dashboard refresh after email send')
-          
-          // Trigger dashboard refresh
-          if (onEmailSent) {
-            onEmailSent()
-          }
-          
-          // Trigger global email sent event for billing refresh
-          window.dispatchEvent(new CustomEvent('emailSent'))
-          
-          // Force a page refresh for all components
-          window.dispatchEvent(new CustomEvent('refreshDashboard'))
-        }, 2000) // Increased delay to 2 seconds to prevent modal from reopening
+        // Email sent successfully - no refresh needed
         
         // Don't reset form here - let handleClose do it when user clicks Done
         // This prevents the modal from reopening

@@ -11,7 +11,7 @@ export interface SubscriptionUsage {
   id: string
   user_id: string
   emails_sent_this_month: number
-  recipients_created: number
+  recipients_count: number
   month_year: string
   created_at: string
   updated_at: string
@@ -106,7 +106,7 @@ export async function canAddRecipient(userId: string): Promise<boolean> {
       return true // Unlimited
     }
 
-    const recipientsCreated = usage?.recipients_created || 0
+    const recipientsCreated = usage?.recipients_count || 0
     return recipientsCreated < limits.recipients_limit
   } catch (error) {
     console.error('Error in canAddRecipient (client-side):', error)

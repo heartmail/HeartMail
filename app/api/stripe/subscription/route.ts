@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
           current_period_end: null,
           cancel_at_period_end: false,
           usage: {
-            recipients_created: freeRecipientCount || 0,
+            recipients_count: freeRecipientCount || 0,
             emails_sent_this_month: freeUsageData?.emails_sent_this_month || 0
           }
         },
@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
         current_period_end: subscription.current_period_end,
         cancel_at_period_end: subscription.cancel_at_period_end,
         usage: {
-          recipients_created: recipientCount || 0,
+          recipients_count: recipientCount || 0,
           emails_sent_this_month: usageData?.emails_sent_this_month || 0
         }
       },

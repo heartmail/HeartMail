@@ -107,49 +107,9 @@ export function useDashboardData(): {
   }, [user])
 
   // Periodic refresh to catch scheduled emails
-  useEffect(() => {
-    if (!user) return
+  // No periodic refresh
 
-    const interval = setInterval(() => {
-      fetchData()
-    }, 60000) // Refresh every 60 seconds to reduce frequency
-
-    return () => clearInterval(interval)
-  }, [user])
-
-  // Listen for email events to refresh immediately
-  useEffect(() => {
-    if (!user) return
-
-    let refreshTimeout: NodeJS.Timeout | null = null
-
-    const handleEmailEvent = () => {
-      console.log('🔄 Dashboard data hook: Email event received, fetching fresh data...')
-      
-      // Clear any existing timeout to prevent multiple refreshes
-      if (refreshTimeout) {
-        clearTimeout(refreshTimeout)
-      }
-      
-      // Add a delay to ensure database has been updated and prevent rapid refreshes
-      refreshTimeout = setTimeout(() => {
-        fetchData()
-      }, 500) // Increased delay to prevent rapid refreshes
-    }
-
-    window.addEventListener('emailSent', handleEmailEvent)
-    window.addEventListener('emailScheduled', handleEmailEvent)
-    window.addEventListener('refreshDashboard', handleEmailEvent)
-
-    return () => {
-      if (refreshTimeout) {
-        clearTimeout(refreshTimeout)
-      }
-      window.removeEventListener('emailSent', handleEmailEvent)
-      window.removeEventListener('emailScheduled', handleEmailEvent)
-      window.removeEventListener('refreshDashboard', handleEmailEvent)
-    }
-  }, [user])
+  // No automatic refresh on email events
 
   const refetch = () => {
     fetchData()

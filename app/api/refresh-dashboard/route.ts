@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     const currentMonth = new Date().toISOString().slice(0, 7) // YYYY-MM format
     const { data: usage, error } = await supabase
       .from('subscription_usage')
-      .select('emails_sent_this_month, recipients_created')
+      .select('emails_sent_this_month, recipients_count')
       .eq('user_id', userId)
       .eq('month_year', currentMonth)
       .single()
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       success: true,
       usage: {
         emails_sent_this_month: usage?.emails_sent_this_month || 0,
-        recipients_created: usage?.recipients_created || 0
+        recipients_count: usage?.recipients_count || 0
       }
     })
 
