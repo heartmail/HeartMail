@@ -105,12 +105,31 @@ export const sendScheduledEmail = inngest.createFunction(
           throw new Error(`Recipient not found: ${recipientError?.message}`)
         }
 
+        // Get user email for "from" field
+        const { data: userProfile, error: profileError } = await supabase
+          .from('user_profiles')
+          .select('email')
+          .eq('user_id', userId)
+          .single()
+
+        const fromEmail = userProfile?.email || 'HeartMail User'
+
+        // Import email template function
+        const { createEmailTemplate } = await import('@/lib/email-template')
+
+        // Wrap the content with the beautiful email template (same as manual emails)
+        const formattedHtml = createEmailTemplate(
+          scheduledEmail.title,
+          scheduledEmail.content,
+          fromEmail
+        )
+
         // Send the email
         const { data, error } = await resend.emails.send({
           from: 'HeartMail <noreply@letter.heartsmail.com>',
           to: [recipient.email],
           subject: scheduledEmail.title,
-          html: scheduledEmail.content,
+          html: formattedHtml,
         })
 
         if (error) {
