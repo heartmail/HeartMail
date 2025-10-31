@@ -173,13 +173,13 @@ export default function SchedulePage() {
     }
   }, [user])
 
-  // Filter scheduled emails based on search query (only for list view)
+  // Filter and sort scheduled emails based on search query (only for list view)
   useEffect(() => {
     if (viewMode === 'list') {
-      if (!searchQuery.trim()) {
-        setFilteredScheduledEmails(scheduledEmails)
-      } else {
-        const filtered = scheduledEmails.filter(email => {
+      let filtered = scheduledEmails
+      
+      if (searchQuery.trim()) {
+        filtered = scheduledEmails.filter(email => {
           const searchLower = searchQuery.toLowerCase()
           
           // Search by text content
@@ -197,8 +197,16 @@ export default function SchedulePage() {
           
           return textMatch || statusMatch || frequencyMatch
         })
-        setFilteredScheduledEmails(filtered)
       }
+      
+      // Sort by date and time, newest first
+      const sorted = [...filtered].sort((a, b) => {
+        const dateA = new Date(`${a.scheduled_date} ${a.scheduled_time || '00:00'}`).getTime()
+        const dateB = new Date(`${b.scheduled_date} ${b.scheduled_time || '00:00'}`).getTime()
+        return dateB - dateA // Descending order (newest first)
+      })
+      
+      setFilteredScheduledEmails(sorted)
     }
   }, [scheduledEmails, searchQuery, viewMode])
 
